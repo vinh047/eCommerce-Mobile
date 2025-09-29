@@ -1,8 +1,43 @@
 @import "tailwindcss";
 
 :root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
 }
 
+html {
+  font-family: var(--font-sans);
+}
 
-body {
+.swiper-button-prev,
+.swiper-button-next {
+  width: 44px;
+  height: 44px;
+  background-color: #fff;
+  border-radius: 9999px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  color: #111 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  z-index: 20;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 14px;
+}
+
+.swiper-button-prev {
+  left: -8px !important;
+}
+
+.swiper-button-next {
+  right: -8px !important;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 20px;
+  font-weight: 600;
 }

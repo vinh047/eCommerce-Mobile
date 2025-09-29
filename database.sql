@@ -39,13 +39,15 @@ CREATE TABLE Brands (
 -- parent_id: hỗ trợ phân cấp danh mục (danh mục con)
 -- spec_template_id: liên kết với mẫu thông số kỹ thuật
 CREATE TABLE Categories (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255),
-  slug VARCHAR(255),
-  parent_id INT,
+  id               INT PRIMARY KEY AUTO_INCREMENT,
+  name             VARCHAR(255),
+  slug             VARCHAR(191),
+  parent_id        INT,
   spec_template_id INT,
-  is_active BOOLEAN DEFAULT TRUE,
-  FOREIGN KEY (parent_id) REFERENCES Categories(id),
+  is_active        BOOLEAN DEFAULT TRUE,
+  icon_key         VARCHAR(64) NULL,
+
+  FOREIGN KEY (parent_id)        REFERENCES Categories(id),
   FOREIGN KEY (spec_template_id) REFERENCES spec_templates(id)
 );
 
