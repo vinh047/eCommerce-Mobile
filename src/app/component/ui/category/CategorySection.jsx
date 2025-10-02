@@ -14,7 +14,7 @@ const products = [
     rating: 47,
     rating_avg: 2.3,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2025%2F6%2F9%2F1%2F1752071900683_samsung_galaxy_z_fold7_5g_didongviet.png&w=256&q=75", // thay bằng ảnh thật
+      "/assets/image-products/iphone_air-3_2.webp"
   },
   {
     id: 2,
@@ -24,7 +24,7 @@ const products = [
     rating: 36,
     rating_avg: 4.5,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2024%2F9%2F1%2F1%2F1727758429310_iphone12_pro_max_128gb_likenew_1.png&w=256&q=75",
+      "/assets/image-products/iphone_air-3_2.webp"
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ const products = [
     rating: 24,
     rating_avg: 4.7,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2024%2F9%2F1%2F1%2F1727770654764_iphone15_128gb_likenew_1.png&w=256&q=75",
+      "/assets/image-products/iphone_air-3_2.webp"
   },
   {
     id: 4,
@@ -44,7 +44,7 @@ const products = [
     rating: 17,
     rating_avg: 3.3,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2025%2F0%2F16%2F1%2F1737001950246_xiaomi_redmi_note_14_128gb_didongviet.png&w=256&q=75",
+      "/assets/image-products/iphone_air-3_2.webp"
   },
   {
     id: 5,
@@ -54,7 +54,7 @@ const products = [
     rating: 20,
     rating_avg: 2.6,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2025%2F6%2F3%2F1%2F1751518082285_reno14_f_5g_didongviet.png&w=256&q=75",
+      "/assets/image-products/iphone_air-3_2.webp"
   },
   {
     id: 6,
@@ -64,7 +64,7 @@ const products = [
     rating: 20,
     rating_avg: 2.6,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2025%2F6%2F3%2F1%2F1751518082285_reno14_f_5g_didongviet.png&w=256&q=75",
+      "/assets/image-products/iphone_air-3_2.webp"
   },
   {
     id: 7,
@@ -74,7 +74,7 @@ const products = [
     rating: 20,
     rating_avg: 2.6,
     image:
-      "https://didongviet.vn/_next/image?url=https%3A%2F%2Fcdn-v2.didongviet.vn%2Ffiles%2Fproducts%2F2025%2F6%2F3%2F1%2F1751518082285_reno14_f_5g_didongviet.png&w=256&q=75",
+      "/assets/image-products/iphone_air-3_2.webp"
   },
 ];
 

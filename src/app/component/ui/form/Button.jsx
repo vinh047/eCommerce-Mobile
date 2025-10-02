@@ -15,7 +15,7 @@ const sizes = {
 const variants = {
   primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
   secondary: "bg-slate-900 text-white hover:bg-slate-800 shadow-sm",
-  outline: "border border-slate-300 text-slate-900 hover:bg-slate-50",
+  outline: "border border-slate-300 text-slate-900",
   ghost: "text-slate-900 hover:bg-slate-100",
   success: "bg-green-600 text-white hover:bg-green-700 shadow-sm",
   warning: "bg-amber-500 text-white hover:bg-amber-600 shadow-sm",

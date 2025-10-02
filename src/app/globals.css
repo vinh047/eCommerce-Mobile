@@ -41,3 +41,36 @@ html {
   font-size: 20px;
   font-weight: 600;
 }
+
+
+/* Scrollbar đẹp, nằm trong bo góc của card */
+.filter-card { display: flex; flex-direction: column; }
+.scroll-area {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-gutter: stable;         /* giữ layout khi hiện/ẩn thanh cuộn (trình duyệt mới) */
+  padding-bottom: 0;                /* phần debug đã chèn pb-24 để không đè action bar */
+}
+
+/* Firefox */
+.scroll-area { scrollbar-width: thin; scrollbar-color: #9ca3af transparent; }
+
+/* WebKit (Chrome/Edge/Safari) */
+.scroll-area::-webkit-scrollbar { width: 8px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb {
+  background: #d1d5db;             /* gray-300 */
+  border-radius: 9999px;
+  border: 2px solid transparent;   /* tạo khoảng cách với track */
+  background-clip: padding-box;
+}
+.scroll-area:hover::-webkit-scrollbar-thumb { background: #9ca3af; } /* gray-400 */
+
+/* Checkbox xanh, bo vuông nhẹ như mock */
+input.chk { accent-color: #2563eb; border-radius: 6px; }
+
+/* Mobile drawer */
+@media (max-width: 1023px) {
+  #filterSidebar { position: fixed; top: 0; left: -100%; width: 100%; height: 100vh; background: #fff; z-index: 50; transition: left .3s ease; padding: 16px; }
+  #filterSidebar.open { left: 0; }
+}

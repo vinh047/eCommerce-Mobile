@@ -24,7 +24,7 @@ function RatingStars({ rating }) {
 function ProductCard({ product }) {
   return (
     <Link href={'/product'}>
-      <div className="my-4 mx-2 group bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[340px]">
+      <div className="my-2 mx-2 group bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[340px]">
         {/* Ảnh sản phẩm */}
         <div className="relative w-full h-52 rounded-lg mb-3 overflow-hidden">
           <Image
