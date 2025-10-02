@@ -1,6 +1,6 @@
 import BannerSlider from "@/component/ui/banner/BannerSlider";
-import CategoryIcon from "./component/ui/category/CategoryIcon";
-import CategorySection from "./component/ui/category/CategorySection";
+import CategoryIcon from "@/component/ui/category/CategoryIcon";
+import CategorySection from "@/component/ui/category/CategorySection";
 import Link from "next/link";
 
 const categories = [
