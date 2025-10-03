@@ -1,0 +1,74 @@
+[
+    {
+        "id":1,
+        "product_id":1,
+        "color":"Vàng",
+        "price":23791500,
+        "stock":0,
+        "specs_json":{
+            "Dung lượng":"128GB"
+        },
+        "is_active":true
+
+    },
+      {
+        "id":2,
+        "product_id":1,
+        "color":"Xám",
+        "price":23791500,
+        "stock":64,
+        "specs_json":{
+            "Dung lượng":"128GB"
+        },
+        "is_active":true
+
+    },
+      {
+        "id":3,
+        "product_id":1,
+        "color":"Bạc",
+        "price":23791500,
+        "stock":64,
+        "specs_json":{
+            "Dung lượng":"128GB"
+        },
+        "is_active":true
+
+    },
+     {
+        "id":4,
+        "product_id":1,
+        "color":"Vàng",
+        "price":23791500,
+        "stock":64,
+        "specs_json":{
+            "Dung lượng":"256GB"
+        },
+        "is_active":true
+
+    },
+     {
+        "id":5,
+        "product_id":1,
+        "color":"Vàng",
+        "price":23791500,
+        "stock":64,
+        "specs_json":{
+            "Dung lượng":"512GB"
+        },
+        "is_active":true
+
+    },
+    {
+        "id":6,
+        "product_id":1,
+        "color":"Bạc",
+        "price":23791500,
+        "stock":64,
+        "specs_json":{
+            "Dung lượng":"256GB"
+        },
+        "is_active":true
+
+    }
+]
