@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FaStar, FaRegStar, FaStarHalfAlt } from "react-icons/fa";
+import { formatPrice } from "@/utils/format";
+
+const baseUrlImage = "/assets/image-products/";
 
 function RatingStars({ rating }) {
   const safeRating = Math.max(0, Math.min(5, Number(rating) || 0));
@@ -23,12 +26,12 @@ function RatingStars({ rating }) {
 
 function ProductCard({ product }) {
   return (
-    <Link href={'/product'}>
+    <Link href={"/product"}>
       <div className="my-2 mx-2 group bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[340px]">
         {/* Ảnh sản phẩm */}
         <div className="relative w-full h-52 rounded-lg mb-3 overflow-hidden">
           <Image
-            src={product.image}
+            src={`${baseUrlImage}${product.image}`}
             alt={product.name}
             fill
             className="object-contain p-2 transition-transform duration-200 ease-in-out group-hover:-translate-y-1.5"
@@ -41,12 +44,20 @@ function ProductCard({ product }) {
         </h3>
 
         {/* Giá */}
-        <p className="text-blue-600 font-bold text-md mb-1">{product.price}</p>
+        <p className="text-blue-600 font-bold text-md mb-1">
+          {formatPrice(Number(product.minPrice))}
+        </p>
 
         {/* Đánh giá */}
         <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
-          <RatingStars rating={product.rating_avg} />
-          <span className="text-sm">({product.rating_avg})</span>
+          <RatingStars
+            rating={
+              Number(product.ratingAvg) === 0 ? 5 : Number(product.ratingAvg)
+            }
+          />
+          <span className="text-sm ms-0.5 mt-1">
+            ({Number(product.ratingAvg) === 0 ? 5 : Number(product.ratingAvg)})
+          </span>
         </div>
       </div>
     </Link>

@@ -17,11 +17,6 @@ enum AccountStatus {
   deleted
 }
 
-enum MediaType {
-  image
-  video
-}
-
 enum CouponType {
   fixed
   percentage
@@ -227,7 +222,6 @@ model Media {
   id        Int       @id @default(autoincrement())
   variantId Int       @map("variant_id")
   url       String    @db.VarChar(255)
-  type      MediaType @default(image)
   isPrimary Boolean   @default(false) @map("is_primary")
   sortOrder Int       @default(0) @map("sort_order")
 
