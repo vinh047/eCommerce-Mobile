@@ -1,10 +1,11 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import ProductTableHeader from './ProductTableHeader'
-import ProductTableRow from './ProductTableRow'
-import TablePagination from './TablePagination'
-import LoadingSkeleton from './LoadingSkeleton'
+import { useState } from "react";
+import ProductTableHeader from "./ProductTableHeader";
+import ProductTableRow from "./ProductTableRow";
+import TablePagination from "./TablePagination";
+import LoadingSkeleton from "./LoadingSkeleton";
+import Pagination from "../common/Pagination";
 
 export default function ProductsTable({
   products,
@@ -15,13 +16,12 @@ export default function ProductsTable({
   pageSize,
   totalItems,
   onSelectItem,
-  onSelectAll,
   onSort,
   onQuickView,
   onEditProduct,
   onDeleteProduct,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
 }) {
   const [columnVisibility, setColumnVisibility] = useState({
     id: true,
@@ -30,40 +30,45 @@ export default function ProductsTable({
     category: true,
     rating: true,
     status: true,
-    createdAt: true
-  })
+    createdAt: true,
+  });
 
-  const [showColumnFilter, setShowColumnFilter] = useState(false)
+  const [showColumnFilter, setShowColumnFilter] = useState(false);
 
   const handleColumnVisibilityChange = (column, visible) => {
-    setColumnVisibility(prev => ({
+    setColumnVisibility((prev) => ({
       ...prev,
-      [column]: visible
-    }))
-  }
+      [column]: visible,
+    }));
+  };
 
   const handleSelectAll = () => {
-    if (selectedItems.size === products.length) {
-      // Deselect all
-      products.forEach(product => onSelectItem(product.id, false))
+    const currentPageIds = products.map((p) => p.id);
+    const allSelected = currentPageIds.every((id) => selectedItems.has(id));
+
+    if (allSelected) {
+      products.forEach((product) => onSelectItem(product.id, false));
     } else {
-      // Select all
-      products.forEach(product => onSelectItem(product.id, true))
+      products.forEach((product) => onSelectItem(product.id, true));
     }
-  }
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Table Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Danh sách sản phẩm</h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400">Tổng: {totalItems} sản phẩm</span>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Danh sách sản phẩm
+          </h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Tổng: {totalItems} sản phẩm
+          </span>
         </div>
         <div className="flex items-center space-x-2">
           {/* Column Visibility */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowColumnFilter(!showColumnFilter)}
               className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
             >
@@ -72,24 +77,35 @@ export default function ProductsTable({
             {showColumnFilter && (
               <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
                 <div className="p-3 space-y-2">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">Hiển thị cột</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                    Hiển thị cột
+                  </div>
                   {Object.entries(columnVisibility).map(([column, visible]) => (
                     <label key={column} className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={visible}
-                        onChange={(e) => handleColumnVisibilityChange(column, e.target.checked)}
+                        onChange={(e) =>
+                          handleColumnVisibilityChange(column, e.target.checked)
+                        }
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <span className="text-sm dark:text-white capitalize">
-                        {column === 'id' ? 'ID' : 
-                         column === 'name' ? 'Tên sản phẩm' :
-                         column === 'brand' ? 'Thương hiệu' :
-                         column === 'category' ? 'Danh mục' :
-                         column === 'rating' ? 'Đánh giá' :
-                         column === 'status' ? 'Trạng thái' :
-                         column === 'createdAt' ? 'Ngày tạo' : column
-                        }
+                        {column === "id"
+                          ? "ID"
+                          : column === "name"
+                          ? "Tên sản phẩm"
+                          : column === "brand"
+                          ? "Thương hiệu"
+                          : column === "category"
+                          ? "Danh mục"
+                          : column === "rating"
+                          ? "Đánh giá"
+                          : column === "status"
+                          ? "Trạng thái"
+                          : column === "createdAt"
+                          ? "Ngày tạo"
+                          : column}
                       </span>
                     </label>
                   ))}
@@ -107,7 +123,7 @@ export default function ProductsTable({
             columnVisibility={columnVisibility}
             sortConfig={sortConfig}
             selectedItems={selectedItems}
-            totalItems={products.length}
+            currentPageProducts={products} 
             onSort={onSort}
             onSelectAll={handleSelectAll}
           />
@@ -115,7 +131,7 @@ export default function ProductsTable({
             {loading ? (
               <LoadingSkeleton columnVisibility={columnVisibility} />
             ) : (
-              products.map(product => (
+              products.map((product) => (
                 <ProductTableRow
                   key={product.id}
                   product={product}
@@ -133,7 +149,7 @@ export default function ProductsTable({
       </div>
 
       {/* Pagination */}
-      <TablePagination
+      <Pagination
         currentPage={currentPage}
         pageSize={pageSize}
         totalItems={totalItems}
@@ -141,5 +157,5 @@ export default function ProductsTable({
         onPageSizeChange={onPageSizeChange}
       />
     </div>
-  )
+  );
 }
