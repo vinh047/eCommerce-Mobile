@@ -31,7 +31,6 @@ export default function ProductsPage() {
     changePageSize,
     bulkAction,
     deleteProduct,
-    refreshProducts,
   } = useProducts();
 
   const { showToast } = useToast();
