@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=src/prisma/schema.prisma",
     "prisma:validate": "prisma validate --schema=src/prisma/schema.prisma",
-    "prisma:format": "prisma format --schema=src/prisma/schema.prisma"
+    "prisma:format": "prisma format --schema=src/prisma/schema.prisma",
+    "seed": "prisma db seed"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
@@ -31,15 +32,17 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^24.6.2",
+    "@types/node": "^24.7.0",
     "@types/react": "19.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
     "prisma": "^6.16.3",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "prisma": {
-    "schema": "src/prisma/schema.prisma"
+    "schema": "src/prisma/schema.prisma",
+    "seed": "tsx src/prisma/seed.ts"
   }
 }

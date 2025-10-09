@@ -1,6 +1,8 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { productService } from "../services/product.service";
 import { z } from "zod";
+import { categoryService } from "../services/category.service";
+
 
 const getByCategorySchema = z.object({
   categoryId: z.string().regex(/^\d+$/),
@@ -15,8 +17,9 @@ export const productController = {
     try {
       // Validate param + query
       const sp = req.nextUrl.searchParams;
+      const { categoryId } = await params;
       const parseResult = getByCategorySchema.safeParse({
-        categoryId: params.categoryId,
+        categoryId,
         limit: sp.get("limit") ?? undefined,
       });
 
@@ -38,6 +41,28 @@ export const productController = {
     } catch (err: any) {
       console.error("getByCategory error:", err);
       return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  },
+
+  async getFiltersByCategory(req: NextRequest, {params} : {params: {categorySlug: string}}) {
+    try {
+      const { categorySlug } = await params
+      const category = await categoryService.getCategoryBySlug(categorySlug);
+      const categoryId = Number(category?.id);
+      if (!Number.isFinite(categoryId))
+        return NextResponse.json(
+          { error: "Invalid categoryId" },
+          { status: 400 }
+        );
+
+      const data = await productService.getFiltersByCategory(categoryId);
+      return NextResponse.json({ data });
+    } catch (e: any) {
+      console.error("filters error:", e);
+      return NextResponse.json(
+        { error: e.message ?? "Internal Server Error" },
+        { status: 500 }
+      );
     }
   },
 };
