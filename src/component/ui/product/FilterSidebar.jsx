@@ -5,123 +5,55 @@ import { useRouter, useSearchParams } from "next/navigation";
 import FilterSidebarSkeleton from "./FilterSidebarSkeleton";
 
 /* ===========================
- * FAKE APIs (demo)
+ * API thật + Adapter
  * =========================== */
-async function fetchFilterTemplateFake(categorySlug) {
-  await new Promise((r) => setTimeout(r, 120));
-  return {
-    meta: {
-      category_slug: categorySlug,
-      title: "Bộ lọc",
-      version: 2,
-      locale: "vi-VN",
-    },
-    fields: {
-      brand: {
-        label: "Thương hiệu",
-        control: "select",
-        multi: true,
-        facet: { type: "discrete" },
-      },
-      chipset: {
-        label: "Chip xử lý",
-        control: "select",
-        multi: true,
-        facet: { type: "discrete" },
-      },
-      screen_size_bucket: {
-        label: "Kích thước màn hình",
-        control: "bucket-select",
-        multi: true,
-        facet: {
-          type: "range",
-          path: "$.screen.size",
-          buckets: [
-            { id: "lt_6_1", label: '< 6.1"' },
-            { id: "6_1_6_7", label: '6.1" - 6.7"' },
-            { id: "gt_6_7", label: '> 6.7"' },
-          ],
-        },
-      },
-      battery_capacity_bucket: {
-        label: "Dung lượng pin",
-        control: "bucket-select",
-        multi: true,
-        facet: {
-          type: "range",
-          path: "$.battery.capacity",
-          buckets: [
-            { id: "lt_4000", label: "< 4000 mAh" },
-            { id: "4k_5k", label: "4000 - 5000 mAh" },
-            { id: "gt_5000", label: "> 5000 mAh" },
-          ],
-        },
-      },
-      waterproof: {
-        label: "Chống nước",
-        control: "select",
-        datatype: "boolean",
-        facet: { type: "discrete" },
-        options: [
-          { value: "true", label: "Có" },
-          { value: "false", label: "Không" },
-        ],
-        include_all_option: true,
-      },
-      connectivity: {
-        label: "Kết nối",
-        control: "multiselect",
-        facet: { type: "discrete" },
-        options: ["5G", "Wi-Fi 6", "Wi-Fi 6E", "Bluetooth 5.3", "NFC"],
-      },
-      ram: {
-        label: "RAM",
-        control: "select",
-        multi: true,
-        facet: { type: "discrete" },
-        options: ["4GB", "6GB", "8GB", "12GB", "16GB"],
-      },
-      storage: {
-        label: "Dung lượng",
-        control: "select",
-        multi: true,
-        facet: { type: "discrete" },
-        options: ["64GB", "128GB", "256GB", "512GB", "1TB"],
-      },
-      color: {
-        label: "Màu sắc",
-        control: "select",
-        multi: true,
-        facet: { type: "discrete" },
-      },
-    },
-  };
+async function fetchFilterTemplate(categorySlug) {
+  const res = await fetch(`/api/products/categorySlug/${categorySlug}`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Fetch template failed (${res.status})`);
+  const json = await res.json(); // { data: { meta, fields } }
+
+  return json.data.data;
 }
 
-async function fetchFilterOptionsFake(categorySlug, fields) {
-  await new Promise((r) => setTimeout(r, 120));
-  const repo = {
-    brand: [
-      { value: "apple", label: "Apple" },
-      { value: "samsung", label: "Samsung" },
-      { value: "xiaomi", label: "Xiaomi" },
-      { value: "oppo", label: "OPPO" },
-      { value: "vivo", label: "Vivo" },
-      { value: "realme", label: "Realme" },
-    ],
-    chipset: [
-      { value: "A17 Pro", label: "A17 Pro" },
-      { value: "Snapdragon 8 Gen 3", label: "Snapdragon 8 Gen 3" },
-      { value: "Dimensity 9200+", label: "Dimensity 9200+" },
-    ],
-    color: [
-      { value: "Black", label: "Đen" },
-      { value: "Silver", label: "Bạc" },
-      { value: "Blue", label: "Xanh" },
-    ],
-  };
-  const out = {};
-  for (const f of fields) out[f] = repo[f] ?? [];
+/** Chuẩn hoá payload BE -> FE (đảm bảo title + ép id/value sang string) */
+function adaptBackendTemplateToFE(be) {
+  const out = { meta: { ...be.meta }, fields: {} };
+
+  // đảm bảo có title để hiển thị
+  out.meta.title = be?.meta?.category?.name || "Bộ lọc";
+
+  for (const [k, def] of Object.entries(be.fields || {})) {
+    const control = def.control; // "bucket-select" | "select" | "multiselect"
+    if (control === "bucket-select") {
+      out.fields[k] = {
+        ...def,
+        facet: {
+          ...def.facet,
+          buckets: (def.facet?.buckets ?? []).map((b) => ({
+            id: String(b.id), // ép string để so sánh checkbox/URL
+            label: b.label,
+            count: b.count ?? undefined,
+          })),
+        },
+      };
+    } else if (control === "select" || control === "multiselect") {
+      out.fields[k] = {
+        ...def,
+        options: (def.options ?? []).map((o) =>
+          typeof o === "object" && o !== null
+            ? { value: String(o.value), label: String(o.label) }
+            : { value: String(o), label: String(o) }
+        ),
+      };
+    } else {
+      out.fields[k] = def;
+    }
+  }
+
   return out;
 }
 
@@ -133,7 +65,8 @@ function useFilterTemplate(categorySlug) {
   useEffect(() => {
     let ignore = false;
     setState({ tpl: null, loading: true, error: null });
-    fetchFilterTemplateFake(categorySlug)
+    fetchFilterTemplate(categorySlug)
+      .then((be) => adaptBackendTemplateToFE(be))
       .then((tpl) => !ignore && setState({ tpl, loading: false, error: null }))
       .catch(
         (err) => !ignore && setState({ tpl: null, loading: false, error: err })
@@ -145,10 +78,20 @@ function useFilterTemplate(categorySlug) {
   return state;
 }
 
+/** Nếu có field select/multiselect mà options rỗng và cần fetch thêm, bạn có thể dùng hook này.
+ *  Với payload BE hiện tại, đa số field đã có options nên hook sẽ không gọi thêm gì. */
+async function fetchFilterOptionsFake(categorySlug, fields) {
+  // giữ nguyên cấu trúc, nhưng hầu như không dùng trong case hiện tại
+  await new Promise((r) => setTimeout(r, 30));
+  const out = {};
+  for (const f of fields) out[f] = [];
+  return out;
+}
+
 function useFilterOptions(categorySlug, tpl) {
   const [state, setState] = useState({
     optionsByField: {},
-    loading: true,
+    loading: false,
     error: null,
   });
   useEffect(() => {
@@ -179,6 +122,7 @@ function useFilterOptions(categorySlug, tpl) {
           !ignore &&
           setState({ optionsByField: {}, loading: false, error: err })
       );
+
     return () => {
       ignore = true;
     };
@@ -191,7 +135,7 @@ function useFilterOptions(categorySlug, tpl) {
  * =========================== */
 function buildInitialStateFromTemplate(tpl) {
   const state = {};
-  for (const [k, def] of Object.entries(tpl.fields)) {
+  for (const [k, def] of Object.entries(tpl.fields || {})) {
     if (
       def.control === "bucket-select" ||
       def.control === "multiselect" ||
@@ -199,7 +143,7 @@ function buildInitialStateFromTemplate(tpl) {
     ) {
       state[k] = [];
     } else if (def.datatype === "boolean" && def.control === "select") {
-      state[k] = null;
+      state[k] = null; // 3 trạng thái: null/"true"/"false"
     } else if (def.control === "select") {
       state[k] = "";
     } else {
@@ -254,10 +198,11 @@ function normalizeValuesToOptions(values, options) {
 
 function readFiltersFromSearch(tpl, searchParams, optionsByField) {
   const out = buildInitialStateFromTemplate(tpl);
-  for (const [fieldKey, def] of Object.entries(tpl.fields)) {
+  for (const [fieldKey, def] of Object.entries(tpl.fields || {})) {
     const raw = searchParams.get(fieldKey);
     if (raw == null || raw === "") continue;
 
+    // multi
     if (
       def.control === "bucket-select" ||
       def.control === "multiselect" ||
@@ -267,6 +212,8 @@ function readFiltersFromSearch(tpl, searchParams, optionsByField) {
         .split(",")
         .map((x) => x.trim())
         .filter(Boolean);
+
+      // bucket-select không có options -> dùng buckets làm options
       const options =
         optionsByField?.[fieldKey] ||
         (Array.isArray(def.options)
@@ -275,7 +222,11 @@ function readFiltersFromSearch(tpl, searchParams, optionsByField) {
                 ? { value: String(o.value), label: String(o.label) }
                 : { value: String(o), label: String(o) }
             )
-          : []);
+          : (def.facet?.buckets || []).map((b) => ({
+              value: String(b.id),
+              label: b.label,
+            })));
+
       out[fieldKey] = normalizeValuesToOptions(incoming, options);
       continue;
     }
@@ -292,20 +243,17 @@ function readFiltersFromSearch(tpl, searchParams, optionsByField) {
 }
 
 /* ===========================
- * UI bits (đã style theo mock)
+ * UI bits
  * =========================== */
 function CheckboxList({ items, checked, onToggle }) {
   return (
     <div className="space-y-2">
       {items.map((opt) => (
-        <label
-          key={opt.value}
-          className="flex items-center text-[13px] leading-5"
-        >
+        <label key={opt.value} className="flex items-center text-[13px] leading-5">
           <input
             type="checkbox"
             className="chk h-4 w-4 rounded-md border border-gray-300 mr-2 align-middle"
-            checked={checked.includes(opt.value)}
+            checked={(checked || []).map(String).includes(String(opt.value))}
             onChange={() => onToggle(opt.value)}
           />
           <span>{opt.label}</span>
@@ -325,8 +273,9 @@ function FieldRenderer({
 }) {
   const cur = state[fieldKey];
   const toggleInArray = (arr, v) => {
-    const s = new Set(arr || []);
-    s.has(v) ? s.delete(v) : s.add(v);
+    const s = new Set((arr || []).map(String));
+    const sv = String(v);
+    s.has(sv) ? s.delete(sv) : s.add(sv);
     return Array.from(s);
   };
 
@@ -341,44 +290,33 @@ function FieldRenderer({
       : []) ||
     [];
 
-  // bucket
+  // bucket-select
   if (def.control === "bucket-select") {
-    const buckets = def?.facet?.buckets || [];
+    const buckets = (def?.facet?.buckets || []).map((b) => ({
+      value: String(b.id),
+      label: b.label,
+    }));
     return (
       <section
         className={withDivider ? "pb-3 mb-3 border-b border-gray-100" : "mb-3"}
       >
         <h3 className="text-[13px] font-semibold mb-2">{def.label}</h3>
-        <div className="space-y-2">
-          {buckets.map((b) => (
-            <label
-              key={b.id}
-              className="flex items-center text-[13px] leading-5"
-            >
-              <input
-                type="checkbox"
-                className="chk h-4 w-4 rounded-md border border-gray-300 mr-2"
-                checked={(cur || []).includes(b.id)}
-                onChange={() =>
-                  setState((s) => ({
-                    ...s,
-                    [fieldKey]: toggleInArray(s[fieldKey] || [], b.id),
-                  }))
-                }
-              />
-              <span>{b.label}</span>
-            </label>
-          ))}
-        </div>
+        <CheckboxList
+          items={buckets}
+          checked={cur || []}
+          onToggle={(v) =>
+            setState((s) => ({
+              ...s,
+              [fieldKey]: toggleInArray(s[fieldKey] || [], v),
+            }))
+          }
+        />
       </section>
     );
   }
 
-  // multi
-  if (
-    def.control === "multiselect" ||
-    (def.control === "select" && def.multi)
-  ) {
+  // multiselect / select multi
+  if (def.control === "multiselect" || (def.control === "select" && def.multi)) {
     return (
       <section
         className={withDivider ? "pb-3 mb-3 border-b border-gray-100" : "mb-3"}
@@ -495,7 +433,7 @@ export default function FilterSidebar({ categorySlug, open = false }) {
       </aside>
     );
 
-  const fieldKeys = Object.keys(tpl.fields);
+  const fieldKeys = Object.keys(tpl.fields || {});
 
   return (
     <aside
@@ -506,14 +444,11 @@ export default function FilterSidebar({ categorySlug, open = false }) {
       <div className="filter-card rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.1)] overflow-hidden h-[calc(100vh-100px)]">
         {/* Vùng CUỘN: scrollbar ở trong border */}
         <div className="scroll-area h-full px-4 pt-4">
-          <h2 className="text-sm font-semibold mb-3">{tpl.meta.title}</h2>
 
           {(loadingOpts || errorOpts) && (
             <div className="text-[12px] mb-2">
               {loadingOpts && <FilterSidebarSkeleton />}
-              {errorOpts && (
-                <span className="text-red-600">Lỗi tải options</span>
-              )}
+              {errorOpts && <span className="text-red-600">Lỗi tải options</span>}
             </div>
           )}
 
@@ -543,11 +478,7 @@ export default function FilterSidebar({ categorySlug, open = false }) {
               className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500"
               type="button"
               onClick={() => {
-                const qs = query
-                  ? query.startsWith("?")
-                    ? query
-                    : "?" + query
-                  : "";
+                const qs = query ? (query.startsWith("?") ? query : "?" + query) : "";
                 const url = `/products/${categorySlug}${qs}`;
                 router.push(url);
               }}

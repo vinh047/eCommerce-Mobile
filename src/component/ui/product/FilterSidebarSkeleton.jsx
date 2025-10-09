@@ -3,7 +3,7 @@
 export default function FilterSidebarSkeleton() {
   return (
     <aside className="w-72 hidden lg:block" id="filterSidebar">
-      <div className="bg-white border rounded-2xl shadow-sm overflow-hidden h-[calc(100vh-100px)]">
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden h-[calc(100vh-100px)]">
         <div className="scroll-area h-full px-4 pt-4">
           {/* Title skeleton */}
           <div className="h-4 w-28 bg-gray-200 rounded mb-4 animate-pulse" />

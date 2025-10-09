@@ -1,49 +1,25 @@
+"use client";
 import BannerSlider from "@/component/ui/banner/BannerSlider";
 import CategoryIcon from "@/component/ui/category/CategoryIcon";
 import CategorySection from "@/component/ui/category/CategorySection";
 import Link from "next/link";
-
-const categories = [
-  {
-    id: 1,
-    name: "Điện thoại",
-    slug: "dien-thoai",
-    icon_key: "phones",
-  },
-  {
-    id: 2,
-    name: "Máy tính bảng",
-    slug: "may-tinh-bang",
-    icon_key: "tablets",
-  },
-  {
-    id: 3,
-    name: "Phụ kiện",
-    slug: "phu-kien",
-    icon_key: "accessories",
-  },
-  {
-    id: 4,
-    name: "Đồng hồ",
-    slug: "dong-ho-thong-minh",
-    icon_key: "watches",
-  },
-  {
-    id: 5,
-    name: "Âm thanh",
-    slug: "am-thanh",
-    icon_key: "audio",
-  },
-];
+import { useEffect, useState } from "react";
 
 export default function HomePage() {
-  // const [loading, setLoading] = useState(false);
-
-  // const [ready, setReady] = useState(false);
-  // useEffect(() => {
-  //   const timer = setTimeout(() => setReady(true), 100);
-  //   return () => clearTimeout(timer);
-  // }, []);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch("/api/categories");
+        if (!res.ok) throw new Error("Fetch failed");
+        const data = await res.json();
+        setCategories(data.data); // vì controller trả { data: categories }
+      } catch (err) {
+        console.error("Error:", err);
+      }
+    }
+    fetchCategories();
+  }, []);
   return (
     <main>
       <div className="max-w-screen-xl mx-auto px-4 py-4">
@@ -56,7 +32,7 @@ export default function HomePage() {
             <div className="space-y-2">
               {categories.map(({ id, icon_key: icon, name }) => (
                 <Link
-                href={"/category"}
+                  href={"/category"}
                   key={id}
                   className="group flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-white to-slate-50 rounded-lg shadow-sm hover:shadow-md hover:from-blue-50 transition-all duration-300 cursor-pointer"
                 >
