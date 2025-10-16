@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { productService } from "../services/product.service";
 import { z } from "zod";
-import { categoryService } from "../services/category.service";
-
-function searchParamsToObject(sp: URLSearchParams) {
-  const o: Record<string, string> = {};
-  // FE của bạn đang truyền giá trị dạng "a=1,2,3" nên 1 key chỉ có 1 value
-  sp.forEach((v, k) => {
-    o[k] = v;
-  });
-  return o;
-}
+import { productService } from "../services/product.service";
 
 const getByCategorySchema = z.object({
   categoryId: z.string().regex(/^\d+$/),
@@ -40,40 +30,15 @@ export const productController = {
         Math.max(1, Number(parseResult.data.limit ?? 10))
       );
 
-      const items = await productService.getProductsWithMinPriceByCategory(
+      const products = await productService.getProductsWithMinPriceByCategory(
         parseResult.data.categoryId,
         limit
       );
 
-      return Response.json({ data: { items, total: items.length, limit } });
+      return Response.json(products);
     } catch (err: any) {
       console.error("getByCategory error:", err);
       return Response.json({ error: "Internal Server Error" }, { status: 500 });
-    }
-  },
-
-  async getFiltersByCategory(
-    req: NextRequest,
-    { params }: { params: { categorySlug: string } }
-  ) {
-    try {
-      const { categorySlug } = await params;
-      const category = await categoryService.getCategoryBySlug(categorySlug);
-      const categoryId = Number(category?.id);
-      if (!Number.isFinite(categoryId))
-        return NextResponse.json(
-          { error: "Invalid categoryId" },
-          { status: 400 }
-        );
-
-      const data = await productService.getFiltersByCategory(categoryId);
-      return NextResponse.json({ data });
-    } catch (e: any) {
-      console.error("filters error:", e);
-      return NextResponse.json(
-        { error: e.message ?? "Internal Server Error" },
-        { status: 500 }
-      );
     }
   },
 

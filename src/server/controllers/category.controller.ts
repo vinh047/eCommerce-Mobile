@@ -1,11 +1,10 @@
 import { categoryService } from "../services/category.service";
-import { productService } from "../services/product.service";
 
 export const categoryController = {
   async getAllCategories() {
     try {
       const categories = await categoryService.getAllCategories();
-      return Response.json({ data: categories }, { status: 200 });
+      return Response.json(categories, { status: 200 });
     } catch (error) {
       console.error("getAllCategories error:", error);
       return Response.json({ error: "Internal Server Error" }, { status: 500 });
@@ -28,12 +27,9 @@ export const categoryController = {
         return Response.json({ error: "Category not found" }, { status: 404 });
       }
 
-      return Response.json({ data: category }, { status: 200 });
+      return Response.json(category, { status: 200 });
     } catch (err: any) {
       console.error("getCategoryBySlug error:", err);
-
-      // Nếu bạn muốn phân biệt lỗi Prisma
-      // if (err instanceof Prisma.PrismaClientKnownRequestError) { ... }
 
       return Response.json(
         { error: "Internal Server Error", message: err.message },
@@ -41,5 +37,4 @@ export const categoryController = {
       );
     }
   },
-
 };

@@ -1,17 +1,14 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { getCategories } from "@/lib/api/categoriesApi";
 import BannerSlider from "@/components/Home/banner/BannerSlider";
 import CategoryIcon from "@/components/Home/category/CategoryIcon";
 import CategorySection from "@/components/Home/category/CategorySection";
 import CategorySidebar from "@/components/Home/category/CategorySidebar";
 import CategorySidebarSkeleton from "@/components/Home/category/CategorySidebarSkeleton";
-import Link from "next/link";
-import { Suspense } from "react";
 
 export default async function HomePage() {
-  // update: viết qua lib
-  const res = await fetch("http://localhost:3000/api/categories");
-  if (!res.ok) throw new Error("Fetch failed");
-  const data = await res.json();
-  const categories = data.data;
+  const categories = await getCategories();
 
   return (
     <main>

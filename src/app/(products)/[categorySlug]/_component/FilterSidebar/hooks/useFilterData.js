@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { fetchFilterTemplate } from "@/lib/api/filter";
+import { fetchFilterTemplate } from "@/lib/api/filterApi";
 import {
     adaptBackendTemplateToFE,
     buildInitialStateFromTemplate,

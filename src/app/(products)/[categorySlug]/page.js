@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getCategories, getCategoryBySlug } from "@/lib/api/categories";
+import { getCategories, getCategoryBySlug } from "@/lib/api/categoriesApi";
 
 import CategoryTabs from "@/app/(products)/[categorySlug]/_component/CategoryTabs";
 import Breadcrumb from "@/app/(products)/[categorySlug]/_component/navigation/Breadcrumb";
@@ -9,7 +9,6 @@ import SortDropdown from "./_component/SortDropdown";
 import ListProducts from "./_component/ListProduct";
 import ProductCard from "@/components/ui/product/ProductCard";
 
-// update: đưa vào db
 const SORT_OPTIONS = [
   { label: "Mới nhất", value: "latest" },
   { label: "Giá: Thấp đến cao", value: "price-asc" },

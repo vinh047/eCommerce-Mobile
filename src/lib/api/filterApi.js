@@ -1,18 +1,10 @@
+import { apiFetch } from "./utils/apiFetch";
+
 /**
  * Gọi API Route để lấy template filter cho một category.
  */
 export async function fetchFilterTemplate(categoryId) {
-  const res = await fetch(`/api/filters/category/${categoryId}`, {
-    method: "GET",
-    headers: { accept: "application/json" },
-    cache: "force-cache",
-  });
-
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error(`Fetch template failed (${res.status})`);
-  }
-  return res.json();
+  return await apiFetch(`/filters/category/${categoryId}`, {cache:'force-cache'})
 }
 
 /**

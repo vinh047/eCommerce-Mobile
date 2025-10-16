@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { getProductsByFilters } from "@/lib/api/productApi";
 import ProductCard from "@/components/ui/product/ProductCard";
 import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 
@@ -23,16 +24,11 @@ export default function ListProducts({ categoryId }) {
         if (!params.has("page")) params.set("page", "1");
         params.set("limit", String(LIMIT));
 
-        const url = `/api/products/filters/${categoryId}?${params.toString()}`;
+        const { data } = await getProductsByFilters(
+          categoryId,
+          params.toString()
+        );
 
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { accept: "application/json" },
-          next: { revalidate: 360 },
-        });
-        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
-
-        const { data } = await res.json();
         if (active) setItems(data ?? []);
       } catch (e) {
         if (active) setErr(e);
@@ -58,7 +54,7 @@ export default function ListProducts({ categoryId }) {
   }
 
   if (err) return <div>Lỗi: {String(err.message || err)}</div>;
-  
+
   if (!items.length) return <div>Không có sản phẩm phù hợp</div>;
 
   return (

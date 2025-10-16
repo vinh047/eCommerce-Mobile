@@ -1,17 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
+import { getProductsByCategory } from "@/lib/api/productApi";
 import CategoryProductsDelay from "./CategoryProductsDelay";
 import CategoryProductsSkeleton from "./CategoryProductsSkeleton";
 
 async function CategorySection({ category, limit }) {
-  // update: viết trong lib
-  const res = await fetch(
-    `http://localhost:3000/api/products/categoryId/${category.id}?limit=${limit}`
-  );
-  if (!res.ok) throw new Error("Fetch failed");
-  const data = await res.json();
-  const products = data.data.items;
+  const products = await getProductsByCategory(category.id, limit);
 
   return (
     <section className="px-2 sm:px-4 md:px-0 py-4">
