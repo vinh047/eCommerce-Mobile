@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import ProductTableHeader from "./ProductTableHeader";
-import ProductTableRow from "./ProductTableRow";
-import LoadingSkeleton from "../common/LoadingSkeleton";
-import Pagination from "../common/Pagination";
 
-export default function ProductsTable({
-  products,
+import Pagination from "../../../../components/common/Pagination";
+import { User } from "lucide-react";
+import UsersTableHeader from "./UsersTableHeader";
+import UsersTableRow from "./UsersTableRow";
+import LoadingSkeleton from "../../../../components/common/LoadingSkeleton";
+
+export default function UsersTable({
+  users,
   selectedItems,
   loading,
   sortConfig,
@@ -17,17 +19,15 @@ export default function ProductsTable({
   onSelectItem,
   onSort,
   onQuickView,
-  onEditProduct,
-  onDeleteProduct,
+  onEditUser,
+  onDeleteUser,
   onPageChange,
   onPageSizeChange,
 }) {
   const [columnVisibility, setColumnVisibility] = useState({
     id: true,
     name: true,
-    brand: true,
-    category: true,
-    rating: true,
+    email: true,
     status: true,
     createdAt: true,
   });
@@ -42,13 +42,13 @@ export default function ProductsTable({
   };
 
   const handleSelectAll = () => {
-    const currentPageIds = products.map((p) => p.id);
+    const currentPageIds = users.map((u) => u.id);
     const allSelected = currentPageIds.every((id) => selectedItems.has(id));
 
     if (allSelected) {
-      products.forEach((product) => onSelectItem(product.id, false));
+      users.forEach((user) => onSelectItem(user.id, false));
     } else {
-      products.forEach((product) => onSelectItem(product.id, true));
+      users.forEach((user) => onSelectItem(user.id, true));
     }
   };
 
@@ -58,10 +58,10 @@ export default function ProductsTable({
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Danh sách sản phẩm
+            Danh sách người dùng
           </h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Tổng: {totalItems} sản phẩm
+            Tổng: {totalItems} người dùng   
           </span>
         </div>
         <div className="flex items-center space-x-2">
@@ -93,12 +93,10 @@ export default function ProductsTable({
                         {column === "id"
                           ? "ID"
                           : column === "name"
-                          ? "Tên sản phẩm"
-                          : column === "brand"
-                          ? "Thương hiệu"
-                          : column === "category"
-                          ? "Danh mục"
-                          : column === "rating"
+                          ? "Tên người dùng"
+                          : column === "email"
+                          ? "Email"
+                          : column === "status"
                           ? "Đánh giá"
                           : column === "status"
                           ? "Trạng thái"
@@ -118,28 +116,28 @@ export default function ProductsTable({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <ProductTableHeader
+          <UsersTableHeader
             columnVisibility={columnVisibility}
             sortConfig={sortConfig}
             selectedItems={selectedItems}
-            currentPageProducts={products} 
+            currentPageUsers={users}
             onSort={onSort}
             onSelectAll={handleSelectAll}
           />
           <tbody>
             {loading ? (
               <LoadingSkeleton columnVisibility={columnVisibility} />
-            ) : (
-              products.map((product) => (
-                <ProductTableRow
-                  key={product.id}
-                  product={product}
+            ) : ( 
+              users.map((user) => (
+                <UsersTableRow
+                  key={user.id}
+                  user={user}
                   columnVisibility={columnVisibility}
-                  isSelected={selectedItems.has(product.id)}
-                  onSelect={(selected) => onSelectItem(product.id, selected)}
-                  onQuickView={() => onQuickView(product.id)}
-                  onEdit={() => onEditProduct(product.id)}
-                  onDelete={() => onDeleteProduct(product.id)}
+                  isSelected={selectedItems.has(user.id)}
+                  onSelect={(selected) => onSelectItem(user.id, selected)}
+                  onQuickView={() => onQuickView(user.id)}
+                  onEdit={() => onEditUser(user.id)}
+                  onDelete={() => onDeleteUser(user.id)}
                 />
               ))
             )}
@@ -154,6 +152,7 @@ export default function ProductsTable({
         totalItems={totalItems}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        showPageSizeOptions={false}
       />
     </div>
   );

@@ -10,6 +10,8 @@
 
 html {
   font-family: var(--font-sans);
+
+  
 }
 
 .swiper-button-prev,
@@ -103,3 +105,4 @@ input.chk {
     left: 0;
   }
 }
+

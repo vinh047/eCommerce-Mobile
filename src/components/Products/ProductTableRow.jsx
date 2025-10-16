@@ -1,3 +1,5 @@
+import { Edit, Eye, Trash } from "lucide-react"
+
 const productImageClasses = [
   'bg-gradient-to-br from-purple-400 to-purple-600',
   'bg-gradient-to-br from-pink-400 to-red-500',
@@ -121,28 +123,28 @@ export default function ProductTableRow({
         </td>
       )}
       
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
+      <td className="px-1 py-4">
+        <div className="">
           <button 
             onClick={onQuickView}
             className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400" 
             title="Xem nhanh"
           >
-            <i className="fas fa-eye"></i>
+            <Eye className="w-4 h-4" />
           </button>
           <button 
             onClick={onEdit}
             className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400" 
             title="Chỉnh sửa"
           >
-            <i className="fas fa-edit"></i>
+            <Edit className="w-4 h-4" />
           </button>
           <button 
             onClick={onDelete}
             className="p-1 text-red-600 hover:text-red-800" 
             title="Xóa"
           >
-            <i className="fas fa-trash"></i>
+            <Trash className="w-4 h-4" />
           </button>
         </div>
       </td>
