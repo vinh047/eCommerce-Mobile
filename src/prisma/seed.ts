@@ -6,6 +6,7 @@ import {
   FacetType,
   Prisma,
 } from '@prisma/client'
+import { users } from './seedData'
 
 const prisma = new PrismaClient()
 
@@ -215,6 +216,7 @@ async function main() {
   await safeDeleteMany(() => prisma.specTemplate.deleteMany())
   await safeDeleteMany(() => prisma.category.deleteMany())
   await safeDeleteMany(() => prisma.brand.deleteMany())
+  await safeDeleteMany(() => prisma.user.deleteMany())
 
   // -------- Brands --------
   console.log('▶ Seeding brands')
@@ -284,10 +286,10 @@ async function main() {
           specTemplateId: template.id,
           name: s.name,
           label: s.label,
-          multi: s.multi ?? false,
+          // multi: s.multi ?? false,
           filterable: s.filterable ?? false,
           control: s.control,
-          datatype: s.datatype,
+          // datatype: s.datatype,
           facetId: s.facetCode ? facetIdByCode[s.facetCode] ?? null : null,
         },
       })
@@ -300,10 +302,10 @@ async function main() {
           specTemplateId: template.id,
           name: s.name,
           label: s.label,
-          multi: s.multi ?? false,
+          // multi: s.multi ?? false,
           filterable: s.filterable ?? false,
           control: s.control,
-          datatype: s.datatype,
+          // datatype: s.datatype,
           facetId: s.facetCode ? facetIdByCode[s.facetCode] ?? null : null,
         },
       })
@@ -433,6 +435,24 @@ async function main() {
         })
       }
     }
+  }
+
+  for (const user of users) {
+    const createdUser = await prisma.user.create({
+      data: {
+        email: user.email,
+        passwordHash: user.passwordHash,
+        name: user.name,
+        avatar: user.avatar,
+        status: user.status,
+        createdAt: user.createdAt,
+        addresses: {
+          create: user.addresses,
+        },
+      },
+    });
+
+    console.log(`✅ Đã tạo user: ${createdUser.email}`);
   }
 
   console.log('🎉 Seeding completed.')

@@ -56,7 +56,7 @@ export default function AdminLayout({ children }) {
           />
 
           {/* Content */}
-          <main className="p-6">{children}</main>
+          <main className="">{children}</main>
         </div>
       </div>
     </div>
