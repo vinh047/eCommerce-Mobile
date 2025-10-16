@@ -1,4 +1,5 @@
 import { categoryService } from "../services/category.service";
+import { productService } from "../services/product.service";
 
 export const categoryController = {
   async getAllCategories() {
@@ -13,14 +14,15 @@ export const categoryController = {
 
   async getCategoryBySlug({ params }: { params: { slug: string } }) {
     try {
-      if (!params?.slug) {
+      const { slug } = await params;
+      if (!slug) {
         return Response.json(
           { error: "Missing category slug" },
           { status: 400 }
         );
       }
 
-      const category = await categoryService.getCategoryBySlug(params.slug);
+      const category = await categoryService.getCategoryBySlug(slug);
 
       if (!category) {
         return Response.json({ error: "Category not found" }, { status: 404 });
@@ -39,4 +41,5 @@ export const categoryController = {
       );
     }
   },
+
 };

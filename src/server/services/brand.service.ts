@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 
 export const brandService = {
-  async getBrandsByCategory(categoryId: number) {
+  async getBrandsByCategoryId(categoryId: number) {
     const brands = await prisma.brand.findMany({
       where: {
         isActive: true,

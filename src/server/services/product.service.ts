@@ -1,155 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { specTemplateService } from "./specTemplate.service";
-import { productSpecService } from "./productSpec.service";
-import { variantSpecService } from "./variantSpec.service";
-import { facetService } from "./facet.service";
-import { brandService } from "./brand.service";
-import { categoryService } from "./category.service";
-
-type FEFields = Record<
-  string,
-  | {
-      label: string;
-      control: string;                // "select" | "multiselect" | "bucket-select" ...
-      datatype: "string" | "boolean" | "number" | string;
-      // chỉ có khi là select/multiselect có options
-      options?: Array<{ value: string; label: string }>;
-      // chỉ thêm khi là select cho phép nhiều lựa chọn (tuỳ logic dự án)
-      multi?: boolean;
-    }
-  | {
-      label: string;
-      control: "bucket-select";
-      datatype: "string";
-      facet: { buckets: Array<{ id: string | number; label: string; count?: number }> };
-    }
->;
-
-const CONTROL_MAP: Record<string, string> = {
-  bucket_select: "bucket-select",
-  multiselect : "multiselect",
-  select      : "select",
-};
-
-const DATATYPE_FALLBACK: "string" = "string";
-
-const toKebab = (v: string) => v.toLowerCase().replace(/_/g, "-");
-
-/** Suy ra datatype cho field từ OptionSpec (ưu tiên option đầu tiên) */
-function inferDatatype(spec: any): "string" | "boolean" | "number" | string {
-  const dt = spec?.options?.[0]?.datatype;
-  if (!dt) return DATATYPE_FALLBACK;
-  return typeof dt === "string" ? dt.toLowerCase() : String(dt);
-}
-
-/** Convert control DB -> FE */
-function mapControl(control: string): string {
-  const key = control?.toLowerCase();
-  return CONTROL_MAP[key] ?? toKebab(control ?? "select");
-}
-
-/** Tạo options từ facet range */
-function mapRangeFacetToOptions(facet: any): Array<{ value: string; label: string }> {
-  const buckets = Array.isArray(facet?.buckets) ? facet.buckets : [];
-  return buckets.map((b: any) => {
-    const left = b?.gt != null ? String(b.gt) : "0";
-    const right = b?.lte != null ? String(b.lte) : "";
-    return { value: `${left}-${right}`, label: b.label };
-  });
-}
-
-/** Map 1 spec (ProductSpec/VariantSpec) -> 1 field FE */
-function mapSpecToField(spec: any): FEFields[string] | null {
-  if (!spec) return null;
-
-  const control = mapControl(spec.control);
-  const datatype = inferDatatype(spec);
-
-  // Nếu facet là range -> FE dùng options (value = "gt-lte")
-  if (spec?.facet?.type === "range") {
-    const options = mapRangeFacetToOptions(spec.facet);
-    return {
-      label: spec.label,
-      control: "select",              // FE mẫu đang dùng "select" cho range
-      datatype: "string",             // FE mẫu mong "string" cho value "gt-lte"
-      multi: control === "multiselect" || spec.name === "price_range" || spec.name === "condition" || false,
-      options,
-    };
-  }
-
-  // Ngược lại: dùng options từ OptionSpec
-  const options = (spec.options ?? []).map((o: any) => ({
-    value: String(o.value),
-    label: o.label,
-  }));
-
-  if (control === "bucket-select") {
-    // bucket-select (discrete) theo FE chỉ có ở brand trong ví dụ.
-    // Tuy nhiên nếu DB có spec control = bucket_select, vẫn trả theo facet.buckets nếu có.
-    const facetBuckets =
-      Array.isArray(spec?.facet?.buckets) && spec.facet.buckets.length
-        ? spec.facet.buckets.map((b: any) => ({ id: b.id, label: b.label }))
-        : options.map((o, idx) => ({ id: idx + 1, label: o.label })); // không có count ở DB
-
-    return {
-      label: spec.label,
-      control: "bucket-select",
-      datatype,
-      facet: { buckets: facetBuckets },
-    };
-  }
-
-  const field: any = {
-    label: spec.label,
-    control,
-    datatype,
-    options,
-  };
-
-  // FE mẫu chỉ set multi cho một vài field; nếu control là multiselect thì có thể không cần multi.
-  // Nếu đội FE muốn set rõ, bật dòng dưới:
-  // if (control === "select" && spec.allowMulti) field.multi = true;
-
-  return field as FEFields[string];
-}
-
-/** Merge các spec vào fields (ưu tiên theo tên spec) */
-function buildFieldsFromSpecs(productSpecs: any[], variantSpecs: any[]): FEFields {
-  const fields: FEFields = {};
-
-  const upsertField = (name: string, spec: any) => {
-    const f = mapSpecToField(spec);
-    if (f) fields[name] = f;
-  };
-
-  // Map toàn bộ productSpecs
-  for (const ps of productSpecs ?? []) {
-    upsertField(ps.name, ps);
-  }
-  // Map toàn bộ variantSpecs (ghi đè nếu trùng key, tuỳ yêu cầu)
-  for (const vs of variantSpecs ?? []) {
-    upsertField(vs.name, vs);
-  }
-
-  return fields;
-}
-
-/** Thêm field brand từ brands (chỉ brand lấy từ brands theo yêu cầu) */
-function injectBrandField(fields: FEFields, brands: Array<{ id?: string | number; slug?: string; code?: string; name: string; count?: number }>) {
-  const buckets = (brands ?? []).map((b, i) => ({
-    id: b.slug ?? b.code ?? b.id ?? i + 1,
-    label: b.name,
-    count: typeof b.count === "number" ? b.count : 0,
-  }));
-
-  fields.brand = {
-    label: "Thương hiệu",
-    control: "bucket-select",
-    datatype: "string",
-    facet: { buckets },
-  };
-}
-
+import {  Prisma, ValueType } from "@prisma/client";
 
 export const productService = {
   async getProductsWithMinPriceByCategory(
@@ -198,46 +48,224 @@ export const productService = {
     });
   },
 
-  async getFiltersByCategory(categoryId: number) {
-    const specTemplate = await specTemplateService.getByCategoryId(categoryId);
-    const brands = await brandService.getBrandsByCategory(categoryId); // [{name,slug,count?}, ...]
-
-    const category = await categoryService.getById(categoryId);
-
-    if (!specTemplate)
-      throw new Error("Spec template not found for this category");
-
+  /**
+   * Lấy danh sách sản phẩm dựa trên các bộ lọc (filters) từ query params.
+   * Hỗ trợ lọc theo thuộc tính của Product và Variant, với cả 2 kiểu giá trị là 'discrete' và 'range'.
+   *
+   * @param categoryId - ID của danh mục sản phẩm.
+   * @param filters - Object chứa các bộ lọc, ví dụ: { brand: 'apple', screen_size: '1,2', color: 'blue' }
+   * - Đối với valueType='range', value là ID của bucket.
+   * - Đối với valueType='discrete', value là giá trị thực tế.
+   */
+  async getProductsByFilters(
+    categoryId: number,
+    filters: Record<string, string>
+  ) {
+    // === BƯỚC 1: LẤY THÔNG TIN SPEC (Giữ nguyên) ===
+    const specTemplate = await prisma.specTemplate.findFirst({
+      where: { categoryId, isActive: true },
+    });
+    if (!specTemplate) {
+      throw new Error(
+        `Không tìm thấy Spec Template cho category ID: ${categoryId}`
+      );
+    }
     const [productSpecs, variantSpecs] = await Promise.all([
-      productSpecService.getSpecsWithFacetsByTemplateId(specTemplate.id),
-      variantSpecService.getSpecsWithFacetsByTemplateId(specTemplate.id),
+      prisma.productSpec.findMany({
+        where: { specTemplateId: specTemplate.id, filterable: true },
+      }),
+      prisma.variantSpec.findMany({
+        where: { specTemplateId: specTemplate.id, filterable: true },
+      }),
+    ]);
+    const specInfoMap = new Map<
+      string,
+      { type: "product" | "variant"; valueType: ValueType }
+    >();
+    productSpecs.forEach((spec) =>
+      specInfoMap.set(spec.code, { type: "product", valueType: spec.valueType })
+    );
+    variantSpecs.forEach((spec) =>
+      specInfoMap.set(spec.code, { type: "variant", valueType: spec.valueType })
+    );
+
+    // === BƯỚC 2: XÂY DỰNG `WHERE`, `ORDER BY` VÀ LẤY THÔNG TIN PHÂN TRANG ===
+    const whereClause: Prisma.ProductWhereInput = {
+      categoryId: categoryId,
+      isActive: true,
+      AND: [],
+    };
+
+    const orderBy: Prisma.ProductOrderByWithRelationInput = {};
+    let priceSortDirection: "asc" | "desc" | null = null;
+
+    //  Mới: Xử lý page và limit
+    const page = parseInt(filters.page || "1", 10);
+    const limit = parseInt(filters.limit || "10", 10);
+    const skip = (page - 1) * limit;
+
+    const productSpecConditions: Prisma.ProductWhereInput[] = [];
+    const variantSpecConditions: Prisma.VariantWhereInput[] = [];
+
+    for (const key in filters) {
+      const value = filters[key];
+      if (!value) continue;
+
+      // Bỏ qua page, limit trong vòng lặp chính
+      if (key === "page" || key === "limit") {
+        continue;
+      }
+
+      if (key === "sort") {
+        switch (value) {
+          case "latest":
+            orderBy.createdAt = "desc";
+            break;
+          case "price-asc":
+            priceSortDirection = "asc";
+            break;
+          case "price-desc":
+            priceSortDirection = "desc";
+            break;
+        }
+        continue;
+      }
+
+      // (Logic filter còn lại giữ nguyên)
+      if (key === "brand") {
+        whereClause.brand = { slug: { in: String(value).split(",") } };
+        continue;
+      }
+      const specInfo = specInfoMap.get(key);
+      if (!specInfo) continue;
+      const filterValues = String(value).split(",");
+      if (specInfo.valueType === "discrete") {
+        const condition = { specKey: key, stringValue: { in: filterValues } };
+        if (specInfo.type === "product") {
+          productSpecConditions.push({
+            productSpecValues: { some: condition },
+          });
+        } else {
+          variantSpecConditions.push({
+            variantSpecValues: { some: condition },
+          });
+        }
+      } else if (specInfo.valueType === "range") {
+        const bucketIds = filterValues
+          .map((id) => parseInt(id, 10))
+          .filter(Boolean);
+        if (bucketIds.length === 0) continue;
+        if (specInfo.type === "product") {
+          const buckets = await prisma.productBucket.findMany({
+            where: { id: { in: bucketIds } },
+          });
+          const rangeConditions = buckets.map((b) => ({
+            numericValue: { gt: b.gt?.toNumber(), lte: b.lte?.toNumber() },
+          }));
+          if (rangeConditions.length > 0) {
+            productSpecConditions.push({
+              productSpecValues: {
+                some: { specKey: key, OR: rangeConditions },
+              },
+            });
+          }
+        } else {
+          const buckets = await prisma.variantBucket.findMany({
+            where: { id: { in: bucketIds } },
+          });
+          const rangeConditions = buckets.map((b) => ({
+            numericValue: { gt: b.gt?.toNumber(), lte: b.lte?.toNumber() },
+          }));
+          if (rangeConditions.length > 0) {
+            variantSpecConditions.push({
+              variantSpecValues: {
+                some: { specKey: key, OR: rangeConditions },
+              },
+            });
+          }
+        }
+      }
+    }
+
+    if (productSpecConditions.length > 0) {
+      (whereClause.AND as Prisma.ProductWhereInput[]).push(
+        ...productSpecConditions
+      );
+    }
+    if (variantSpecConditions.length > 0) {
+      (whereClause.AND as Prisma.ProductWhereInput[]).push({
+        variants: { some: { AND: variantSpecConditions } },
+      });
+    }
+    if ((whereClause.AND as any[]).length === 0) {
+      delete whereClause.AND;
+    }
+
+    // === BƯỚC 5: TRUY VẤN CSDL (LẤY DỮ LIỆU VÀ ĐẾM TỔNG SỐ) ===
+    const [products, totalProducts] = await prisma.$transaction([
+      prisma.product.findMany({
+        where: whereClause,
+        orderBy: orderBy,
+        skip: skip, //  Mới
+        take: limit, //  Mới
+        include: {
+          brand: { select: { name: true, slug: true } },
+          variants: {
+            where: { isActive: true },
+            orderBy: { price: "asc" },
+            include: { Media: { select: { url: true, isPrimary: true } } },
+          },
+        },
+      }),
+      prisma.product.count({ where: whereClause }), //  Mới: Đếm tổng số
     ]);
 
-    if (!productSpecs?.length) {
-      throw new Error(
-        `Không tìm thấy ProductSpec cho template #${specTemplate.id}`
-      );
+    // === BƯỚC 6: XỬ LÝ KẾT QUẢ TRẢ VỀ ===
+    let result = products
+      .filter((product) => product.variants.length > 0)
+      .map((product) => {
+        const cheapestVariant = product.variants[0];
+        let primaryImage = null;
+        for (const variant of product.variants) {
+          const foundImage = variant.Media.find((m) => m.isPrimary);
+          if (foundImage) {
+            primaryImage = foundImage.url;
+            break;
+          }
+        }
+        if (!primaryImage && cheapestVariant.Media.length > 0) {
+          primaryImage = cheapestVariant.Media[0].url;
+        }
+        return {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          minPrice: cheapestVariant.price,
+          image: primaryImage,
+          ratingAvg: product.ratingAvg,
+        };
+      });
+
+    // Sắp xếp theo giá (nếu có)
+    if (priceSortDirection) {
+      result.sort((a, b) => {
+        const priceA = a.minPrice.toNumber();
+        const priceB = b.minPrice.toNumber();
+        return priceSortDirection === "asc" ? priceA - priceB : priceB - priceA;
+      });
     }
-    if (!variantSpecs?.length) {
-      throw new Error(
-        `Không tìm thấy VariantSpec cho template #${specTemplate.id}`
-      );
-    }
 
-    const fields = buildFieldsFromSpecs(productSpecs, variantSpecs);
+    //  Mới: Tính toán metadata cho phân trang
+    const totalPages = Math.ceil(totalProducts / limit);
 
-  // chỉ brand lấy từ brands (ghi đè nếu có spec brand trong DB)
-  injectBrandField(fields, brands);
-
-  return {
-    data: {
+    return {
+      data: result,
       meta: {
-        category: { id: category?.id, slug: category?.slug, name: category?.name },
-        updated_at: new Date().toISOString(),
-        version: specTemplate.version ?? 1,
+        totalProducts,
+        totalPages,
+        currentPage: page,
+        limit: limit,
       },
-      fields,
-    },
-  };
-
+    };
   },
 };

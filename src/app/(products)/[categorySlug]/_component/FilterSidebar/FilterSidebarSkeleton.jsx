@@ -23,11 +23,7 @@ export default function FilterSidebarSkeleton() {
                     <div
                       className={[
                         "h-3 bg-gray-200 rounded",
-                        i % 3 === 0
-                          ? "w-32"
-                          : i % 3 === 1
-                          ? "w-28"
-                          : "w-24",
+                        i % 3 === 0 ? "w-32" : i % 3 === 1 ? "w-28" : "w-24",
                       ].join(" ")}
                     />
                   </div>

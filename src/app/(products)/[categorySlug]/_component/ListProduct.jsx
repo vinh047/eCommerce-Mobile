@@ -2,57 +2,81 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import ProductCard from "@/component/ui/product/ProductCard";
-import { getProducts } from "@/lib/api/product";
+import ProductCard from "@/components/ui/product/ProductCard";
+import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 
-export default function ListProducts() {
-  const sp = useSearchParams(); // ?ram=6GB,8GB&brand=apple...
+const LIMIT = 8;
+
+export default function ListProducts({ categoryId }) {
+  const sp = useSearchParams();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
-  // useEffect(() => {
-  //   let mounted = true;
+  useEffect(() => {
+    let active = true;
 
-  //   async function load() {
-  //     try {
-  //       setLoading(true);
-  //       // Truyền NGUYÊN query từ URL
-  //       const data = await getProducts(sp); // hoặc getProducts(window.location.search)
-  //       if (mounted) setItems(data?.items ?? []);
-  //     } catch (e) {
-  //       if (mounted) setErr(e);
-  //     } finally {
-  //       if (mounted) setLoading(false);
-  //     }
-  //   }
+    async function load() {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams(sp.toString());
+        if (!params.has("page")) params.set("page", "1");
+        params.set("limit", String(LIMIT));
 
-  //   load();
-  //   return () => {
-  //     mounted = false;
-  //   };
-  // }, [sp]); // refetch khi query đổi
+        const url = `/api/products/filters/${categoryId}?${params.toString()}`;
 
-  if (loading) return <div>Đang tải…</div>;
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { accept: "application/json" },
+          next: { revalidate: 360 },
+        });
+        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+
+        const { data } = await res.json();
+        if (active) setItems(data ?? []);
+      } catch (e) {
+        if (active) setErr(e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [sp, categoryId]);
+
+  if (loading) {
+    return (
+      <>
+        {Array.from({ length: LIMIT }).map((_, index) => (
+          <ProductCardSkeleton key={index} />
+        ))}
+      </>
+    );
+  }
+
   if (err) return <div>Lỗi: {String(err.message || err)}</div>;
+  
   if (!items.length) return <div>Không có sản phẩm phù hợp</div>;
 
   return (
     <>
-      {/* {items.map((p) => (
+      {items.map((p) => (
         <ProductCard
           key={p.id}
           product={{
             id: p.id,
             name: p.name,
-            price: p.minPrice,
+            minPrice: p.minPrice,
             image: p.image,
             rating: p.ratingCount,
-            rating_avg: Number(p.ratingAvg),
+            ratingAvg: Number(p.ratingAvg),
             slug: p.slug,
           }}
         />
-      ))} */}
+      ))}
     </>
   );
 }

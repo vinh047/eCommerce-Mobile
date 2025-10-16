@@ -3,6 +3,14 @@ import { productService } from "../services/product.service";
 import { z } from "zod";
 import { categoryService } from "../services/category.service";
 
+function searchParamsToObject(sp: URLSearchParams) {
+  const o: Record<string, string> = {};
+  // FE của bạn đang truyền giá trị dạng "a=1,2,3" nên 1 key chỉ có 1 value
+  sp.forEach((v, k) => {
+    o[k] = v;
+  });
+  return o;
+}
 
 const getByCategorySchema = z.object({
   categoryId: z.string().regex(/^\d+$/),
@@ -44,9 +52,12 @@ export const productController = {
     }
   },
 
-  async getFiltersByCategory(req: NextRequest, {params} : {params: {categorySlug: string}}) {
+  async getFiltersByCategory(
+    req: NextRequest,
+    { params }: { params: { categorySlug: string } }
+  ) {
     try {
-      const { categorySlug } = await params
+      const { categorySlug } = await params;
       const category = await categoryService.getCategoryBySlug(categorySlug);
       const categoryId = Number(category?.id);
       if (!Number.isFinite(categoryId))
@@ -63,6 +74,32 @@ export const productController = {
         { error: e.message ?? "Internal Server Error" },
         { status: 500 }
       );
+    }
+  },
+
+  async getProductsByFilters(
+    req: NextRequest,
+    context: { params: { categoryId: string } }
+  ) {
+    try {
+      const { categoryId } = await context.params;
+
+      // 2. Lấy tất cả searchParams và chuyển thành một object filters
+      const filters = Object.fromEntries(req.nextUrl.searchParams.entries());
+
+      // 3. Gọi đến service để xử lý logic lấy dữ liệu từ database
+      // Dùng await ở đây vì đây là một tác vụ bất đồng bộ
+      const products = await productService.getProductsByFilters(
+        Number(categoryId),
+        filters
+      );
+
+      // 4. Trả về kết quả thành công dưới dạng JSON
+      return NextResponse.json(products);
+    } catch (error) {
+      // 5. Bắt lỗi và trả về một response lỗi tường minh
+      console.error(`[API_PRODUCTS_FILTER_ERROR]`, error);
+      return new NextResponse("Internal Server Error", { status: 500 });
     }
   },
 };

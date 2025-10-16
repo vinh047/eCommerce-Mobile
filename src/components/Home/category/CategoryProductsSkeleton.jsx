@@ -1,4 +1,4 @@
-import ProductCardSkeleton from "../product/ProductCardSkeleton";
+import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 
 function CategoryProductsSkeleton() {
   return (

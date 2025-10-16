@@ -216,7 +216,6 @@ async function main() {
   await safeDeleteMany(() => prisma.specTemplate.deleteMany())
   await safeDeleteMany(() => prisma.category.deleteMany())
   await safeDeleteMany(() => prisma.brand.deleteMany())
-  await safeDeleteMany(() => prisma.user.deleteMany())
 
   // -------- Brands --------
   console.log('▶ Seeding brands')
@@ -286,10 +285,10 @@ async function main() {
           specTemplateId: template.id,
           name: s.name,
           label: s.label,
-          // multi: s.multi ?? false,
+          multi: s.multi ?? false,
           filterable: s.filterable ?? false,
           control: s.control,
-          // datatype: s.datatype,
+          datatype: s.datatype,
           facetId: s.facetCode ? facetIdByCode[s.facetCode] ?? null : null,
         },
       })
@@ -302,10 +301,10 @@ async function main() {
           specTemplateId: template.id,
           name: s.name,
           label: s.label,
-          // multi: s.multi ?? false,
+          multi: s.multi ?? false,
           filterable: s.filterable ?? false,
           control: s.control,
-          // datatype: s.datatype,
+          datatype: s.datatype,
           facetId: s.facetCode ? facetIdByCode[s.facetCode] ?? null : null,
         },
       })
@@ -330,80 +329,57 @@ async function main() {
       const baseName = `${cat.name} ${brand.name} ${i}`
       const product = await prisma.product.create({
         data: {
-          name: baseName,
-          slug: slugify(`${baseName}-${Date.now()}-${i}`),
-          brandId: brand.id,
-          categoryId: cat.id,
-          description: `${CATEGORIES[key].hint} – seed demo thông số & lọc.`,
-          isActive: true,
+          name: productName,
+          slug: faker.helpers.slugify(productName).toLowerCase(),
+          description: faker.commerce.productDescription(),
+          brand: { connect: { id: randomBrand.id } },
+          category: { connect: { id: category.id } },
         },
-      })
+      });
+      console.log(`  - Đã tạo Product: ${product.name}`);
 
-      // ---- ProductSpecValue (theo category) ----
-      const psv: Prisma.ProductSpecValueCreateManyInput[] = []
+      // Tạo ProductSpecValue theo đúng schema
+      for (const spec of relevantTemplate.productSpecs) {
+        const randomOption = getRandomElement(spec.options);
+        const randomBucket = getRandomElement(spec.buckets);
+        let valueToStore: any = null;
+        let label = '';
+        
+        if (randomOption) {
+            valueToStore = randomOption.value;
+            label = randomOption.label;
+        } else if (randomBucket) {
+            valueToStore = { gt: randomBucket.gt, lte: randomBucket.lte };
+            label = randomBucket.label;
+        }
 
-      if (key === 'phone') {
-        const screen = pick([6.1, 6.5, 6.7])
-        const battery = pick([3500, 4000, 4500, 5000])
-        const ram = pick([4, 6, 8, 12])
-        const storage = pick([64, 128, 256, 512])
-        const os = pick(PHONE_OS)
-
-        psv.push(
-          { productId: product.id, specKey: 'screen_size', label: 'Kích thước màn hình', valueJson: { value: screen }, type: DataType.number, unit: 'inch', numericValue: screen },
-          { productId: product.id, specKey: 'battery', label: 'Dung lượng pin', valueJson: { value: battery }, type: DataType.number, unit: 'mAh', numericValue: battery },
-          { productId: product.id, specKey: 'ram', label: 'RAM', valueJson: { value: ram }, type: DataType.number, unit: 'GB', numericValue: ram },
-          { productId: product.id, specKey: 'storage', label: 'Bộ nhớ trong', valueJson: { value: storage }, type: DataType.number, unit: 'GB', numericValue: storage },
-          { productId: product.id, specKey: 'os', label: 'Hệ điều hành', valueJson: { value: os }, type: DataType.string, unit: null, stringValue: os },
-        )
+        if (valueToStore) {
+            await prisma.productSpecValue.create({
+                data: {
+                    product: { connect: { id: product.id } },
+                    specKey: spec.code,
+                    label: label,
+                    valueJson: valueToStore,
+                    type: spec.datatype,
+                    unit: spec.unit,
+                    stringValue: spec.datatype === DataType.string ? String(valueToStore) : null,
+                    numericValue: spec.datatype === DataType.number ? Number(valueToStore) : null,
+                    booleanValue: spec.datatype === DataType.boolean ? Boolean(valueToStore) : null,
+                }
+            });
+        }
       }
 
-      if (key === 'laptop') {
-        const screen = pick([13.3, 14.0, 15.6])
-        const ram = pick([8, 16, 32])
-        const storage = pick([256, 512, 1024])
-        const weight = pick([1.25, 1.4, 1.7, 2.1])
-        const cpu = pick(CPU_POOL)
-        const gpu = pick(GPU_POOL)
-
-        psv.push(
-          { productId: product.id, specKey: 'cpu', label: 'CPU', valueJson: { value: cpu }, type: DataType.string, unit: null, stringValue: cpu },
-          { productId: product.id, specKey: 'ram', label: 'RAM', valueJson: { value: ram }, type: DataType.number, unit: 'GB', numericValue: ram },
-          { productId: product.id, specKey: 'storage', label: 'SSD', valueJson: { value: storage }, type: DataType.number, unit: 'GB', numericValue: storage },
-          { productId: product.id, specKey: 'screen_size', label: 'Kích thước màn', valueJson: { value: screen }, type: DataType.number, unit: 'inch', numericValue: screen },
-          { productId: product.id, specKey: 'weight', label: 'Khối lượng', valueJson: { value: weight }, type: DataType.number, unit: 'kg', numericValue: weight },
-          { productId: product.id, specKey: 'gpu', label: 'GPU', valueJson: { value: gpu }, type: DataType.string, unit: null, stringValue: gpu },
-        )
-      }
-
-      if (key === 'accessory') {
-        const type = pick(ACCESSORY_TYPES)
-        const compatibility = pick(['iOS', 'Android', 'Windows', 'macOS', 'Universal'])
-        const origin = pick(['VN', 'CN', 'KR', 'JP', 'US', 'TW'])
-
-        psv.push(
-          { productId: product.id, specKey: 'type', label: 'Loại phụ kiện', valueJson: { value: type }, type: DataType.string, unit: null, stringValue: type },
-          { productId: product.id, specKey: 'compatibility', label: 'Tương thích', valueJson: { value: compatibility }, type: DataType.string, unit: null, stringValue: compatibility },
-          { productId: product.id, specKey: 'brand_origin', label: 'Hãng / Xuất xứ', valueJson: { value: origin }, type: DataType.string, unit: null, stringValue: origin },
-        )
-      }
-
-      if (psv.length > 0) {
-        await prisma.productSpecValue.createMany({ data: psv, skipDuplicates: true })
-      }
-
-      // ---- Variants (1–3) ----
-      const [minP, maxP] = priceRange[key]
-      const variantCount = randInt(1, 3)
-
-      for (let v = 1; v <= variantCount; v++) {
+      const variantCount = getRandomNumber(1, 3);
+      for (let j = 0; j < variantCount; j++) {
+        // Tạo Variant theo đúng schema
         const variant = await prisma.variant.create({
           data: {
-            productId: product.id,
-            color: pick(COLOR_POOL), // KHÔNG thêm color vào VariantSpecValue
-            price: randInt(minP, maxP),
-            stock: randInt(10, 200),
-            isActive: true,
+            product: { connect: { id: product.id } },
+            // sku: faker.string.alphanumeric(10).toUpperCase(), // Schema của bạn có trường này
+            price: parseFloat(faker.commerce.price({ min: 5_000_000, max: 50_000_000, dec: 0 })),
+            stock: getRandomNumber(10, 100),
+            color: faker.color.human(),
           },
         })
 
@@ -437,32 +413,16 @@ async function main() {
     }
   }
 
-  for (const user of users) {
-    const createdUser = await prisma.user.create({
-      data: {
-        email: user.email,
-        passwordHash: user.passwordHash,
-        name: user.name,
-        avatar: user.avatar,
-        status: user.status,
-        createdAt: user.createdAt,
-        addresses: {
-          create: user.addresses,
-        },
-      },
-    });
-
-    console.log(`✅ Đã tạo user: ${createdUser.email}`);
-  }
-
   console.log('🎉 Seeding completed.')
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Seed error:', e)
-    process.exit(1)
+  .then(async () => {
+    await prisma.$disconnect();
+    console.log('\n Quá trình seeding hoàn tất!');
   })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+  .catch(async (e) => {
+    console.error(' Đã xảy ra lỗi trong quá trình seeding:', e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

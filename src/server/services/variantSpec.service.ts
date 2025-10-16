@@ -1,34 +1,42 @@
 import prisma from "@/lib/prisma";
+import { VariantBucket, VariantSpec, VariantSpecOption } from '@prisma/client';
 
+/**
+ * Kiểu dữ liệu (Type) cho VariantSpec khi có include Options và Buckets.
+ * KHÔNG BAO GỒM template.
+ */
+export type VariantSpecWithRelations = VariantSpec & {
+    options: VariantSpecOption[];
+    buckets: VariantBucket[];
+};
+
+/**
+ * Service quản lý các thao tác liên quan đến VariantSpec.
+ */
 export const variantSpecService = {
-  async getById(id: number) {
-    return await prisma.variantSpec.findUnique({ where: { id } });
-  },
-
-  async getSpecsWithFacetsByTemplateId(specTemplateId: number) {
-    return prisma.variantSpec.findMany({
-      where: { specTemplateId },
-      include: {
-        facet: {
-          include: {
-            buckets: {
-              select: { id: true, label: true, gt: true, lte: true },
-              orderBy: { id: "asc" },
+    
+    /**
+     * Lấy tất cả VariantSpec, bao gồm các options và buckets liên quan.
+     * @returns Promise<VariantSpecWithRelations[]>
+     */
+    async getAllVariantSpecs(): Promise<VariantSpecWithRelations[]> {
+        
+        const variantSpecs = await prisma.variantSpec.findMany({
+            include: {
+                options: {
+                    orderBy: { sortOrder: 'asc' },
+                },
+                buckets: {
+                    orderBy: { sortOrder: 'asc' },
+                },
             },
-          },
-        },
-        options: {
-          select: {
-            id: true,
-            label: true,
-            value: true,
-            datatype: true,
-          },
-          orderBy: { label: "asc" },
+            orderBy: {
+                id: 'asc', 
+            }
+        });
 
-        },
-      },
-      orderBy: { id: "asc" },
-    });
-  },
+        return variantSpecs as VariantSpecWithRelations[];
+    },
+
+    
 };

@@ -26,15 +26,16 @@ function RatingStars({ rating }) {
 
 function ProductCard({ product }) {
   return (
-    <Link href={"/product"}>
+    <Link href={`/san-pham/${product.slug}`}>
       <div className="my-2 mx-2 group bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[340px]">
         {/* Ảnh sản phẩm */}
         <div className="relative w-full h-52 rounded-lg mb-3 overflow-hidden">
           <Image
             src={`${baseUrlImage}${product.image}`}
             alt={product.name}
-            fill
             className="object-contain p-2 transition-transform duration-200 ease-in-out group-hover:-translate-y-1.5"
+            width={175}
+            height={210}
           />
         </div>
 

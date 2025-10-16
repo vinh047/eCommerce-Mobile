@@ -82,21 +82,33 @@ enum RmaStatus {
 enum ControlType {
   select
   multiselect
-  bucket_select
 }
 
 enum DataType {
   string
   number
   boolean
-  array
-  bucket
-  json
 }
 
-enum FacetType {
+enum ValueType {
   discrete
   range
+}
+
+// Banner
+model Banner {
+  id           Int      @id @default(autoincrement())
+  image     String   @map("image_url") @db.VarChar(255) // URL của ảnh banner
+  altText      String?  @map("alt_text") @db.VarChar(255) // Văn bản thay thế cho ảnh (tốt cho SEO)
+  isActive     Boolean  @default(true) @map("is_active") // Cờ để bật/tắt banner
+  displayOrder Int      @default(0) @map("display_order") // Thứ tự hiển thị
+
+  // --- Liên kết bắt buộc tới sản phẩm ---
+  productId    Int      @map("product_id")
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("banners")
 }
 
 /**
@@ -147,7 +159,6 @@ model Brand {
   id        Int      @id @default(autoincrement())
   name      String   @db.VarChar(255)
   slug      String   @unique @db.VarChar(191)
-  image     String?  @db.VarChar(255)
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
 
@@ -198,91 +209,114 @@ model SpecTemplate {
   @@map("spec_templates")
 }
 
-// ============== SPEC DEFINITIONS ==============
+// =================== PRODUCT SPECS ===================
 model ProductSpec {
   id             Int         @id @default(autoincrement())
   specTemplateId Int         @map("spec_template_id")
-  name           String      @db.VarChar(191)
-  facetId        Int?        @map("facet_id")
+  code           String      @db.VarChar(64)
   label          String      @db.VarChar(255)
+  valueType      ValueType
+  datatype       DataType
+  unit           String?     @db.VarChar(32)
   filterable     Boolean     @default(false)
   control        ControlType
+  isRequired     Boolean     @default(false)
+  groupLabel     String?     @db.VarChar(128)
+  displayOrder   Int         @default(0) @map("display_order")
 
-  facet        Facet?             @relation(fields: [facetId], references: [id], onDelete: SetNull)
-  specTemplate SpecTemplate       @relation(fields: [specTemplateId], references: [id], onDelete: Cascade)
-  values       ProductSpecValue[]
+  template   SpecTemplate       @relation(fields: [specTemplateId], references: [id], onDelete: Cascade)
+  options    ProductSpecOption[]
+  buckets    ProductBucket[]
+  values     ProductSpecValue[]
 
-  // Một ProductSpec có nhiều OptionSpec
-  options OptionSpec[]
-
-  @@index([facetId])
-  @@index([specTemplateId])
+  @@unique([specTemplateId, code], map: "uq_product_specs_tmpl_code")
+  @@index([specTemplateId], map: "idx_product_specs_template")
   @@map("product_specs")
 }
 
+model ProductSpecOption {
+  id            Int         @id @default(autoincrement())
+  productSpecId Int         @map("product_spec_id")
+  value         String      @db.VarChar(191)
+  label         String      @db.VarChar(255)
+  sortOrder     Int         @default(0) @map("sort_order")
+
+  spec ProductSpec @relation(fields: [productSpecId], references: [id], onDelete: Cascade)
+
+  @@unique([productSpecId, value], map: "uq_product_spec_option_value")
+  @@index([productSpecId], map: "idx_product_spec_option_spec")
+  @@map("product_spec_options")
+}
+
+model ProductBucket {
+  id            Int      @id @default(autoincrement())
+  productSpecId Int      @map("product_spec_id")
+  gt            Decimal? @db.Decimal(18, 6)
+  lte           Decimal? @db.Decimal(18, 6)
+  label         String   @db.VarChar(255)
+  sortOrder     Int      @default(0) @map("sort_order")
+
+  spec ProductSpec @relation(fields: [productSpecId], references: [id], onDelete: Cascade)
+
+  @@unique([productSpecId, gt, lte], map: "uq_product_buckets_range")
+  @@index([productSpecId], map: "idx_product_buckets_spec")
+  @@map("product_buckets")
+}
+
+// =================== VARIANT SPECS ===================
 model VariantSpec {
   id             Int         @id @default(autoincrement())
   specTemplateId Int         @map("spec_template_id")
-  name           String      @db.VarChar(191)
-  facetId        Int?        @map("facet_id")
+  code           String      @db.VarChar(64)          // color, storage, edition...
   label          String      @db.VarChar(255)
+  valueType      ValueType
+  datatype       DataType
+  unit           String?     @db.VarChar(32)
   filterable     Boolean     @default(false)
   control        ControlType
+  isRequired     Boolean     @default(false)
+  isVariantKey   Boolean     @default(false) @map("is_variant_key")
+  orderIndex     Int         @default(0)     @map("order_index")
+  groupLabel     String?     @db.VarChar(128)
+  displayOrder   Int         @default(0) @map("display_order")
 
-  facet        Facet?             @relation(fields: [facetId], references: [id], onDelete: SetNull)
-  specTemplate SpecTemplate       @relation(fields: [specTemplateId], references: [id], onDelete: Cascade)
-  values       VariantSpecValue[]
+  template   SpecTemplate       @relation(fields: [specTemplateId], references: [id], onDelete: Cascade)
+  options    VariantSpecOption[]
+  buckets    VariantBucket[]
+  values     VariantSpecValue[]
 
-  // Một VariantSpec có nhiều OptionSpec
-  options OptionSpec[]
-
-  @@index([facetId])
-  @@index([specTemplateId])
+  @@unique([specTemplateId, code], map: "uq_variant_specs_tmpl_code")
+  @@index([specTemplateId], map: "idx_variant_specs_template")
   @@map("variant_specs")
 }
 
-model OptionSpec {
-  id        Int    @id @default(autoincrement())
-  label     String @db.VarChar(255)
-  value     String @db.VarChar(255)
-  datatype       DataType
+model VariantSpecOption {
+  id            Int        @id @default(autoincrement())
+  variantSpecId Int        @map("variant_spec_id")
+  value         String     @db.VarChar(191)
+  label         String     @db.VarChar(255)
+  sortOrder     Int        @default(0) @map("sort_order")
 
+  spec VariantSpec @relation(fields: [variantSpecId], references: [id], onDelete: Cascade)
 
-  productSpecId Int? @map("product_spec_id")
-  variantSpecId Int? @map("variant_spec_id")
-
-  // Mỗi OptionSpec thuộc về 1 ProductSpec hoặc 1 VariantSpec
-  productSpec ProductSpec? @relation(fields: [productSpecId], references: [id], onDelete: Cascade)
-  variantSpec VariantSpec? @relation(fields: [variantSpecId], references: [id], onDelete: Cascade)
-
-  @@index([productSpecId])
-  @@index([variantSpecId])
-  @@map("option_specs")
+  @@unique([variantSpecId, value], map: "uq_variant_spec_option_value")
+  @@index([variantSpecId], map: "idx_variant_spec_option_spec")
+  @@map("variant_spec_options")
 }
 
-// =================== FACET / BUCKET ===================
-model Facet {
-  id   Int       @id @default(autoincrement())
-  type FacetType
+model VariantBucket {
+  id            Int      @id @default(autoincrement())
+  variantSpecId Int      @map("variant_spec_id")
+  gt            Decimal? @db.Decimal(18, 6)
+  lte           Decimal? @db.Decimal(18, 6)
+  label         String   @db.VarChar(255)
+  sortOrder     Int      @default(0) @map("sort_order")
 
-  buckets      Bucket[]
-  productSpecs ProductSpec[]
-  variantSpecs VariantSpec[]
+  spec VariantSpec @relation(fields: [variantSpecId], references: [id], onDelete: Cascade)
 
-  @@map("facets")
-}
-
-model Bucket {
-  id      Int    @id @default(autoincrement())
-  facetId Int    @map("facet_id")
-  gt      Float? @db.DoublePrecision
-  lte     Float? @db.DoublePrecision
-  label   String @db.VarChar(255)
-
-  facet Facet @relation(fields: [facetId], references: [id], onDelete: Cascade)
-
-  @@index([facetId])
-  @@map("buckets")
+  @@unique([variantSpecId, gt, lte], map: "uq_variant_buckets_range")
+  @@index([variantSpecId], map: "idx_variant_buckets_spec")
+  @@map("variant_buckets")
 }
 
 // =================== PRODUCT / VARIANT ===================
@@ -310,16 +344,20 @@ model Product {
   @@index([name])
   @@index([slug], map: "idx_products_slug")
   @@map("products")
+  Banner Banner[]
 }
 
 model Variant {
   id        Int      @id @default(autoincrement())
   productId Int      @map("product_id")
   color     String?  @db.VarChar(100)
-  price     Decimal  @db.Decimal(12, 2)
+  price     Decimal  @db.Decimal(12, 2) // Giá bán hiện tại (có thể là giá đã giảm)
+  compareAtPrice Decimal? @map("compare_at_price") @db.Decimal(12, 2) // Giá gốc để so sánh (giá bị gạch đi)
   stock     Int      @default(0)
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  lowStockThreshold Int? @map("low_stock_threshold")
 
   product              Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantSpecValues    VariantSpecValue[]
@@ -340,13 +378,13 @@ model ProductSpecValue {
   productId Int      @map("product_id")
   specKey   String   @map("spec_key") @db.VarChar(191) // thường map sang ProductSpec.name
   label     String?  @db.VarChar(255)
-  valueJson Json     @map("value_json")
   type      DataType
   unit      String?  @db.VarChar(64)
 
   // cột phục vụ lọc/sort nhanh (tuỳ chọn, giữ để tương thích & hiệu năng)
-  stringValue  String? @db.VarChar(255)
-  numericValue Float?  @db.DoublePrecision
+  stringValue  String?  @db.VarChar(255)
+  numericValue Float?   @db.DoublePrecision
+  booleanValue Boolean? @db.Boolean
 
   product     Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
   // optional: liên kết mềm tới ProductSpec qua specKey nếu cần đảm bảo toàn vẹn ở app layer
@@ -364,13 +402,13 @@ model VariantSpecValue {
   variantId Int      @map("variant_id")
   specKey   String   @map("spec_key") @db.VarChar(191) // thường map sang VariantSpec.name
   label     String?  @db.VarChar(255)
-  valueJson Json     @map("value_json")
   type      DataType
   unit      String?  @db.VarChar(64)
 
   // cột phục vụ lọc/sort nhanh (tuỳ chọn)
-  stringValue  String? @db.VarChar(255)
-  numericValue Float?  @db.DoublePrecision
+  stringValue  String?  @db.VarChar(255)
+  numericValue Float?   @db.DoublePrecision
+  booleanValue Boolean? @db.Boolean
 
   variant     Variant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
   // optional: liên kết mềm tới VariantSpec qua specKey
@@ -458,7 +496,8 @@ model Order {
   userId           Int           @map("user_id")
   code             String        @unique @db.VarChar(50)
   status           OrderStatus   @default(pending)
-  paymentMethod    String?       @map("payment_method") @db.VarChar(50)
+  paymentAccountId Int? @map("payment_account_id")
+  paymentAccount   PaymentAccount? @relation(fields: [paymentAccountId], references: [id], onDelete: SetNull)
   paymentStatus    PaymentStatus @default(pending) @map("payment_status")
   discount         Decimal       @default(0.00) @db.Decimal(12, 2)
   shippingFee      Decimal       @default(0.00) @map("shipping_fee") @db.Decimal(12, 2)
@@ -480,6 +519,7 @@ model Order {
   @@index([status], map: "idx_orders_status")
   @@index([createdAt], map: "idx_orders_created_at")
   @@map("orders")
+  @@index([paymentAccountId])
 }
 
 model OrderItem {
@@ -502,7 +542,8 @@ model OrderItem {
 model PaymentTransaction {
   id                Int              @id @default(autoincrement())
   orderId           Int              @map("order_id")
-  provider          String?          @db.VarChar(100)
+  paymentMethodId Int? @map("payment_method_id")
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
   providerPaymentId String?          @map("provider_payment_id") @db.VarChar(100)
   amount            Decimal          @db.Decimal(12, 2)
   status            PaymentTxnStatus @default(pending)
@@ -513,6 +554,7 @@ model PaymentTransaction {
   @@index([orderId])
   @@index([status])
   @@map("payment_transactions")
+  @@index([paymentMethodId])
 }
 
 /**
@@ -664,4 +706,42 @@ model OrderDevice {
   device    Device    @relation(fields: [deviceId], references: [id], onDelete: Restrict)
 
   @@map("order_devices")
+}
+
+
+// Model này định nghĩa các phương thức thanh toán mà cửa hàng cung cấp
+model PaymentMethod {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255) // Tên hiển thị cho người dùng, ví dụ: "Chuyển khoản Ngân hàng"
+  code         String   @unique @db.VarChar(50) // Mã định danh cho logic, ví dụ: "bank_transfer", "momo"
+  description  String?  @db.Text // Hướng dẫn ngắn cho người dùng
+  logoUrl      String?  @map("logo_url") @db.VarChar(255) // URL logo của phương thức
+  isActive     Boolean  @default(true) @map("is_active") // Cho phép bật/tắt phương thức này
+  displayOrder Int      @default(0) @map("display_order") // Thứ tự hiển thị trên trang thanh toán
+
+  // Một phương thức có thể có nhiều tài khoản nhận tiền
+  accounts PaymentAccount[]
+
+  @@map("payment_methods")
+  PaymentTransaction PaymentTransaction[]
+}
+
+// Model này lưu chi tiết từng tài khoản nhận tiền của cửa hàng
+model PaymentAccount {
+  id              Int      @id @default(autoincrement())
+  paymentMethodId Int      @map("payment_method_id")
+
+  accountName     String   @map("account_name") @db.VarChar(255) // Tên chủ tài khoản
+  accountNumber   String   @map("account_number") @db.VarChar(50) // Số tài khoản hoặc SĐT ví
+  bankName        String?  @map("bank_name") @db.VarChar(100) // Tên ngân hàng (ví dụ: Vietcombank)
+  bankBranch      String?  @map("bank_branch") @db.VarChar(255) // Chi nhánh ngân hàng (tùy chọn)
+  qrCodeUrl       String?  @map("qr_code_url") @db.VarChar(255) // URL ảnh mã QR để thanh toán
+  isActive        Boolean  @default(true) @map("is_active") // Cho phép bật/tắt một tài khoản cụ thể
+
+  // Liên kết tới phương thức thanh toán cha
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
+
+  @@index([paymentMethodId])
+  @@map("payment_accounts")
+  Order Order[]
 }

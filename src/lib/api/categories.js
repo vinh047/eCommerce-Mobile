@@ -5,7 +5,7 @@ export async function getCategories() {
       headers: {
         accept: "application/json",
       },
-      cache: "force-cache", // hoặc "no-store" nếu muốn luôn lấy dữ liệu mới
+      cache: "no-store", // hoặc "no-store" nếu muốn luôn lấy dữ liệu mới
     });
 
     if (!res.ok) {
@@ -29,7 +29,7 @@ export async function getCategoryBySlug(slug) {
         headers: {
           accept: "application/json",
         },
-        cache: "force-cache",
+        cache: "no-store",
       }
     );
     if (!res.ok) {

@@ -1,26 +1,18 @@
-"use client";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import CategoryProductsDelay from "./CategoryProductsDelay";
-import { Suspense, useEffect, useState } from "react";
 import CategoryProductsSkeleton from "./CategoryProductsSkeleton";
 
-function CategorySection({ category, limit }) {
-  const [products, setProducts] = useState([]);
+async function CategorySection({ category, limit }) {
+  // update: viết trong lib
+  const res = await fetch(
+    `http://localhost:3000/api/products/categoryId/${category.id}?limit=${limit}`
+  );
+  if (!res.ok) throw new Error("Fetch failed");
+  const data = await res.json();
+  const products = data.data.items;
 
-  useEffect(() => {
-    async function fetchProductByCategoryId() {
-      try {
-        const res = await fetch(`/api/products/${category.id}?limit=${limit}`);
-        if (!res.ok) throw new Error("Fetch failed");
-        const data = await res.json();
-        setProducts(data.data.items);
-      } catch (err) {
-        console.error("Error:", err);
-      }
-    }
-    fetchProductByCategoryId();
-  }, []);
   return (
     <section className="px-2 sm:px-4 md:px-0 py-4">
       <div className="flex items-center justify-between mb-2 pe-4">
@@ -28,7 +20,7 @@ function CategorySection({ category, limit }) {
           {category.name}
         </h2>
         <Link
-          href="/product-category"
+          href={`/${category.slug}`}
           className="group relative flex items-center gap-1 text-neutral-800 hover:text-blue-600 transition-colors duration-200 text-sm font-medium"
         >
           <span className="relative after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all after:duration-300 group-hover:after:w-full">

@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Tính năng nổi bật
+##  Tính năng nổi bật
 
 - Thiết kế responsive, tối ưu cho thiết bị di động
 - Tùy biến kích thước và kiểu dáng

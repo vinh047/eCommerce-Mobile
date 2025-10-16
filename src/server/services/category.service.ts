@@ -2,7 +2,10 @@ import prisma from "@/lib/prisma";
 
 export const categoryService = {
   async getAllCategories() {
-    return await prisma.category.findMany({ where: { isActive: true } });
+    return await prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: { id:"asc" },
+    });
   },
 
   async getCategoryBySlug(slug: string) {

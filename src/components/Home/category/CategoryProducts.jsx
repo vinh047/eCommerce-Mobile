@@ -4,7 +4,7 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { lazy } from "react";
-const ProductCard = lazy(() => import("../product/ProductCard"));
+const ProductCard = lazy(() => import("@/components/ui/product/ProductCard"));
 
 function CategoryProducts({ title, products }) {
   return (
