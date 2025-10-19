@@ -2,7 +2,6 @@ import { ArrowRight } from "lucide-react";
 import CategoryProductsSkeleton from "./CategoryProductsSkeleton";
 
 export default function CategorySectionSkeleton() {
-  console.log("section skeleton render")
   return (
     <section className="px-2 sm:px-4 md:px-0 py-6">
       {/* Header skeleton: giữ layout h2 + Link nhưng dùng shimmer */}

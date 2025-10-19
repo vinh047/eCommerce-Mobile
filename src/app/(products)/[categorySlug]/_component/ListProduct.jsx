@@ -5,12 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { getProductsByFilters } from "@/lib/api/productApi";
 import ProductCard from "@/components/ui/product/ProductCard";
 import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
+import Pagination from "@/components/common/Pagination";
 
 const LIMIT = 8;
 
 export default function ListProducts({ categoryId }) {
   const sp = useSearchParams();
-  const [items, setItems] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
@@ -24,12 +25,13 @@ export default function ListProducts({ categoryId }) {
         if (!params.has("page")) params.set("page", "1");
         params.set("limit", String(LIMIT));
 
-        const { data } = await getProductsByFilters(
+        const data = await getProductsByFilters(
           categoryId,
           params.toString()
         );
 
-        if (active) setItems(data ?? []);
+
+        if (active) setProducts(data.data ?? []);
       } catch (e) {
         if (active) setErr(e);
       } finally {
@@ -55,24 +57,24 @@ export default function ListProducts({ categoryId }) {
 
   if (err) return <div>Lỗi: {String(err.message || err)}</div>;
 
-  if (!items.length) return <div>Không có sản phẩm phù hợp</div>;
+  if (!products.length) return <div>Không có sản phẩm phù hợp</div>;
 
   return (
     <>
-      {items.map((p) => (
+      {products.map((p) => (
         <ProductCard
           key={p.id}
-          product={{
-            id: p.id,
-            name: p.name,
-            minPrice: p.minPrice,
-            image: p.image,
-            rating: p.ratingCount,
-            ratingAvg: Number(p.ratingAvg),
-            slug: p.slug,
-          }}
+          product={p}
         />
       ))}
+      {/* <Pagination
+        currentPage={1}
+        pageSize={LIMIT}
+        totalItems={data}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        showPageSizeOptions={false}
+      /> */}
     </>
   );
 }

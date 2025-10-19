@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FaStar, FaRegStar, FaStarHalfAlt } from "react-icons/fa";
 import { formatPrice } from "@/utils/format";
 
-const baseUrlImage = "/assets/image-products/";
+const baseUrlImage = "/assets/products/";
 
 function RatingStars({ rating }) {
   const safeRating = Math.max(0, Math.min(5, Number(rating) || 0));
@@ -25,17 +25,30 @@ function RatingStars({ rating }) {
 }
 
 function ProductCard({ product }) {
+  // THAY ĐỔI: Logic kiểm tra và tính toán giảm giá
+  const hasDiscount =
+    product.compareAtPrice &&
+    Number(product.compareAtPrice) > Number(product.price);
+
+  let discountPercentage = 0;
+  if (hasDiscount) {
+    discountPercentage = Math.round(
+      ((Number(product.compareAtPrice) - Number(product.price)) /
+        Number(product.compareAtPrice)) *
+        100
+    );
+  }
   return (
     <Link href={`/san-pham/${product.slug}`}>
-      <div className="my-2 mx-2 group bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[340px]">
+      <div className="my-2 mx-2 group bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[325px]">
         {/* Ảnh sản phẩm */}
-        <div className="relative w-full h-52 rounded-lg mb-3 overflow-hidden">
+        <div className="relative w-full h-48 rounded-lg mb-1 overflow-hidden flex justify-center items-center">
           <Image
             src={`${baseUrlImage}${product.image}`}
             alt={product.name}
             className="object-contain p-2 transition-transform duration-200 ease-in-out group-hover:-translate-y-1.5"
-            width={175}
-            height={210}
+            placeholder="empty"
+            fill={true}
           />
         </div>
 
@@ -45,9 +58,25 @@ function ProductCard({ product }) {
         </h3>
 
         {/* Giá */}
-        <p className="text-blue-600 font-bold text-md mb-1">
-          {formatPrice(Number(product.minPrice))}
-        </p>
+        <div className="flex flex-col items-center justify-center min-h-[42px] mb-1">
+          {hasDiscount ? (
+            <>
+              <p className="text-blue-600 font-bold text-md">
+                {formatPrice(Number(product.price))}
+              </p>
+              {/* Giá gốc (ở trên) */}
+              <p className="text-sm text-gray-500 line-through">
+                {formatPrice(Number(product.compareAtPrice))}
+              </p>
+              {/* Giá bán (ở dưới) */}
+            </>
+          ) : (
+            // Khi không giảm giá, giá bán sẽ được căn giữa trong container
+            <p className="text-blue-600 font-bold text-md">
+              {formatPrice(Number(product.price))}
+            </p>
+          )}
+        </div>
 
         {/* Đánh giá */}
         <div className="flex items-center justify-center gap-1 text-yellow-500 mb-1">
