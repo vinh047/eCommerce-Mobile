@@ -61,7 +61,7 @@ export default function UsersTable({
             Danh sách người dùng
           </h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Tổng: {totalItems} người dùng   
+            Tổng: {totalItems} người dùng
           </span>
         </div>
         <div className="flex items-center space-x-2">
@@ -127,7 +127,7 @@ export default function UsersTable({
           <tbody>
             {loading ? (
               <LoadingSkeleton columnVisibility={columnVisibility} />
-            ) : ( 
+            ) : (
               users.map((user) => (
                 <UsersTableRow
                   key={user.id}
@@ -152,7 +152,7 @@ export default function UsersTable({
         totalItems={totalItems}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
-        showPageSizeOptions={false}
+        label="người dùng"
       />
     </div>
   );

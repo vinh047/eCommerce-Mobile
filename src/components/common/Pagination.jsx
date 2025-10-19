@@ -41,7 +41,7 @@ export default function Pagination({
     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
       {showPageSizeOptions && (
         <div className="flex items-center space-x-4 text-sm text-gray-700 dark:text-gray-300">
-          Hiển thị {startItem} - {endItem} của {totalItems} {label}
+          Hiển thị {startItem} - {endItem} của {totalItems} {label}/
           <div className="flex items-center space-x-2">
             <label className="text-sm text-gray-600 dark:text-gray-400">
               Số dòng:
@@ -60,7 +60,11 @@ export default function Pagination({
           </div>
         </div>
       )}
-      <div className={`flex items-center space-x-2 ${!showPageSizeOptions ? "m-auto" : ""}`}>
+      <div
+        className={`flex items-center space-x-2 ${
+          !showPageSizeOptions ? "m-auto" : ""
+        }`}
+      >
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}

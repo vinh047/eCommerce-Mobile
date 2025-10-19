@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 
 const usersApi = {
-  getUsers: () => axiosClient.get("/users"),
+  getUsers: (params) => axiosClient.get("/users", { params }),
 
   getUserById: (id) => axiosClient.get(`/users/${id}`),
 
@@ -11,8 +11,7 @@ const usersApi = {
 
   deleteUser: (id) => axiosClient.delete(`/users/${id}`),
 
-  bulkAction: (ids, action) =>
-    axiosClient.post(`/users/bulk`, { ids, action }),
+  bulkAction: (ids, action) => axiosClient.post(`/users/bulk`, { ids, action }),
 };
 
 export default usersApi;
