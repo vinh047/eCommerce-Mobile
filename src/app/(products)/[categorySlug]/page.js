@@ -1,5 +1,8 @@
 import { Suspense } from "react";
-import { getCategories, getCategoryBySlug } from "@/lib/api/categoriesApi";
+import {
+  getCategoryBySlug,
+  getCategoriesWithSpecTemplates,
+} from "@/lib/api/categoriesApi";
 
 import CategoryTabs from "@/app/(products)/[categorySlug]/_component/CategoryTabs";
 import Breadcrumb from "@/app/(products)/[categorySlug]/_component/navigation/Breadcrumb";
@@ -22,7 +25,7 @@ export default async function ProductsPage({ params }) {
 
   // Bắt đầu cả hai promise mà không cần "await"
   const categoryPromise = getCategoryBySlug(categorySlug);
-  const categoriesPromise = getCategories();
+  const categoriesPromise = getCategoriesWithSpecTemplates();
 
   // Đợi cho cả hai promise hoàn thành cùng lúc
   const [category, categories] = await Promise.all([

@@ -4,7 +4,21 @@ export const categoryService = {
   async getAllCategories() {
     return await prisma.category.findMany({
       where: { isActive: true },
-      orderBy: { id:"asc" },
+      orderBy: { id: "asc" },
+    });
+  },
+
+  async getRootCategories() {
+    return await prisma.category.findMany({
+      where: { isActive: true, parent: null },
+      orderBy: { id: "asc" },
+    });
+  },
+
+  async getCategoriesWithSpecTemplates() {
+    return await prisma.category.findMany({
+      where: { isActive: true, templates: { some: {} } },
+      orderBy: { id: "asc" },
     });
   },
 

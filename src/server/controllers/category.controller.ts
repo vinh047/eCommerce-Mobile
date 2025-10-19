@@ -11,6 +11,26 @@ export const categoryController = {
     }
   },
 
+  async getRootCategories() {
+    try {
+      const categories = await categoryService.getRootCategories();
+      return Response.json(categories, { status: 200 });
+    } catch (error) {
+      console.error("getAllCategories error:", error);
+      return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  },
+
+  async getCategoriesWithSpecTemplates() {
+    try {
+      const categories = await categoryService.getCategoriesWithSpecTemplates();
+      return Response.json(categories, { status: 200 });
+    } catch (error) {
+      console.error("getAllCategories error:", error);
+      return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  },
+
   async getCategoryBySlug({ params }: { params: { slug: string } }) {
     try {
       const { slug } = await params;

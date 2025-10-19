@@ -83,7 +83,7 @@ export const productService = {
     categoryId: number,
     filters: Record<string, string>
   ) {
-    // === BƯỚC 1: LẤY THÔNG TIN SPEC (Giữ nguyên) ===
+    // === BƯỚC 1: LẤY THÔNG TIN SPEC  ===
     const specTemplate = await prisma.specTemplate.findFirst({
       where: { categoryId, isActive: true },
     });
@@ -157,7 +157,6 @@ export const productService = {
         continue;
       }
 
-      // (Logic filter còn lại giữ nguyên)
       if (key === "brand") {
         whereClause.brand = { slug: { in: String(value).split(",") } };
         continue;
@@ -227,7 +226,7 @@ export const productService = {
       delete whereClause.AND;
     }
 
-    // === BƯỚC 5: TRUY VẤN CSDL (GIỮ NGUYÊN) ===
+    // === BƯỚC 5: TRUY VẤN CSDL  ===
     const [products, totalProducts] = await prisma.$transaction([
       prisma.product.findMany({
         where: whereClause,
@@ -313,7 +312,18 @@ export const productService = {
         };
       });
 
-    // === BƯỚC 7: TRẢ VỀ KẾT QUẢ VÀ METADATA (GIỮ NGUYÊN) ===
+    if (priceSortDirection) {
+      result.sort((a, b) => {
+        // Xử lý an toàn trường hợp giá có thể là null
+        const priceA = a.price?.toNumber() || 0;
+        const priceB = b.price?.toNumber() || 0;
+
+        // Sắp xếp tăng dần hoặc giảm dần dựa trên cờ
+        return priceSortDirection === "asc" ? priceA - priceB : priceB - priceA;
+      });
+    }
+
+    // === BƯỚC 7: TRẢ VỀ KẾT QUẢ VÀ METADATA  ===
     const totalPages = Math.ceil(totalProducts / limit);
     return {
       data: result,

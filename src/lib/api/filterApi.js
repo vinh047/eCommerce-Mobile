@@ -4,7 +4,9 @@ import { apiFetch } from "./utils/apiFetch";
  * Gọi API Route để lấy template filter cho một category.
  */
 export async function fetchFilterTemplate(categoryId) {
-  return await apiFetch(`/filters/category/${categoryId}`, {cache:'force-cache'})
+  return await apiFetch(`/filters/category/${categoryId}`, {
+    cache: "no-cache",
+  });
 }
 
 /**

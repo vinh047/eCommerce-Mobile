@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
-import { getProductsByCategory } from "@/lib/api/productApi";
 import CategoryProductsDelay from "./CategoryProductsDelay";
 import CategoryProductsSkeleton from "./CategoryProductsSkeleton";
 
-async function CategorySection({ category, limit }) {
-  const products = await getProductsByCategory(category.id, limit);
-
+async function CategorySection({ category, products }) {
   return (
     <section className="px-2 sm:px-4 md:px-0 py-4">
       <div className="flex items-center justify-between mb-2 pe-4">

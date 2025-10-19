@@ -12,6 +12,20 @@ export const categories: Prisma.CategoryCreateInput[] = [
     name: "Laptop",
     slug: "laptop",
   },
+  {
+    name: "Phụ kiện",
+    slug: "phu-kien",
+  },
+  {
+    name: "Âm thanh",
+    slug: "am-thanh",
+    parent: { connect: { slug: "phu-kien" } },
+  },
+  {
+    name: "Pin sạc dự phòng",
+    slug: "pin-sac-du-phong",
+    parent: { connect: { slug: "phu-kien" } },
+  },
 ];
 
 // ---------------------------
@@ -59,32 +73,44 @@ export const brands: Prisma.BrandCreateInput[] = [
     name: "Lenovo",
     slug: "lenovo",
   },
+  {
+    name: "JBL",
+    slug: "jbl",
+  },
 ];
 
 // ---------------------------
 // 3. DỮ LIỆU TEMPLATE THÔNG SỐ (SPEC TEMPLATES)
 // ---------------------------
-export const specTemplates: Prisma.SpecTemplateCreateInput[] = [
+interface SpectemplateinterfacS {
+  name: string,
+  version: number,
+  categoryId: number,
+}
+export const specTemplates: SpectemplateinterfacS[] = [
   {
     name: "Điện thoại - V1",
     version: 1,
-    isActive: true,
-    category: {
-      connect: {
-        slug: "dien-thoai",
-      },
-    },
+    categoryId: 1
   },
   {
     name: "Laptop - V1",
     version: 1,
-    isActive: true,
-    category: {
-      connect: {
-        slug: "laptop",
-      },
-    },
+    categoryId: 2
   },
+  {
+    name: "Âm thanh",
+    version: 1,
+    categoryId: 4,
+  },
+  {
+    name: "Pin sạc dự phòng",
+    version: 1,
+    categoryId: 5,
+  },
+
+
+  
 ];
 
 // Định nghĩa kiểu dữ liệu đơn giản hóa cho việc tạo ProductSpec bằng ID trực tiếp
@@ -319,6 +345,71 @@ export const productSpecs: ProductSpecSeedInput[] = [
     isRequired: false,
     groupLabel: "Màn hình",
     displayOrder: 5,
+  },
+  {
+    specTemplateId: 3,
+    code: "micro",
+    label: "Micro",
+    valueType: "discrete",
+    datatype: "boolean",
+    unit: null,
+    filterable: true,
+    control: "select",
+    isRequired: false,
+    groupLabel: null,
+    displayOrder: 1,
+  },
+  {
+    specTemplateId: 3,
+    code: "battery_life",
+    label: "Thời lượng pin",
+    valueType: "discrete",
+    datatype: "string",
+    unit: null,
+    filterable: false,
+    control: "select",
+    isRequired: false,
+    groupLabel: null,
+    displayOrder: 2,
+  },
+  {
+    specTemplateId: 4,
+    code: "battery",
+    label: "Dung lượng pin",
+    valueType: "discrete",
+    datatype: "number",
+    unit: "mAh",
+    filterable: false,
+    control: "select",
+    isRequired: false,
+    groupLabel: null,
+    displayOrder: 1,
+  },
+  {
+    specTemplateId: 4,
+    code: "input-port",
+    label: "Cổng sạc vào",
+    valueType: "discrete",
+    datatype: "string",
+    unit: null,
+    filterable: false,
+    control: "select",
+    isRequired: false,
+    groupLabel: null,
+    displayOrder: 2,
+  },
+  {
+    specTemplateId: 4,
+    code: "output-port",
+    label: "Cổng sạc ra",
+    valueType: "discrete",
+    datatype: "string",
+    unit: null,
+    filterable: false,
+    control: "select",
+    isRequired: false,
+    groupLabel: null,
+    displayOrder: 3,
   },
 ];
 
@@ -834,6 +925,22 @@ export const productsToCreate: ProductSeedInput[] = [
     description:
       "Laptop Dell Inspiron 14 5440 N4I7204W1 với chipset Intel Core i7 150U, 16GB RAM cùng ổ cứng 512GB hứa hẹn sẽ trở thành công cụ làm việc đáng tin cậy. Mẫu laptop Dell Inspiron này còn sở hữu màn hình FHD+ 14 inch 60Hz để đảm bảo hình ảnh luôn được hiển thị sắc nét. Kèm theo đó là viên pin có dung lượng 54WHr và đa dạng các cổng kết nối để đảm bảo công việc diễn ra ổn định.",
   },
+  {
+    name: "Tai nghe Bluetooth Apple AirPods Pro 3 2025 Type-C | Chính hãng (MFHP4ZP/A)",
+    slug: "tai-nghe-bluetooth-apple-airpods-pro-3-2025-type-c-chinh-hang",
+    brandId: 1,
+    categoryId: 4,
+    description:
+      "AirPods Pro 3 ra mắt tháng 9/2025, mang đến bước tiến lớn với khả năng khử tiếng ồn chủ động gấp đôi thế hệ trước, thiết kế gọn nhẹ và pin bền bỉ vượt trội. Apple tích hợp cảm biến đo nhịp tim trực tiếp trên tai nghe, biến AirPod Pro 3 thành trợ lý sức khỏe thông minh cho người dùng. Cùng với chất lượng âm thanh ấn tượng, Airpods Pro 3 hứa hẹn nâng tầm trải nghiệm nghe nhạc và giao tiếp hàng ngày.",
+  },
+  {
+    name: "Pin dự phòng Xiaomi 10.000mAh 165W tích hợp cáp Type-C",
+    slug: "pin-du-phong-xiaomi-10000mAh-165w-tich-hop-cap-type-c",
+    brandId: 4,
+    categoryId: 5,
+    description:
+      "Pin sạc dự phòng Xiaomi 10000mAh 165W kèm cáp type C được trang bị dung lượng 10000mAh hỗ trợ sạc nhiều thiết bị cùng lúc hoặc sạc nhiều lần tiện lợi. Sản phẩm sạc dự phòng Xiaomi này sở hữu công suất tối đa đạt 165 Watt cho hiệu quả nạp pin nhanh chóng, đầy ấn tượng. Thiết kế cầm tay tiện lợi kèm cáp type C giúp việc sạc trở nên di động và đơn giản hơn.",
+  },
 
   // {
   //   name: "",
@@ -871,6 +978,10 @@ const specKeyToLabelMap: Record<string, string> = {
   battery: "Dung lượng pin",
   rear_camera_mp: "Camera sau",
   nfc: "Công nghệ NFC",
+  micro: "Micro",
+  battery_life: "Thời lượng pin",
+  input_port: "Cổng sạc vào",
+  output_port: "Cổng sạc ra",
 };
 
 // Dữ liệu đã được xử lý và làm sạch
@@ -2042,7 +2153,7 @@ export const productSpecValuesToCreate: ProductSpecValueSeedInput[] = [
     unit: null,
     stringValue: "Windows",
     numericValue: null,
-    booleanValue: true,
+    booleanValue: null,
   },
   {
     productId: 14,
@@ -2052,7 +2163,7 @@ export const productSpecValuesToCreate: ProductSpecValueSeedInput[] = [
     unit: null,
     stringValue: "Intel Core 7",
     numericValue: null,
-    booleanValue: true,
+    booleanValue: null,
   },
   {
     productId: 14,
@@ -2062,7 +2173,7 @@ export const productSpecValuesToCreate: ProductSpecValueSeedInput[] = [
     unit: null,
     stringValue: "SSD",
     numericValue: null,
-    booleanValue: true,
+    booleanValue: null,
   },
   {
     productId: 14,
@@ -2072,7 +2183,57 @@ export const productSpecValuesToCreate: ProductSpecValueSeedInput[] = [
     unit: "inch",
     stringValue: null,
     numericValue: 14,
+    booleanValue: null,
+  },
+  {
+    productId: 15,
+    specKey: "micro",
+    label: specKeyToLabelMap.micro,
+    type: "boolean",
+    unit: null,
+    stringValue: null,
+    numericValue: null,
     booleanValue: true,
+  },
+  {
+    productId: 15,
+    specKey: "battery_life",
+    label: specKeyToLabelMap.battery_life,
+    type: "string",
+    unit: null,
+    stringValue: "Tai nghe: lên đến 8 giờ\nTai nghe + hộp sạc: lên đến 24 giờ",
+    numericValue: null,
+    booleanValue: null,
+  },
+  {
+    productId: 16,
+    specKey: "battery",
+    label: specKeyToLabelMap.battery,
+    type: "string",
+    unit: "mAh",
+    stringValue: null,
+    numericValue: 10000,
+    booleanValue: null,
+  },
+  {
+    productId: 16,
+    specKey: "input_port",
+    label: specKeyToLabelMap.input_port,
+    type: "string",
+    unit: null,
+    stringValue: "1 x USB-C",
+    numericValue: null,
+    booleanValue: null,
+  },
+  {
+    productId: 16,
+    specKey: "oputput_port",
+    label: specKeyToLabelMap.oputput_port,
+    type: "string",
+    unit: null,
+    stringValue: "1 x USB-C\n1 x cáp USB-C",
+    numericValue: null,
+    booleanValue: null,
   },
 ];
 
@@ -2668,6 +2829,25 @@ export const variant: VariantInterface[] = [
     stock: 10,
     isActive: true,
     lowStockThreshold: 2,
+  },
+
+  {
+    productId: 15,
+    color: "Trắng",
+    price: 6790000,
+    compareAtPrice: 6890000,
+    stock: 10,
+    isActive: true,
+    lowStockThreshold: 3,
+  },
+  {
+    productId: 16,
+    color: "Xám",
+    price: 1290000,
+    compareAtPrice: 1990000,
+    stock: 10,
+    isActive: true,
+    lowStockThreshold: 3,
   },
 ];
 
@@ -3750,6 +3930,61 @@ export const MediaArray: MediaInterface[] = [
     isPrimary: false,
     sortOrder: 3,
   },
+  {
+    url: "group_111_1_1.webp",
+    isPrimary: true,
+    sortOrder: 1,
+  },
+  {
+    url: "airpods_pro_3_sep25_pdp_image_position_1__vn-vi_1.webp",
+    isPrimary: false,
+    sortOrder: 2,
+  },
+  {
+    url: "airpods_pro_3_sep25_pdp_image_position_3__vn-vi_1.webp",
+    isPrimary: false,
+    sortOrder: 3,
+  },
+  {
+    url: "airpods_pro_3_sep25_pdp_image_position_4__vn-vi_1.webp",
+    isPrimary: false,
+    sortOrder: 4,
+  },
+  {
+    url: "airpods_pro_3_sep25_pdp_image_position_7__vn-vi_1.webp",
+    isPrimary: false,
+    sortOrder: 5,
+  },
+  {
+    url: "airpods_pro_3_sep25_pdp_image_position_8__vn-vi_1.webp",
+    isPrimary: false,
+    sortOrder: 6,
+  },
+  {
+    url: "pin-sac-du-phong-xiaomi-10000mah-165w-kem-cap-type-c_3.webp",
+    isPrimary: true,
+    sortOrder: 1,
+  },
+  {
+    url: "pin-sac-du-phong-xiaomi-10000mah-165w-kem-cap-type-c_3_.webp",
+    isPrimary: false,
+    sortOrder: 2,
+  },
+  {
+    url: "pin-sac-du-phong-xiaomi-10000mah-165w-kem-cap-type-c_2_.webp",
+    isPrimary: false,
+    sortOrder: 3,
+  },
+  {
+    url: "pin-sac-du-phong-xiaomi-10000mah-165w-kem-cap-type-c_9_.webp",
+    isPrimary: false,
+    sortOrder: 4,
+  },
+  {
+    url: "pin-sac-du-phong-xiaomi-10000mah-165w-kem-cap-type-c_8_.webp",
+    isPrimary: false,
+    sortOrder: 5,
+  },
 ];
 
 export interface MediaVariantInterface {
@@ -3929,4 +4164,14 @@ export const MediaVariant: MediaVariantInterface[] = [
   { mediaId: 79, variantId: 62 },
   { mediaId: 79, variantId: 63 },
   { mediaId: 79, variantId: 64 },
+  { mediaId: 80, variantId: 65 },
+  { mediaId: 81, variantId: 65 },
+  { mediaId: 82, variantId: 65 },
+  { mediaId: 83, variantId: 65 },
+  { mediaId: 84, variantId: 65 },
+  { mediaId: 85, variantId: 66 },
+  { mediaId: 86, variantId: 66 },
+  { mediaId: 87, variantId: 66 },
+  { mediaId: 88, variantId: 66 },
+  { mediaId: 89, variantId: 66 },
 ];
