@@ -46,18 +46,39 @@ async function main() {
   await prisma.mediaVariant.deleteMany();
   console.log("Đã xóa xong dữ liệu cũ.");
 
-  // --- 2. Seed dữ liệu cơ bản (không có phụ thuộc) ---
-  console.log(`Đang seed Categories...`);
-  await prisma.category.createMany({ data: categories });
+  // --- 2.1. Tách category cha và con ---
+  const parentCategories = categories.filter((cat) => !cat.parent);
+  const childCategories = categories.filter((cat) => cat.parent);
+
+  // --- 2.2. Seed các category cha trước bằng createMany cho nhanh ---
+  console.log(`Đang seed ${parentCategories.length} category cha...`);
+  await prisma.category.createMany({
+    data: parentCategories,
+  });
+
+  // --- 2.3. Seed các category con bằng vòng lặp và create để xử lý quan hệ ---
+  console.log(`Đang seed ${childCategories.length} category con...`);
+  for (const cat of childCategories) {
+    await prisma.category.create({
+      data: {
+        name: cat.name,
+        slug: cat.slug,
+        parent: {
+          // Dùng create thì cú pháp này hoàn toàn hợp lệ
+          connect: {
+            slug: cat.parent.connect.slug,
+          },
+        },
+      },
+    });
+  }
 
   console.log(`Đang seed Brands...`);
   await prisma.brand.createMany({ data: brands });
 
   // --- 3. Seed Spec Templates (phụ thuộc vào Category) ---
   console.log(`Đang seed SpecTemplates...`);
-  for (const template of specTemplates) {
-    await prisma.specTemplate.create({ data: template });
-  }
+  await prisma.specTemplate.createMany({ data: specTemplates });
 
   // LƯU Ý QUAN TRỌNG:
   // Dữ liệu bạn cung cấp sử dụng ID được hard-code (ví dụ: specTemplateId: 1).
