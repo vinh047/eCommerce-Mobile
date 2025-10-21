@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Input } from "@/component/ui/form/Input";
+import { Input } from "@/components/ui/form/Input"; 
 
 export default function InputForm(props) {
   const [value, setValue] = React.useState("");
