@@ -3,7 +3,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial;
 }
