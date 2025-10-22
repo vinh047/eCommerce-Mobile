@@ -1,25 +1,39 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// POST - Tạo user mới
+// POST - Tạo Coupon mới
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const user = await prisma.user.create({
+
+    const coupon = await prisma.coupon.create({
       data: {
-        email: data.email,
-        passwordHash: data.passwordHash,
-        name: data.name,
-        avatar: data.avatar,
+        code: data.code,
+        type: data.type,
+        value: data.value,
+        minOrder: data.minOrder,
+        startsAt: data.startsAt ? new Date(data.startsAt) : null,
+        endsAt: data.endsAt ? new Date(data.endsAt) : null,
+        usageLimit: data.usageLimit,
+        status: data.status,
+        categoryId: data.categoryId,
+        brandId: data.brandId,
       },
     });
-    return NextResponse.json(user, { status: 201 });
+    return NextResponse.json(coupon, { status: 201 });
   } catch (err: any) {
+    // Xử lý lỗi trùng code (unique constraint)
+    if (err.code === "P2002") {
+      return NextResponse.json(
+        { error: "Mã giảm giá đã tồn tại." },
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
 
-// GET - Lấy danh sách user (có phân trang, tìm kiếm, lọc)
+// GET - Lấy danh sách Coupon (có phân trang, tìm kiếm, lọc)
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -28,18 +42,16 @@ export async function GET(req: Request) {
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const search = searchParams.get("search") || "";
     const statusQuery = searchParams.get("status") || "";
-    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const typeQuery = searchParams.get("type") || "";
+    const sortBy = searchParams.get("sortBy") || "id";
     const sortOrder = searchParams.get("sortOrder") || "desc";
 
     const where: any = {
-      NOT: { status: "deleted" }, // tránh lấy user bị xoá
+      NOT: { status: "deleted" },
     };
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-      ];
+      where.code = { contains: search, mode: "insensitive" };
     }
 
     if (statusQuery) {
@@ -47,13 +59,21 @@ export async function GET(req: Request) {
       where.status = { in: statuses };
     }
 
-    const totalItems = await prisma.user.count({ where });
-    const data = await prisma.user.findMany({
+    if (typeQuery) {
+      const types = typeQuery.split(",");
+      where.type = { in: types };
+    }
+
+    const totalItems = await prisma.coupon.count({ where });
+    const data = await prisma.coupon.findMany({
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy: { [sortBy]: sortOrder },
-      include: { addresses: true },
+      include: {
+        category: true,
+        brand: true,
+      },
     });
 
     return NextResponse.json({

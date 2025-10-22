@@ -49,7 +49,7 @@ export default function Pagination({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(parseInt(e.target.value))}
-              className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 dark:text-white"
+              className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 dark:text-white cursor-pointer"
             >
               {[10, 25, 50, 100].map((size) => (
                 <option key={size} value={size}>
@@ -68,7 +68,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 border rounded text-sm disabled:opacity-50 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="px-3 py-1 border rounded text-sm disabled:opacity-50 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-not-allowed "
         >
           ← Trước
         </button>
@@ -82,10 +82,11 @@ export default function Pagination({
             <button
               key={i}
               onClick={() => onPageChange(page)}
+              disabled={currentPage === page}
               className={`px-3 py-1 border rounded text-sm ${
                 currentPage === page
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "border-gray-300 dark:border-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                  ? "bg-blue-600 text-white border-blue-600 disabled:cursor-not-allowed"
+                  : "border-gray-300 dark:border-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
               }`}
             >
               {page}
@@ -96,7 +97,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 border rounded text-sm disabled:opacity-50 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="px-3 py-1 border rounded text-sm disabled:opacity-50 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-not-allowed"
         >
           Sau →
         </button>

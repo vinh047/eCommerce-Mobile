@@ -3,27 +3,19 @@
 import { useState } from "react";
 import {
   X,
-  User, // Thông tin cơ bản
-  Shield, // Bảo mật/Mật khẩu
-  MapPin, // Địa chỉ
-  UserCog, // Vai trò/Trạng thái
+  User,
+  Shield,
+  MapPin,
+  UserCog,
   Mail,
   Key,
   Calendar,
   Info,
 } from "lucide-react";
 
-// Dữ liệu giả định cho dropdowns
-const roleOptions = [
-  { value: "customer", label: "Khách hàng" },
-  { value: "staff", label: "Nhân viên" },
-  { value: "admin", label: "Quản trị viên" },
-];
-
 const statusOptions = [
   { value: "active", label: "Hoạt động" },
-  { value: "inactive", label: "Đã khóa" },
-  { value: "pending", label: "Chờ xác nhận" },
+  { value: "blocked", label: "Đã khóa" },
 ];
 
 export default function UserModal({ mode, user, onClose, onSave }) {
@@ -32,12 +24,10 @@ export default function UserModal({ mode, user, onClose, onSave }) {
     // Basic Info
     name: user?.name || "",
     email: user?.email || "",
-    phone: user?.phone || "",
 
     // Security/Status Info (Chỉ định rõ hơn cho User)
-    password: "", // Chỉ dùng khi tạo mới hoặc reset
+    password: "", 
     confirmPassword: "",
-    role: user?.role || "customer",
     status: user?.status || "active",
 
     // Avatar
@@ -50,8 +40,6 @@ export default function UserModal({ mode, user, onClose, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Thêm validation cơ bản cho mật khẩu nếu ở tab security
     if (
       activeTab === "security" &&
       formData.password !== formData.confirmPassword
@@ -59,8 +47,14 @@ export default function UserModal({ mode, user, onClose, onSave }) {
       alert("Mật khẩu và Xác nhận mật khẩu không khớp!");
       return;
     }
-
-    onSave(formData);
+    const payload = {
+      ...formData,
+      passwordHash: formData.password || undefined,
+    };
+    delete payload.password;
+    delete payload.confirmPassword;
+    console.log("Submitting form data:", payload);
+    onSave(payload);
   };
 
   const handleModalClick = (e) => {
@@ -71,7 +65,6 @@ export default function UserModal({ mode, user, onClose, onSave }) {
     { id: "basic", name: "Thông tin cơ bản", icon: User },
     { id: "security", name: "Bảo mật & Trạng thái", icon: Shield },
     { id: "addresses", name: "Địa chỉ", icon: MapPin },
-    // Có thể thêm tab Roles/Permissions nếu cần quản lý quyền chi tiết hơn
   ];
 
   const ModalTitle =
@@ -96,8 +89,8 @@ export default function UserModal({ mode, user, onClose, onSave }) {
         />
       </div>
 
-      {/* Email & Phone */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Email */}
+      <div className="space-y-6">
         <div>
           <label className=" text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
             <Mail className="w-4 h-4 mr-1 text-blue-500" /> Email *
@@ -116,18 +109,6 @@ export default function UserModal({ mode, user, onClose, onSave }) {
               Email không thể thay đổi sau khi tạo.
             </p>
           )}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Số điện thoại
-          </label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white"
-            placeholder="0901234567"
-          />
         </div>
       </div>
 
@@ -206,7 +187,7 @@ export default function UserModal({ mode, user, onClose, onSave }) {
           <select
             value={formData.status}
             onChange={(e) => handleInputChange("status", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white cursor-pointer"
             required
           >
             {statusOptions.map((option) => (
@@ -229,12 +210,6 @@ export default function UserModal({ mode, user, onClose, onSave }) {
 
   const renderAddressesTab = () => (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Phần này thường cần một component con riêng để quản lý danh sách địa
-        chỉ. Ví dụ: `AddressListManager`
-      </p>
-
-      {/* Giả định: Danh sách địa chỉ (Chỉ là placeholder) */}
       <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
         <h5 className="font-semibold dark:text-white mb-2">
           Địa chỉ đang có ({user?.addresses?.length || 0})
@@ -244,10 +219,13 @@ export default function UserModal({ mode, user, onClose, onSave }) {
           user.addresses.map((addr, index) => (
             <div
               key={index}
-              className="border-b border-gray-200 dark:border-gray-600 py-2"
+              className="border-b border-gray-200 dark:border-gray-600 p-2"
             >
               <p className="text-sm dark:text-gray-300">
                 {addr.line}, {addr.ward}, {addr.district}, {addr.province}
+              </p>
+              <p className="text-sm dark:text-gray-300">
+                sdt liên hệ: {addr.phone}
               </p>
               {addr.isDefault && (
                 <span className="text-xs text-blue-500 font-medium">
@@ -296,7 +274,7 @@ export default function UserModal({ mode, user, onClose, onSave }) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors cursor-pointer ${
                       activeTab === tab.id
                         ? "border-blue-500 text-blue-600 dark:text-blue-400"
                         : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -323,13 +301,13 @@ export default function UserModal({ mode, user, onClose, onSave }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer"
               >
                 {mode === "create" ? "Tạo người dùng" : "Cập nhật người dùng"}
               </button>

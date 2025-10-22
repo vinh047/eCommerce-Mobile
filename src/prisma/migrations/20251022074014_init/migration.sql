@@ -35,6 +35,18 @@ CREATE TYPE "DataType" AS ENUM ('string', 'number', 'boolean');
 CREATE TYPE "ValueType" AS ENUM ('discrete', 'range');
 
 -- CreateTable
+CREATE TABLE "banners" (
+    "id" SERIAL NOT NULL,
+    "image_url" VARCHAR(255) NOT NULL,
+    "alt_text" VARCHAR(255),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "display_order" INTEGER NOT NULL DEFAULT 0,
+    "product_id" INTEGER NOT NULL,
+
+    CONSTRAINT "banners_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
     "email" VARCHAR(255) NOT NULL,
@@ -66,7 +78,6 @@ CREATE TABLE "brands" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "slug" VARCHAR(191) NOT NULL,
-    "image" VARCHAR(255),
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -202,11 +213,13 @@ CREATE TABLE "products" (
 CREATE TABLE "variants" (
     "id" SERIAL NOT NULL,
     "product_id" INTEGER NOT NULL,
-    "color" VARCHAR(100),
-    "price" DECIMAL(12,2) NOT NULL,
+    "color" VARCHAR(100) NOT NULL,
+    "price" DECIMAL(12,2),
+    "compare_at_price" DECIMAL(12,2),
     "stock" INTEGER NOT NULL DEFAULT 0,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "low_stock_threshold" INTEGER,
 
     CONSTRAINT "variants_pkey" PRIMARY KEY ("id")
 );
@@ -217,7 +230,6 @@ CREATE TABLE "product_spec_values" (
     "product_id" INTEGER NOT NULL,
     "spec_key" VARCHAR(191) NOT NULL,
     "label" VARCHAR(255),
-    "value_json" JSONB NOT NULL,
     "type" "DataType" NOT NULL,
     "unit" VARCHAR(64),
     "stringValue" VARCHAR(255),
@@ -245,12 +257,20 @@ CREATE TABLE "variant_spec_values" (
 -- CreateTable
 CREATE TABLE "media" (
     "id" SERIAL NOT NULL,
-    "variant_id" INTEGER NOT NULL,
     "url" VARCHAR(255) NOT NULL,
     "is_primary" BOOLEAN NOT NULL DEFAULT false,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "media_variant" (
+    "id" SERIAL NOT NULL,
+    "media_id" INTEGER NOT NULL,
+    "variant_id" INTEGER NOT NULL,
+
+    CONSTRAINT "media_variant_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -296,7 +316,7 @@ CREATE TABLE "orders" (
     "user_id" INTEGER NOT NULL,
     "code" VARCHAR(50) NOT NULL,
     "status" "OrderStatus" NOT NULL DEFAULT 'pending',
-    "payment_method" VARCHAR(50),
+    "payment_account_id" INTEGER,
     "payment_status" "PaymentStatus" NOT NULL DEFAULT 'pending',
     "discount" DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     "shipping_fee" DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -328,7 +348,7 @@ CREATE TABLE "order_items" (
 CREATE TABLE "payment_transactions" (
     "id" SERIAL NOT NULL,
     "order_id" INTEGER NOT NULL,
-    "provider" VARCHAR(100),
+    "payment_method_id" INTEGER,
     "provider_payment_id" VARCHAR(100),
     "amount" DECIMAL(12,2) NOT NULL,
     "status" "PaymentTxnStatus" NOT NULL DEFAULT 'pending',
@@ -451,6 +471,33 @@ CREATE TABLE "order_devices" (
 );
 
 -- CreateTable
+CREATE TABLE "payment_methods" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(50) NOT NULL,
+    "description" TEXT,
+    "logo_url" VARCHAR(255),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "display_order" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "payment_methods_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "payment_accounts" (
+    "id" SERIAL NOT NULL,
+    "payment_method_id" INTEGER NOT NULL,
+    "account_name" VARCHAR(255) NOT NULL,
+    "account_number" VARCHAR(50) NOT NULL,
+    "bank_name" VARCHAR(100),
+    "bank_branch" VARCHAR(255),
+    "qr_code_url" VARCHAR(255),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "payment_accounts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_ProductSpecToProductSpecValue" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
@@ -465,6 +512,9 @@ CREATE TABLE "_VariantSpecToVariantSpecValue" (
 
     CONSTRAINT "_VariantSpecToVariantSpecValue_AB_pkey" PRIMARY KEY ("A","B")
 );
+
+-- CreateIndex
+CREATE INDEX "banners_product_id_idx" ON "banners"("product_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
@@ -575,7 +625,7 @@ CREATE INDEX "variant_spec_values_type_idx" ON "variant_spec_values"("type");
 CREATE INDEX "variant_spec_values_numericValue_idx" ON "variant_spec_values"("numericValue");
 
 -- CreateIndex
-CREATE INDEX "media_variant_id_idx" ON "media"("variant_id");
+CREATE UNIQUE INDEX "media_variant_media_id_variant_id_key" ON "media_variant"("media_id", "variant_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "coupons_code_key" ON "coupons"("code");
@@ -608,6 +658,9 @@ CREATE INDEX "idx_orders_status" ON "orders"("status");
 CREATE INDEX "idx_orders_created_at" ON "orders"("created_at");
 
 -- CreateIndex
+CREATE INDEX "orders_payment_account_id_idx" ON "orders"("payment_account_id");
+
+-- CreateIndex
 CREATE INDEX "order_items_order_id_idx" ON "order_items"("order_id");
 
 -- CreateIndex
@@ -615,6 +668,9 @@ CREATE INDEX "payment_transactions_order_id_idx" ON "payment_transactions"("orde
 
 -- CreateIndex
 CREATE INDEX "payment_transactions_status_idx" ON "payment_transactions"("status");
+
+-- CreateIndex
+CREATE INDEX "payment_transactions_payment_method_id_idx" ON "payment_transactions"("payment_method_id");
 
 -- CreateIndex
 CREATE INDEX "idx_reviews_product" ON "reviews"("product_id");
@@ -638,10 +694,19 @@ CREATE UNIQUE INDEX "devices_imei_key" ON "devices"("imei");
 CREATE UNIQUE INDEX "order_devices_device_id_key" ON "order_devices"("device_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "payment_methods_code_key" ON "payment_methods"("code");
+
+-- CreateIndex
+CREATE INDEX "payment_accounts_payment_method_id_idx" ON "payment_accounts"("payment_method_id");
+
+-- CreateIndex
 CREATE INDEX "_ProductSpecToProductSpecValue_B_index" ON "_ProductSpecToProductSpecValue"("B");
 
 -- CreateIndex
 CREATE INDEX "_VariantSpecToVariantSpecValue_B_index" ON "_VariantSpecToVariantSpecValue"("B");
+
+-- AddForeignKey
+ALTER TABLE "banners" ADD CONSTRAINT "banners_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "address" ADD CONSTRAINT "address_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -686,7 +751,10 @@ ALTER TABLE "product_spec_values" ADD CONSTRAINT "product_spec_values_product_id
 ALTER TABLE "variant_spec_values" ADD CONSTRAINT "variant_spec_values_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "media" ADD CONSTRAINT "media_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "media_variant" ADD CONSTRAINT "media_variant_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "media_variant" ADD CONSTRAINT "media_variant_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "coupons" ADD CONSTRAINT "coupons_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -704,6 +772,9 @@ ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_cart_id_fkey" FOREIGN KEY ("
 ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "orders" ADD CONSTRAINT "orders_payment_account_id_fkey" FOREIGN KEY ("payment_account_id") REFERENCES "payment_accounts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -711,6 +782,9 @@ ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_payment_method_id_fkey" FOREIGN KEY ("payment_method_id") REFERENCES "payment_methods"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -753,6 +827,9 @@ ALTER TABLE "order_devices" ADD CONSTRAINT "order_devices_order_item_id_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "order_devices" ADD CONSTRAINT "order_devices_device_id_fkey" FOREIGN KEY ("device_id") REFERENCES "devices"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payment_accounts" ADD CONSTRAINT "payment_accounts_payment_method_id_fkey" FOREIGN KEY ("payment_method_id") REFERENCES "payment_methods"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProductSpecToProductSpecValue" ADD CONSTRAINT "_ProductSpecToProductSpecValue_A_fkey" FOREIGN KEY ("A") REFERENCES "product_specs"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import { Toaster } from "sonner";
 
 export default function AdminLayout({ children }) {
   const [isDark, setIsDark] = useState(false);
@@ -56,7 +57,10 @@ export default function AdminLayout({ children }) {
           />
 
           {/* Content */}
-          <main className="">{children}</main>
+          <main className="">
+            {children} 
+            <Toaster richColors />
+          </main>
         </div>
       </div>
     </div>
