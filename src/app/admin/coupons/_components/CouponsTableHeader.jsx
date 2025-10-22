@@ -1,13 +1,13 @@
-export default function UsersTableHeader({
+export default function CouponsTableHeader({
   columnVisibility,
   sortConfig,
   selectedItems,
-  currentPageUsers,
+  currentPageCoupons,
   totalItems,
   onSort,
   onSelectAll,
 }) {
-  const currentPageIds = currentPageUsers.map((p) => p.id);
+  const currentPageIds = currentPageCoupons.map((p) => p.id);
   const allSelected = currentPageIds.every((id) => selectedItems.has(id));
   const someSelected = currentPageIds.some((id) => selectedItems.has(id));
 
@@ -47,51 +47,46 @@ export default function UsersTableHeader({
           </th>
         )}
 
-        {columnVisibility.name && (
+        {columnVisibility.code && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("name")}
+            onClick={() => onSort("code")}
           >
             <div className="flex items-center space-x-1">
-              <span>Tên người dùng</span>
-              <i className={getSortIcon("name")}></i>
+              <span>Mã giảm giá</span>
+              <i className={getSortIcon("code")}></i>
             </div>
           </th>
         )}
 
-
-        {columnVisibility.status && (
+        {columnVisibility.value && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("status")}
+            onClick={() => onSort("value")}
           >
             <div className="flex items-center space-x-1">
-              <span>Trạng thái</span>
-              <i className={getSortIcon("status")}></i>
+              <span>Giá trị</span>
+              <i className={getSortIcon("value")}></i>
             </div>
           </th>
         )}
 
-        {/* {columnVisibility.createdAt && (
+        {columnVisibility.type && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("createdAt")}
+            onClick={() => onSort("type")}
           >
             <div className="flex items-center space-x-1">
-              <span>Ngày tạo</span>
-              <i className={getSortIcon("createdAt")}></i>
+              <span>Loại</span>
+              <i className={getSortIcon("type")}></i>
             </div>
           </th>
         )}
 
-        {columnVisibility.rating && (
-          <th
-            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("rating")}
-          >
+        {columnVisibility.usageLimit && (
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
             <div className="flex items-center space-x-1">
-              <span>Đánh giá</span>
-              <i className={getSortIcon("rating")}></i>
+              <span>Lượt sử dụng</span>
             </div>
           </th>
         )}
@@ -106,16 +101,16 @@ export default function UsersTableHeader({
               <i className={getSortIcon("status")}></i>
             </div>
           </th>
-        )} */}
+        )}
 
-        {columnVisibility.createdAt && (
+        {columnVisibility.endsAt && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("createdAt")}
+            onClick={() => onSort("endsAt")}
           >
             <div className="flex items-center space-x-1">
-              <span>Ngày tạo</span>
-              <i className={getSortIcon("createdAt")}></i>
+              <span>Hết hạn</span>
+              <i className={getSortIcon("endsAt")}></i>
             </div>
           </th>
         )}

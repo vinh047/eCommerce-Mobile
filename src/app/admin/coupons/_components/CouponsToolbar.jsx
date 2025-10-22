@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 
-// Tùy chọn giả định cho User (Người dùng)
 const statusOptions = [
   { value: "active", label: "Hoạt động" },
   { value: "blocked", label: "Đã khóa" },
+  { value: "deleted", label: "Đã xóa" },
 ];
 
-/**
- * Component FilterDropdown được tái sử dụng để hiển thị các tùy chọn lọc dạng checkbox
- */
+const typeOptions = [
+  { value: "fixed", label: "Giảm cố định" },
+  { value: "percentage", label: "Giảm phần trăm" },
+];
+
 function FilterDropdown({
   label,
   options,
@@ -62,7 +64,7 @@ function FilterDropdown({
   );
 }
 
-export default function UsersToolbar({
+export default function CouponsToolbar({
   filters,
   onFiltersChange,
   onClearFilters,
@@ -79,7 +81,7 @@ export default function UsersToolbar({
     setSearchValue(value);
     onFiltersChange({
       ...filters,
-      search: value, 
+      search: value,
     });
   };
 
@@ -98,7 +100,7 @@ export default function UsersToolbar({
               type="text"
               value={searchValue}
               onChange={handleSearch}
-              placeholder="Tìm theo tên hoặc Email người dùng..."
+              placeholder="Tìm theo Mã giảm giá (Code)..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white"
             />
             <i className="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
@@ -107,11 +109,35 @@ export default function UsersToolbar({
 
         {/* Advanced Filters */}
         <div className="flex items-center space-x-3">
+          {/* Type Filter */}
+          <FilterDropdown
+            label="Loại"
+            options={typeOptions}
+            selectedValues={
+              Array.isArray(filters.type)
+                ? filters.type
+                : filters.type
+                ? [filters.type]
+                : []
+            }
+            onSelectionChange={(values) =>
+              onFiltersChange({ ...filters, type: values })
+            }
+            isOpen={openDropdown === "type"}
+            onToggle={() => toggleDropdown("type")}
+          />
+
           {/* Status Filter */}
           <FilterDropdown
             label="Trạng thái"
             options={statusOptions}
-            selectedValues={filters.status || []}
+            selectedValues={
+              Array.isArray(filters.status)
+                ? filters.status
+                : filters.status
+                ? [filters.status]
+                : []
+            }
             onSelectionChange={(values) =>
               onFiltersChange({ ...filters, status: values })
             }

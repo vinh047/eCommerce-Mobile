@@ -48,7 +48,7 @@ export default function UserTableRow({
           type="checkbox"
           checked={isSelected}
           onChange={(e) => onSelect(e.target.checked)}
-          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
         />
       </td>
 
@@ -134,21 +134,21 @@ export default function UserTableRow({
         <div className="flex justify-center space-x-1">
           <button
             onClick={onQuickView}
-            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400"
+            className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 cursor-pointer"
             title="Xem nhanh"
           >
             <Eye className="w-4 h-4" />
           </button>
           <button
             onClick={onEdit}
-            className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400"
+            className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 cursor-pointer"
             title="Chỉnh sửa"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
             onClick={onDelete}
-            className="p-1 text-red-600 hover:text-red-800"
+            className="p-1 text-red-600 hover:text-red-800 cursor-pointer" 
             title="Xóa"
           >
             <Trash className="w-4 h-4" />

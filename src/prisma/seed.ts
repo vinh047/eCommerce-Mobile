@@ -1,6 +1,16 @@
 // Xóa prisma/migrations
 // npx prisma migrate dev --name init
 // npx prisma migrate reset --force
+
+/*
+  Sửa dữ liệu trong schema.prisma
+  npx prisma migrate dev --name ten_moi
+ -> để cập nhật migrations
+
+  Chạy seed (nếu có thay đổi dữ liệu seed thì mới chạy lệnh này , nó vẫn giữ nguyên dữ liệu cũ trong db):
+  npx prisma db seed
+  
+*/
 import { PrismaClient, Prisma } from "@prisma/client";
 import {
   categories,
@@ -19,6 +29,7 @@ import {
   MediaArray,
   MediaVariant,
 } from "./seedData2";
+import { coupons, users } from "./seedData";
 
 const prisma = new PrismaClient();
 
@@ -28,6 +39,7 @@ async function main() {
   // --- 1. Xóa dữ liệu cũ ---
   // Xóa theo thứ tự ngược lại của các quan hệ để tránh lỗi khóa ngoại
   console.log("Đang xóa dữ liệu cũ...");
+  await prisma.user.deleteMany();
   await prisma.mediaVariant.deleteMany();
   await prisma.media.deleteMany();
   await prisma.variantSpecValue.deleteMany();
@@ -159,6 +171,45 @@ async function main() {
   await prisma.mediaVariant.createMany({
     data: MediaVariant, // Dùng trực tiếp mảng JSON bạn đã tạo
   });
+
+  // --- 12. Seed Users ---
+  console.log(`Đang seed Users...`);
+  for (const user of users) {
+    const createdUser = await prisma.user.create({
+      data: {
+        email: user.email,
+        passwordHash: user.passwordHash,
+        name: user.name,
+        avatar: user.avatar,
+        status: user.status,
+        createdAt: user.createdAt,
+        addresses: {
+          create: user.addresses,
+        },
+      },
+    });
+  }
+
+  // --- 13.Seeding Coupons ---
+  console.log(`Đang seed Coupons...`);
+
+  for (const coupon of coupons) {
+    await prisma.coupon.create({
+      data: {
+        code: coupon.code,
+        type: coupon.type,
+        value: new Prisma.Decimal(coupon.value),
+        minOrder: new Prisma.Decimal(coupon.minOrder || 0),
+        startsAt: coupon.startsAt ? new Date(coupon.startsAt) : null,
+        endsAt: coupon.endsAt ? new Date(coupon.endsAt) : null,
+        usageLimit: coupon.usageLimit ?? null,
+        used: coupon.used ?? 0,
+        status: coupon.status || "active",
+        categoryId: coupon.categoryId ?? null,
+        brandId: coupon.brandId ?? null,
+      },
+    });
+  }
 
   console.log(`✅ Quá trình seeding hoàn tất.`);
 }
