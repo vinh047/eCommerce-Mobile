@@ -97,8 +97,6 @@ export default function UsersTable({
                           : column === "email"
                           ? "Email"
                           : column === "status"
-                          ? "Đánh giá"
-                          : column === "status"
                           ? "Trạng thái"
                           : column === "createdAt"
                           ? "Ngày tạo"
@@ -123,10 +121,12 @@ export default function UsersTable({
             currentPageUsers={users}
             onSort={onSort}
             onSelectAll={handleSelectAll}
-          />
+          ></UsersTableHeader>
           <tbody>
             {loading ? (
-              <LoadingSkeleton columnVisibility={columnVisibility} />
+              <LoadingSkeleton
+                columnVisibility={columnVisibility}
+              ></LoadingSkeleton>
             ) : (
               users.map((user) => (
                 <UsersTableRow

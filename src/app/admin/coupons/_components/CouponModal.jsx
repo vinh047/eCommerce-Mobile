@@ -13,6 +13,8 @@ import {
   List,
   Shapes,
 } from "lucide-react";
+import { validateCoupon } from "../utils/couponValidator";
+import { toast } from "sonner";
 
 const statusOptions = [
   { value: "active", label: "Hoạt động" },
@@ -73,6 +75,11 @@ export default function CouponModal({ mode, coupon, onClose, onSave }) {
 
     // Xóa trường used khỏi payload nếu không muốn gửi lên
     delete payload.used;
+    const validationError = validateCoupon(payload);
+    if (validationError !== null) {
+      toast.error(validationError);
+      return; 
+    }
 
     console.log("Submitting form data:", payload);
     onSave(payload);

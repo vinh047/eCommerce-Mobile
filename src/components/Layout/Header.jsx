@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBars,
-  faChevronRight,
-  faChevronDown,
-  faSearch,
-  faPlus,
-  faBell,
-  faSun,
-  faMoon,
-  faUser,
-  faCog,
-  faSignOutAlt,
-} from "@fortawesome/free-solid-svg-icons";
+  Menu,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  Plus,
+  Bell,
+  Sun,
+  Moon,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react";
 
 const userAvatar =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%234F46E5'/%3E%3Ctext x='16' y='21' text-anchor='middle' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E";
@@ -33,10 +32,7 @@ export default function Header({ isDark, toggleTheme, toggleSidebar }) {
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
               onClick={toggleSidebar}
             >
-              <FontAwesomeIcon
-                icon={faBars}
-                className="text-gray-600 dark:text-gray-400"
-              />
+              <Menu className="text-gray-600 dark:text-gray-400" />
             </button>
 
             {/* Breadcrumb */}
@@ -44,10 +40,7 @@ export default function Header({ isDark, toggleTheme, toggleSidebar }) {
               <a href="#" className="hover:text-blue-600">
                 Admin
               </a>
-              <FontAwesomeIcon
-                icon={faChevronRight}
-                className="text-xs text-gray-400"
-              />
+              <ChevronRight className="text-xs text-gray-400" />
               <span className="text-gray-900 dark:text-white">Dashboard</span>
             </nav>
           </div>
@@ -60,21 +53,18 @@ export default function Header({ isDark, toggleTheme, toggleSidebar }) {
                 placeholder="Tìm email, mã đơn, SKU, IMEI..."
                 className="w-80 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <FontAwesomeIcon
-                icon={faSearch}
-                className="absolute left-3 top-3 text-gray-400"
-              />
+              <Search className="absolute left-3 top-3 text-gray-400" />
             </div>
 
             {/* Create Button */}
             <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
-              <FontAwesomeIcon icon={faPlus} />
+              <Plus />
               <span className="hidden md:inline">Tạo mới</span>
             </button>
 
             {/* Notifications */}
             <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              <FontAwesomeIcon icon={faBell} className="text-xl" />
+              <Bell className="text-xl" />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 3
               </span>
@@ -86,11 +76,7 @@ export default function Header({ isDark, toggleTheme, toggleSidebar }) {
               className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               onClick={toggleTheme}
             >
-              {isDark ? (
-                <FontAwesomeIcon icon={faSun} />
-              ) : (
-                <FontAwesomeIcon icon={faMoon} />
-              )}
+              {isDark ? <Sun /> : <Moon />}
             </button>
 
             {/* User Menu */}
@@ -113,37 +99,31 @@ export default function Header({ isDark, toggleTheme, toggleSidebar }) {
                     admin@mobilestore.com
                   </p>
                 </div>
-                <FontAwesomeIcon
-                  icon={faChevronDown}
-                  className="text-xs text-gray-400"
-                />
+                <ChevronDown className="text-xs text-gray-400" />
               </button>
 
               {isUserMenuOpen && (
-                <div
-                  id="userMenu"
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
-                >
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                   >
-                    <FontAwesomeIcon icon={faUser} className="w-4 mr-2" />
+                    <User className="w-4 mr-2" />
                     Hồ sơ
                   </a>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
                   >
-                    <FontAwesomeIcon icon={faCog} className="w-4 mr-2" />
+                    <Settings className="w-4 mr-2" />
                     Cài đặt
                   </a>
                   <hr className="my-2 border-gray-200 dark:border-gray-700" />
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                   >
-                    <FontAwesomeIcon icon={faSignOutAlt} className="w-4 mr-2" />
+                    <LogOut className="w-4 mr-2" />
                     Đăng xuất
                   </a>
                 </div>

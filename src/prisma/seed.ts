@@ -29,7 +29,7 @@ import {
   MediaArray,
   MediaVariant,
 } from "./seedData2";
-import { coupons, users } from "./seedData";
+import { coupons, permissions, rolePermissions, roles, staffRoles, staffs, users } from "./seedData";
 
 const prisma = new PrismaClient();
 
@@ -189,6 +189,50 @@ async function main() {
       },
     });
   }
+
+  // --- 14. Seed dữ liệu liên quan đến Permissions, Roles, Staffs ---
+  
+  // 1 Permissions
+  console.log("→ Seeding Permissions...");
+  await prisma.permission.createMany({
+    data: permissions,
+    skipDuplicates: true,
+  });
+
+  // 2️ Roles
+  console.log("→ Seeding Roles...");
+  await prisma.role.createMany({
+    data: roles,
+    skipDuplicates: true,
+  });
+
+  // 3️ RolePermissions
+  console.log("→ Seeding RolePermissions...");
+  await prisma.rolePermission.createMany({
+    data: rolePermissions,
+    skipDuplicates: true,
+  });
+
+  // 4️ Staffs
+  console.log("→ Seeding Staffs...");
+  await prisma.staff.createMany({
+    data: staffs.map((s) => ({
+      email: s.email,
+      passwordHash: s.passwordHash,
+      name: s.name,
+      avatar: s.avatar,
+      status: s.status,
+      createdAt: s.createdAt,
+    })),
+    skipDuplicates: true,
+  });
+
+  // 5️ StaffRoles
+  console.log("→ Seeding StaffRoles...");
+  await prisma.staffRole.createMany({
+    data: staffRoles,
+    skipDuplicates: true,
+  });
 
   console.log(`✅ Quá trình seeding hoàn tất.`);
 }
