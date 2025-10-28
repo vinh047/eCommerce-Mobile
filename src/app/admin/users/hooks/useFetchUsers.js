@@ -1,54 +1,38 @@
-// hooks/useFetchUsers.js (Phiên bản Hoàn Chỉnh)
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import usersApi from "@/lib/api/usersApi"; // Giả định đã import usersApi
-import { useTableState } from "@/hooks/useTableState";
+import usersApi from "@/lib/api/usersApi";
+import { useTableState } from "@/hooks/useTableState"; 
 import { useUserMutations } from "./useUserMutations";
 import { useSelection } from "@/hooks/useSelection";
-import { useUrlSync } from "@/hooks/useUrlSync";
-
-
 
 export function useFetchUsers(initialUsers = {}) {
-  const didMount = useRef(false);
-
   // =========================================================
   // 1. INITIAL STATE & COMPOSITION (Kết hợp các hook tái sử dụng)
   // =========================================================
 
-  // Định nghĩa trạng thái khởi tạo chi tiết cho Users
-  const userInitialState = {
-    page: initialUsers.page,
-    pageSize: initialUsers.pageSize,
-    filters: {
-      search: initialUsers.filters?.search || "",
-      status: initialUsers.filters?.status || [],
-    },
-    sortConfig: initialUsers.sortConfig,
-  };
-
+  const userInitialState = {};
   const tableState = useTableState(userInitialState);
-  const { skipNextEffect } = useUrlSync(tableState);
 
   const {
     selectedItems,
     deselectAll,
     selectItem,
     selectAllForFilter,
-    selectPage, 
-  } = useSelection();
+    selectPage,
+    selectAll,
+  } = useSelection({ api: usersApi });
 
   // =========================================================
   // 2. STATE CỤ THỂ (READ State)
   // =========================================================
 
   const [users, setUsers] = useState(initialUsers.data || []);
-  const [loading, setLoading] = useState(false);
   const [totalItems, setTotalItems] = useState(
     initialUsers.pagination?.totalItems || 0
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   // =========================================================
   // 3. LOGIC FETCHING (READ Function)
@@ -56,12 +40,12 @@ export function useFetchUsers(initialUsers = {}) {
 
   const fetchUsers = useCallback(
     async (params) => {
-      setLoading(true);
+      setIsLoading(true);
       try {
-        // Lấy params từ tableState hoặc từ overrides nếu được truyền vào
+        // Lấy params mới nhất từ tableState (được đọc từ URL)
         const apiParams = params || tableState.getQueryParams();
 
-        const res = await usersApi.getUsers(apiParams); // Gọi API
+        const res = await usersApi.getUsers(apiParams);
 
         setUsers(res.data);
         setTotalItems(res.pagination?.totalItems ?? res.data.length);
@@ -72,27 +56,28 @@ export function useFetchUsers(initialUsers = {}) {
         console.error("Fetch users failed:", err);
         toast.error("Không thể tải danh sách người dùng.");
       } finally {
-        setLoading(false);
+        setIsLoading(false); // Kết thúc loading
       }
     },
     [deselectAll, tableState]
-  ); // Phụ thuộc vào tableState để đảm bảo fetchUsers mới nhất
+  );
 
   // =========================================================
   // 4. EFFECT FETCH (Side Effect)
   // =========================================================
 
+  // Effect 1: Đồng bộ dữ liệu khởi tạo (nếu có, ví dụ từ SSR)
+  useEffect(() => {
+    setUsers(initialUsers.data || []);
+    setTotalItems(initialUsers.pagination?.totalItems || 0);
+  }, [initialUsers]);
 
   // =========================================================
   // 5. COMPOSITION: Kết hợp Mutators (WRITE Functions)
   // =========================================================
 
   const { isMutating, deleteUser, saveUser, handleBulkAction } =
-    useUserMutations(
-      fetchUsers, // Hàm callback để refresh dữ liệu sau mutation thành công
-      selectedItems, // State cần thiết cho Bulk Action
-      deselectAll // Handler cần thiết cho Bulk Action
-    );
+    useUserMutations(fetchUsers, selectedItems, deselectAll);
 
   // =========================================================
   // 6. EXPORT API
@@ -101,9 +86,8 @@ export function useFetchUsers(initialUsers = {}) {
   return {
     // Data (READ)
     users,
-    // Loading tổng hợp: Đang tải dữ liệu, hoặc đang có mutation (CRUD)
-    loading: loading || isMutating,
     totalItems,
+    isLoading, // Trạng thái Loading
 
     // Table State & Handlers (SORT/FILTER/PAGINATION/URL)
     ...tableState,
@@ -111,11 +95,13 @@ export function useFetchUsers(initialUsers = {}) {
     // Selection State & Handlers
     selectedItems,
     selectItem,
-    selectPage, // Chọn trang hiện tại
+    selectPage,
+    selectAll,
+    deselectAll,
     selectAllForFilter,
 
     // CRUD Handlers (WRITE)
-    fetchUsers, // Vẫn export để có thể gọi fetch thủ công (ví dụ: nút Refresh)
+    fetchUsers,
     deleteUser,
     saveUser,
     handleBulkAction,

@@ -24,13 +24,25 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
+    // Lấy params cơ bản
+    const sort = searchParams.get("sort") || "";
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const search = searchParams.get("search") || "";
-    const statusQuery = searchParams.get("status") || "";
-    const sortBy = searchParams.get("sortBy") || "createdAt";
-    const sortOrder = searchParams.get("sortOrder") || "desc";
+    const statusQuery = searchParams.get("statusQuery") || "";
 
+    let sortBy = "id";
+    let sortOrder: "asc" | "desc" = "desc";
+
+    if (sort) {
+      const [column, direction] = sort.split(":");
+      sortBy = column || "id";
+      sortOrder = direction === "asc" ? "asc" : "desc";
+    }
+
+    // ==========================================================
+    // WHERE điều kiện lọc
+    // ==========================================================
     const where: any = {
       NOT: { status: "deleted" }, // tránh lấy user bị xoá
     };
@@ -47,7 +59,11 @@ export async function GET(req: Request) {
       where.status = { in: statuses };
     }
 
+    // ==========================================================
+    // QUERY dữ liệu
+    // ==========================================================
     const totalItems = await prisma.user.count({ where });
+
     const data = await prisma.user.findMany({
       where,
       skip: (page - 1) * pageSize,
@@ -56,6 +72,9 @@ export async function GET(req: Request) {
       include: { addresses: true },
     });
 
+    // ==========================================================
+    // TRẢ VỀ KẾT QUẢ
+    // ==========================================================
     return NextResponse.json({
       data,
       pagination: {
@@ -64,8 +83,13 @@ export async function GET(req: Request) {
         totalItems,
         totalPages: Math.ceil(totalItems / pageSize),
       },
+      filters: {
+        search,
+        statusQuery: statusQuery ? statusQuery.split(",") : [],
+      },
     });
   } catch (err: any) {
+    console.error("Error fetching users:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -6,12 +6,10 @@ import Pagination from "../../../../components/common/Pagination";
 import { User } from "lucide-react";
 import UsersTableHeader from "./UsersTableHeader";
 import UsersTableRow from "./UsersTableRow";
-import LoadingSkeleton from "../../../../components/common/LoadingSkeleton";
 
 export default function UsersTable({
   users,
   selectedItems,
-  loading,
   sortConfig,
   currentPage,
   pageSize,
@@ -123,10 +121,15 @@ export default function UsersTable({
             onSelectAll={handleSelectAll}
           ></UsersTableHeader>
           <tbody>
-            {loading ? (
-              <LoadingSkeleton
-                columnVisibility={columnVisibility}
-              ></LoadingSkeleton>
+            {users.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                >
+                  Không có người dùng nào để hiển thị.
+                </td>
+              </tr>
             ) : (
               users.map((user) => (
                 <UsersTableRow

@@ -46,7 +46,7 @@ export default function UserBulkActionsBar({
           {/* Chọn tất cả */}
           <button
             onClick={onSelectAll}
-            className="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center"
+            className="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center cursor-pointer"
           >
             <MousePointerSquareDashed className="w-4 h-4 mr-1" />
             Chọn tất cả
@@ -55,7 +55,7 @@ export default function UserBulkActionsBar({
           {/* Bỏ chọn */}
           <button
             onClick={onDeselectAll}
-            className="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center"
+            className="text-blue-600 dark:text-blue-400 hover:underline text-sm flex items-center cursor-pointer"
           >
             <CornerDownLeft className="w-4 h-4 mr-1" />
             Bỏ chọn

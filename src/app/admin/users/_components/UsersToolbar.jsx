@@ -77,114 +77,69 @@ function FilterDropdown({ label, options, selectedValues, onSelectionChange }) {
   );
 }
 
-// --- Component Thanh Công cụ (Client Component) ---
-export default function UsersToolbar() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export default function UsersToolbar({
+  filters,
+  onFilterChange,
+  statusOptions = [
+    { value: "active", label: "Hoạt động" },
+    { value: "blocked", label: "Đã khóa" },
+  ],
+}) {
+  const [searchValue, setSearchValue] = useState(filters.search || "");
+  const [status, setStatus] = useState(filters.statusQuery || []);
+  const debounceRef = useRef(null);
 
-  // Khởi tạo state: Lấy search từ 'search', và status (multi-value) từ 'status' (CSV)
-  const initialStatusFromURL = searchParams.get("status");
-  const initialStatusArray = initialStatusFromURL
-    ? initialStatusFromURL.split(",")
-    : [];
-
-  const [searchValue, setSearchValue] = useState(
-    searchParams.get("search") || ""
-  );
-  // Dùng state là mảng để dễ dàng quản lý checkbox
-  const [status, setStatus] = useState(initialStatusArray);
-
-  // Kỹ thuật Debouncing cho Search
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      // Chỉ cập nhật URL sau khi người dùng ngừng gõ 500ms
-      updateURLParams({ search: searchValue });
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchValue]);
-
-  // Hàm SỬA LỖI VÀ CẬP NHẬT URL (Sử dụng CSV cho 'status')
-  const updateURLParams = (newParams) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    Object.entries(newParams).forEach(([key, value]) => {
-      // Xử lý giá trị rỗng/null/mảng rỗng
-      if (!value || (Array.isArray(value) && value.length === 0)) {
-        params.delete(key);
-      } else {
-        // Luôn xóa key cũ trước khi set mới
-        params.delete(key);
-
-        if (Array.isArray(value)) {
-          // *** SỬA LỖI TẠI ĐÂY: Dùng join(',') để tạo CSV ***
-          // Ví dụ: ['active', 'blocked'] -> 'active,blocked'
-          params.set(key, value.join(","));
-        } else {
-          // Xử lý giá trị đơn (như 'search')
-          params.set(key, value);
-        }
-      }
-    });
-
-    router.replace(`?${params.toString()}`);
-  };
-
-  // Chỉ cập nhật state (URL sẽ được cập nhật trong useEffect)
   const handleSearchChange = (e) => {
-    setSearchValue(e.target.value);
+    const value = e.target.value;
+    setSearchValue(value);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      onFilterChange({
+        ...filters,
+        search: value,
+      });
+    }, 500);
   };
 
-  // Cập nhật state và URL ngay lập tức cho Dropdown
   const handleStatusChange = (values) => {
     setStatus(values);
-    updateURLParams({ status: values });
+    onFilterChange({
+      ...filters,
+      statusQuery: values,
+    });
   };
 
   const handleClearFilters = () => {
     setSearchValue("");
     setStatus([]);
-    // Cập nhật URL ngay lập tức với giá trị rỗng
-    updateURLParams({ search: "", status: [] });
+    onFilterChange({ search: "", statusQuery: [] });
   };
 
   return (
-    // Áp dụng Tailwind CSS chi tiết từ File 2
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6 shadow-md">
-      <div className="flex flex-wrap items-center gap-4">
-        {/* Search Input */}
-        <div className="flex-1 min-w-64">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder="Tìm theo tên hoặc Email người dùng..."
-              // Áp dụng Tailwind CSS chi tiết từ File 2
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white transition duration-150"
-            />
-            {/* Icon Tìm kiếm */}
-            <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-          </div>
-        </div>
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+      <div className="flex gap-4 items-center">
+        <input
+          value={searchValue}
+          onChange={handleSearchChange}
+          placeholder="Tìm kiếm người dùng..."
+          className="flex-1 rounded-lg px-3 py-2 dark:bg-gray-700"
+        />
 
-        {/* Bộ lọc và Xóa */}
-        <div className="flex items-center space-x-3">
-          <FilterDropdown
-            label="Trạng thái"
-            options={statusOptions}
-            selectedValues={status}
-            onSelectionChange={handleStatusChange}
-          />
+        <FilterDropdown
+          label="Trạng thái"
+          options={statusOptions}
+          selectedValues={status}
+          onSelectionChange={handleStatusChange}
+        />
 
-          <button
-            onClick={handleClearFilters}
-            // Áp dụng Tailwind CSS chi tiết từ File 2
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition duration-150 ease-in-out font-medium"
-          >
-            <i className="fas fa-times mr-2"></i>Xóa bộ lọc
-          </button>
-        </div>
+        <button
+          onClick={handleClearFilters}
+          className="text-gray-500 hover:text-red-500 transition cursor-pointer"
+        >
+          <i className="fas fa-times mr-1" /> Xóa bộ lọc
+        </button>
       </div>
     </div>
   );
