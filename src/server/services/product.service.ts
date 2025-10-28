@@ -335,4 +335,25 @@ export const productService = {
       },
     };
   },
+  async getProductBySlug(slug: string) {
+    return prisma.product.findUnique({
+      where: { slug },
+      include: {
+        brand: true, // Thông tin thương hiệu
+        category: true, // Thông tin danh mục
+        productSpecValues: true, // Các thông số kỹ thuật của sản phẩm
+        variants: {
+          include: {
+            // MediaVariant nối giữa Variant và Media
+            MediaVariant: {
+              include: {
+                Media: true, // Lấy ảnh/video của biến thể
+              },
+            },
+            variantSpecValues: true, // Lấy thông số riêng của biến thể (màu, dung lượng,…)
+          },
+        },
+      },
+    });
+  },
 };
