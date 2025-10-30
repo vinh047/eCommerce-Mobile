@@ -67,4 +67,25 @@ export const productController = {
       return new NextResponse("Internal Server Error", { status: 500 });
     }
   },
+
+  async getBySlug(req: NextRequest, { params }: { params: { slug: string } }) {
+    try {
+      const { slug } =params;
+
+      if (!slug) {
+        return Response.json({ error: "Missing slug" }, { status: 400 });
+      }
+
+      const product = await productService.getProductBySlug(slug);
+
+      if (!product) {
+        return Response.json({ error: "Product not found" }, { status: 404 });
+      }
+
+      return Response.json(product, { status: 200 });
+    } catch (err: any) {
+      console.error("getBySlug error:", err);
+      return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  },
 };

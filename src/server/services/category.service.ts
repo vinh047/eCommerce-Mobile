@@ -19,7 +19,7 @@ export const categoryService = {
     return await prisma.category.findMany({
       where: { isActive: true, templates: { some: {} } },
       orderBy: { id: "asc" },
-    });
+    }); 
   },
 
   async getCategoryBySlug(slug: string) {
