@@ -1,0 +1,267 @@
+/* Custom styles for admin product page */
+
+/* Sidebar transition */
+.sidebar-transition {
+  transition: all 0.3s ease;
+}
+
+/* Table row hover */
+.table-row:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.dark .table-row:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Rating stars */
+.rating-stars {
+  color: #fbbf24;
+}
+
+/* Badge styles */
+.badge-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.dark .badge-active {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
+.dark .badge-inactive {
+  background: #374151;
+  color: #9ca3af;
+}
+
+/* Slide over modal */
+.slideover {
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.slideover.open {
+  transform: translateX(0);
+}
+
+/* Overlay */
+.overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.dark .overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Custom checkbox */
+.checkbox-custom {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-custom:checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.checkbox-custom:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 1px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.dark .checkbox-custom {
+  border-color: #4b5563;
+}
+
+.dark .checkbox-custom:checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Filter dropdown */
+.filter-dropdown {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.filter-dropdown.open {
+  max-height: 300px;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Toast animations */
+.toast {
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+/* Fade in animation */
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Sort icon animation */
+.sort-icon {
+  transition: transform 0.2s ease;
+}
+
+.sort-asc .sort-icon {
+  transform: rotate(180deg);
+}
+
+/* Bulk actions bar */
+.bulk-actions {
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.bulk-actions.show {
+  transform: translateY(0);
+}
+
+/* Product image gradients */
+.product-image {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.product-image-2 {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.product-image-3 {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.product-image-4 {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.product-image-5 {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+/* Tab content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Tab button */
+.tab-button {
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-button.active {
+  border-bottom-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.dark .tab-button.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+/* Scrollbar styling */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 3px;
+}
+
+.dark .scrollbar-thin {
+  scrollbar-color: #4a5568 transparent;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+}
+
+/* Ẩn scrollbar trên Chrome, Safari */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ẩn scrollbar trên Firefox */
+.scrollbar-none {
+  scrollbar-width: none;
+}
