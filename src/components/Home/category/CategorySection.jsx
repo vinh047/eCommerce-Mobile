@@ -27,7 +27,7 @@ async function CategorySection({ category, products }) {
         <CategoryProductsDelay
           title={category.name}
           products={products}
-          delay={100}
+          delay={10000}
         />
       </Suspense>
     </section>

@@ -1,15 +1,17 @@
+// src/pages/permissions/_components/PermissionsTable.jsx
 "use client";
 
 import { useState } from "react";
 
 import Pagination from "../../../../components/common/Pagination";
-import { Tag } from "lucide-react";
-import CouponsTableHeader from "./CouponsTableHeader";
-import CouponsTableRow from "./CouponsTableRow";
+// Import icons cần thiết
+import { Shield } from "lucide-react";
+import PermissionsTableHeader from "./PermissionsTableHeader"; // Đã tạo ở trên
+import PermissionsTableRow from "./PermissionsTableRow"; // Cần tạo thêm
 import LoadingSkeleton from "../../../../components/common/LoadingSkeleton";
 
-export default function CouponsTable({
-  coupons,
+export default function PermissionsTable({
+  permissions, // Danh sách Quyền hạn
   selectedItems,
   loading,
   sortConfig,
@@ -18,20 +20,17 @@ export default function CouponsTable({
   totalItems,
   onSelectItem,
   onSort,
-  onQuickView,
-  onEditCoupon,
-  onDeleteCoupon,
+  onEditPermission, // Thay thế onEditCoupon
+  onDeletePermission, // Thay thế onDeleteCoupon
   onPageChange,
   onPageSizeChange,
 }) {
   const [columnVisibility, setColumnVisibility] = useState({
     id: true,
-    code: true,
-    value: true,
-    type: true,
-    usageLimit: true,
-    status: true,
-    endsAt: true,
+    key: true,
+    name: true,
+    description: true,
+    createdAt: true,
   });
 
   const [showColumnFilter, setShowColumnFilter] = useState(false);
@@ -43,14 +42,32 @@ export default function CouponsTable({
     }));
   };
 
+  // Logic chọn tất cả trên trang hiện tại
   const handleSelectAll = () => {
-    const currentPageIds = coupons.map((c) => c.id);
+    const currentPageIds = permissions.map((p) => p.id);
     const allSelected = currentPageIds.every((id) => selectedItems.has(id));
 
     if (allSelected) {
-      coupons.forEach((coupon) => onSelectItem(coupon.id, false));
+      permissions.forEach((permission) => onSelectItem(permission.id, false));
     } else {
-      coupons.forEach((coupon) => onSelectItem(coupon.id, true));
+      permissions.forEach((permission) => onSelectItem(permission.id, true));
+    }
+  };
+
+  const getColumnName = (column) => {
+    switch (column) {
+      case "id":
+        return "ID";
+      case "key":
+        return "Key";
+      case "name":
+        return "Tên";
+      case "description":
+        return "Mô tả";
+      case "createdAt":
+        return "Ngày tạo";
+      default:
+        return column;
     }
   };
 
@@ -60,10 +77,10 @@ export default function CouponsTable({
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Danh sách Mã giảm giá
+            Danh sách Quyền hạn
           </h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Tổng: {totalItems} mã giảm giá
+            Tổng: {totalItems} quyền hạn
           </span>
         </div>
         <div className="flex items-center space-x-2">
@@ -92,21 +109,7 @@ export default function CouponsTable({
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <span className="text-sm dark:text-white capitalize">
-                        {column === "id"
-                          ? "ID"
-                          : column === "code"
-                          ? "Mã giảm giá"
-                          : column === "value"
-                          ? "Giá trị"
-                          : column === "type"
-                          ? "Loại"
-                          : column === "usageLimit"
-                          ? "Giới hạn"
-                          : column === "status"
-                          ? "Trạng thái"
-                          : column === "endsAt"
-                          ? "Hết hạn"
-                          : column}
+                        {getColumnName(column)}
                       </span>
                     </label>
                   ))}
@@ -120,28 +123,28 @@ export default function CouponsTable({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <CouponsTableHeader
+          <PermissionsTableHeader
             columnVisibility={columnVisibility}
             sortConfig={sortConfig}
             selectedItems={selectedItems}
-            currentPageCoupons={coupons}
+            currentPagePermissions={permissions}
             onSort={onSort}
             onSelectAll={handleSelectAll}
           />
           <tbody>
-            {loading || coupons.length === 0 ? (
+            {loading ? (
               <LoadingSkeleton columnVisibility={columnVisibility} />
             ) : (
-              coupons.map((coupon) => (
-                <CouponsTableRow
-                  key={coupon.id}
-                  coupon={coupon}
+              permissions.map((permission) => (
+                <PermissionsTableRow
+                  key={permission.id}
+                  permission={permission}
                   columnVisibility={columnVisibility}
-                  isSelected={selectedItems.has(coupon.id)}
-                  onSelect={(selected) => onSelectItem(coupon.id, selected)}
-                  onQuickView={() => onQuickView(coupon.id)}
-                  onEdit={() => onEditCoupon(coupon.id)}
-                  onDelete={() => onDeleteCoupon(coupon.id)}
+                  isSelected={selectedItems.has(permission.id)}
+                  onSelect={(selected) => onSelectItem(permission.id, selected)}
+                  // Không dùng QuickView cho Permission, dùng Edit trực tiếp
+                  onEdit={() => onEditPermission(permission.id)}
+                  onDelete={() => onDeletePermission(permission.id)}
                 />
               ))
             )}
@@ -156,7 +159,7 @@ export default function CouponsTable({
         totalItems={totalItems}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
-        label="mã giảm giá"
+        label="quyền hạn"
       />
     </div>
   );

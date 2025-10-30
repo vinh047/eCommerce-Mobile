@@ -486,3 +486,100 @@ export const coupons = [
     brandId: null,
   },
 ];
+
+export const staffs = [
+  {
+    id: 1,
+    email: "admin@fastfood.vn",
+    passwordHash: "$2b$10$hashed_admin_password", // bcrypt hash
+    name: "Quản trị viên",
+    avatar: "/avatars/admin.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+  {
+    id: 2,
+    email: "staff1@fastfood.vn",
+    passwordHash: "$2b$10$hashed_staff1_password",
+    name: "Nhân viên bán hàng",
+    avatar: "/avatars/staff1.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+  {
+    id: 3,
+    email: "inventory@fastfood.vn",
+    passwordHash: "$2b$10$hashed_inventory_password",
+    name: "Nhân viên kho",
+    avatar: "/avatars/inventory.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+];
+
+export const roles = [
+  { id: 1, name: "Admin", createdAt: new Date() },
+  { id: 2, name: "Staff", createdAt: new Date() },
+  { id: 3, name: "Inventory", createdAt: new Date() },
+];
+
+export const permissions = [
+  {
+    id: 1,
+    key: "view_dashboard",
+    name: "Xem thống kê",
+    description: "Cho phép xem trang tổng quan",
+    createdAt: new Date(),
+  },
+  {
+    id: 2,
+    key: "manage_staffs",
+    name: "Quản lý nhân viên",
+    description: "Thêm, sửa, xoá nhân viên",
+    createdAt: new Date(),
+  },
+  {
+    id: 3,
+    key: "manage_products",
+    name: "Quản lý sản phẩm",
+    description: "Thêm, sửa, xoá sản phẩm",
+    createdAt: new Date(),
+  },
+  {
+    id: 4,
+    key: "manage_orders",
+    name: "Quản lý đơn hàng",
+    description: "Xử lý đơn hàng, xem lịch sử",
+    createdAt: new Date(),
+  },
+  {
+    id: 5,
+    key: "manage_inventory",
+    name: "Quản lý kho",
+    description: "Nhập xuất nguyên liệu, xem tồn kho",
+    createdAt: new Date(),
+  },
+];
+
+export const rolePermissions = [
+  // Admin: full quyền
+  ...permissions.map((p) => ({
+    roleId: 1,
+    permissionId: p.id,
+    grantedAt: new Date(),
+  })),
+
+  // Staff: chỉ quản lý đơn hàng + xem dashboard
+  { roleId: 2, permissionId: 1, grantedAt: new Date() },
+  { roleId: 2, permissionId: 4, grantedAt: new Date() },
+
+  // Inventory: chỉ quản lý kho
+  { roleId: 3, permissionId: 1, grantedAt: new Date() },
+  { roleId: 3, permissionId: 5, grantedAt: new Date() },
+];
+
+export const staffRoles = [
+  { staffId: 1, roleId: 1, assignedAt: new Date() }, // admin
+  { staffId: 2, roleId: 2, assignedAt: new Date() }, // nhân viên bán hàng
+  { staffId: 3, roleId: 3, assignedAt: new Date() }, // nhân viên kho
+];

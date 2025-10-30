@@ -6,12 +6,10 @@ import Pagination from "../../../../components/common/Pagination";
 import { User } from "lucide-react";
 import UsersTableHeader from "./UsersTableHeader";
 import UsersTableRow from "./UsersTableRow";
-import LoadingSkeleton from "../../../../components/common/LoadingSkeleton";
 
 export default function UsersTable({
   users,
   selectedItems,
-  loading,
   sortConfig,
   currentPage,
   pageSize,
@@ -97,8 +95,6 @@ export default function UsersTable({
                           : column === "email"
                           ? "Email"
                           : column === "status"
-                          ? "Đánh giá"
-                          : column === "status"
                           ? "Trạng thái"
                           : column === "createdAt"
                           ? "Ngày tạo"
@@ -123,10 +119,17 @@ export default function UsersTable({
             currentPageUsers={users}
             onSort={onSort}
             onSelectAll={handleSelectAll}
-          />
+          ></UsersTableHeader>
           <tbody>
-            {loading ? (
-              <LoadingSkeleton columnVisibility={columnVisibility} />
+            {users.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-6 py-4 text-center text-gray-500 dark:text-gray-400"
+                >
+                  Không có người dùng nào để hiển thị.
+                </td>
+              </tr>
             ) : (
               users.map((user) => (
                 <UsersTableRow
@@ -135,8 +138,8 @@ export default function UsersTable({
                   columnVisibility={columnVisibility}
                   isSelected={selectedItems.has(user.id)}
                   onSelect={(selected) => onSelectItem(user.id, selected)}
-                  onQuickView={() => onQuickView(user.id)}
-                  onEdit={() => onEditUser(user.id)}
+                  onQuickView={() => onQuickView(user)}
+                  onEdit={() => onEditUser(user)}
                   onDelete={() => onDeleteUser(user.id)}
                 />
               ))

@@ -1,56 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
-// Tùy chọn giả định cho User (Người dùng)
+// --- Dữ liệu Tùy chọn ---
 const statusOptions = [
   { value: "active", label: "Hoạt động" },
   { value: "blocked", label: "Đã khóa" },
 ];
 
-/**
- * Component FilterDropdown được tái sử dụng để hiển thị các tùy chọn lọc dạng checkbox
- */
-function FilterDropdown({
-  label,
-  options,
-  selectedValues,
-  onSelectionChange,
-  isOpen,
-  onToggle,
-}) {
-  const handleCheckboxChange = (value, checked) => {
-    let newValues;
-    if (checked) {
-      newValues = [...selectedValues, value];
-    } else {
-      newValues = selectedValues.filter((v) => v !== value);
+// --- Component Dropdown Lọc (Client Component) ---
+function FilterDropdown({ label, options, selectedValues, onSelectionChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  // Đóng dropdown khi click bên ngoài
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  const handleCheckboxChange = (value, checked) => {
+    const newValues = checked
+      ? [...selectedValues, value]
+      : selectedValues.filter((v) => v !== value);
     onSelectionChange(newValues);
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
-        onClick={onToggle}
-        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2 bg-white dark:bg-gray-700 dark:text-white cursor-pointer"
+        onClick={toggleDropdown}
+        // Áp dụng Tailwind CSS chi tiết từ File 2
+        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2 bg-white dark:bg-gray-700 dark:text-white cursor-pointer transition duration-150 ease-in-out"
       >
         <span>{label}</span>
-        <i className="fas fa-chevron-down text-sm"></i>
+        <i
+          className={`fas fa-chevron-down text-sm transition-transform ${
+            isOpen ? "rotate-180" : "rotate-0"
+          }`}
+        ></i>
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
+        // Áp dụng Tailwind CSS chi tiết từ File 2
+        <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl z-20">
           <div className="p-3 space-y-2">
             {options.map((option) => (
-              <label key={option.value} className="flex items-center space-x-2">
+              <label
+                key={option.value}
+                className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-1 -m-1 transition duration-100"
+              >
                 <input
                   type="checkbox"
                   checked={selectedValues.includes(option.value)}
                   onChange={(e) =>
                     handleCheckboxChange(option.value, e.target.checked)
                   }
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  // Áp dụng Tailwind CSS chi tiết từ File 2
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500"
                 />
                 <span className="text-sm dark:text-white">{option.label}</span>
               </label>
@@ -64,69 +79,67 @@ function FilterDropdown({
 
 export default function UsersToolbar({
   filters,
-  onFiltersChange,
-  onClearFilters,
+  onFilterChange,
+  statusOptions = [
+    { value: "active", label: "Hoạt động" },
+    { value: "blocked", label: "Đã khóa" },
+  ],
 }) {
-  const [openDropdown, setOpenDropdown] = useState(null);
   const [searchValue, setSearchValue] = useState(filters.search || "");
+  const [status, setStatus] = useState(filters.statusQuery || []);
+  const debounceRef = useRef(null);
 
-  const toggleDropdown = (dropdownName) => {
-    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
-  };
-
-  const handleSearch = (e) => {
+  const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchValue(value);
-    onFiltersChange({
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      onFilterChange({
+        ...filters,
+        search: value,
+      });
+    }, 500);
+  };
+
+  const handleStatusChange = (values) => {
+    setStatus(values);
+    onFilterChange({
       ...filters,
-      search: value, 
+      statusQuery: values,
     });
   };
 
   const handleClearFilters = () => {
     setSearchValue("");
-    onClearFilters();
+    setStatus([]);
+    onFilterChange({ search: "", statusQuery: [] });
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
-      <div className="flex flex-wrap items-center gap-4">
-        {/* Search */}
-        <div className="flex-1 min-w-64">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchValue}
-              onChange={handleSearch}
-              placeholder="Tìm theo tên hoặc Email người dùng..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 dark:text-white"
-            />
-            <i className="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
-          </div>
-        </div>
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+      <div className="flex gap-4 items-center">
+        <input
+          value={searchValue}
+          onChange={handleSearchChange}
+          placeholder="Tìm kiếm người dùng..."
+          className="flex-1 rounded-lg px-3 py-2 dark:bg-gray-700"
+        />
 
-        {/* Advanced Filters */}
-        <div className="flex items-center space-x-3">
-          {/* Status Filter */}
-          <FilterDropdown
-            label="Trạng thái"
-            options={statusOptions}
-            selectedValues={filters.status || []}
-            onSelectionChange={(values) =>
-              onFiltersChange({ ...filters, status: values })
-            }
-            isOpen={openDropdown === "status"}
-            onToggle={() => toggleDropdown("status")}
-          />
+        <FilterDropdown
+          label="Trạng thái"
+          options={statusOptions}
+          selectedValues={status}
+          onSelectionChange={handleStatusChange}
+        />
 
-          {/* Clear Filters */}
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
-          >
-            <i className="fas fa-times mr-2"></i>Xóa bộ lọc
-          </button>
-        </div>
+        <button
+          onClick={handleClearFilters}
+          className="text-gray-500 hover:text-red-500 transition cursor-pointer"
+        >
+          <i className="fas fa-times mr-1" /> Xóa bộ lọc
+        </button>
       </div>
     </div>
   );
