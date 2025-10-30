@@ -23,12 +23,24 @@ export function useTableState(initialState = {}) {
   const sortParam = searchParams.get("sort") || initialState.sort || "id:asc";
   const [sortColumn, sortDirection] = sortParam.split(":");
 
-  // Filters: Đọc các tham số khác ngoại trừ page/pageSize/sort
+  // Xác định các key thuộc về trạng thái bảng (sẽ bị bỏ qua khi tạo filters)
+  const IGNORED_KEYS = new Set(["page", "pageSize", "sort"]);
+
+  // Lấy tất cả các key cần đọc làm bộ lọc: keys từ initialState và key 'search'
+  const defaultFilterKeys = new Set([
+    "search",
+    // Lọc các keys của initialState không phải là trạng thái bảng
+    ...Object.keys(initialState).filter((key) => !IGNORED_KEYS.has(key)),
+  ]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const filters = {
-    search: searchParams.get("search") || initialState.search || "",
-    ...initialState.filters,
-  };
+  const filters = {};
+  defaultFilterKeys.forEach((key) => {
+    const urlValue = searchParams.get(key);
+
+    // Ưu tiên: 1. Giá trị từ URL > 2. Giá trị mặc định > 3. Chuỗi rỗng
+    filters[key] = urlValue || initialState[key] || "";
+  });
 
   // =========================================================
   // 2. LOGIC CẬP NHẬT URL (Update Function)
@@ -39,7 +51,6 @@ export function useTableState(initialState = {}) {
       const params = new URLSearchParams(searchParams.toString());
 
       Object.entries(newParams).forEach(([key, value]) => {
-        // Xử lý các giá trị null/undefined/rỗng để xóa khỏi URL
         if (
           value === undefined ||
           value === null ||
@@ -54,7 +65,6 @@ export function useTableState(initialState = {}) {
         }
       });
 
-      // Sử dụng router.replace để không thêm vào lịch sử trình duyệt
       router.replace(`${pathname}?${params.toString()}`, {
         scroll: false,
         ...options,
@@ -115,7 +125,7 @@ export function useTableState(initialState = {}) {
       pageSize,
       sortBy: sortColumn,
       sortOrder: sortDirection,
-      ...filters,
+      ...filters, // Filters đã có đầy đủ tham số
     };
   }, [page, pageSize, sortColumn, sortDirection, filters]);
 
@@ -128,7 +138,7 @@ export function useTableState(initialState = {}) {
     currentPage: page,
     pageSize,
     sortConfig: { column: sortColumn, direction: sortDirection },
-    filters,
+    filters, 
     getQueryParams,
 
     // WRITE (Handlers)

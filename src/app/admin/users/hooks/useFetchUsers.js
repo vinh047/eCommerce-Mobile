@@ -12,7 +12,9 @@ export function useFetchUsers(initialUsers = {}) {
   // 1. INITIAL STATE & COMPOSITION (Kết hợp các hook tái sử dụng)
   // =========================================================
 
-  const userInitialState = {};
+  const userInitialState = {
+    statusQuery: "",
+  };
   const tableState = useTableState(userInitialState);
 
   const {
@@ -44,7 +46,7 @@ export function useFetchUsers(initialUsers = {}) {
       try {
         // Lấy params mới nhất từ tableState (được đọc từ URL)
         const apiParams = params || tableState.getQueryParams();
-
+        console.log(apiParams);
         const res = await usersApi.getUsers(apiParams);
 
         setUsers(res.data);

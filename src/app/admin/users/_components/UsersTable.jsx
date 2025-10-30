@@ -138,8 +138,8 @@ export default function UsersTable({
                   columnVisibility={columnVisibility}
                   isSelected={selectedItems.has(user.id)}
                   onSelect={(selected) => onSelectItem(user.id, selected)}
-                  onQuickView={() => onQuickView(user.id)}
-                  onEdit={() => onEditUser(user.id)}
+                  onQuickView={() => onQuickView(user)}
+                  onEdit={() => onEditUser(user)}
                   onDelete={() => onDeleteUser(user.id)}
                 />
               ))

@@ -66,6 +66,11 @@ export default function UsersClient({ initialUsers, searchParams }) {
     setShowUserModal(true);
   };
 
+  const handleQuickView = (user) => {
+    setSelectedUser(user);
+    setShowQuickView(true);
+  };
+
   // Hàm tìm User bằng ID (dùng trong UsersTable)
   const findUserById = (id) => users.find((u) => u.id === id);
 
@@ -101,8 +106,8 @@ export default function UsersClient({ initialUsers, searchParams }) {
           onSelectItem={selectItem}
           onSort={onSortChange}
           // Handlers cho từng hàng
-          onQuickView={handleEditUser}
-          onEditUser={(id) => handleEditUser(findUserById(id))}
+          onQuickView={handleQuickView}
+          onEditUser={handleEditUser}
           onDeleteUser={deleteUser}
           // Pagination Handlers
           onPageChange={onPageChange}
