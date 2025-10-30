@@ -67,17 +67,19 @@ export const specTemplateService = {
       where: { categoryId },
       include: {
         productSpecs: {
+          where: { filterable: true },
           orderBy: { displayOrder: "asc" },
           include: {
-            // 🔥 THÊM SORT CHO OPTIONS VÀ BUCKETS
+            //  THÊM SORT CHO OPTIONS VÀ BUCKETS
             options: { orderBy: { sortOrder: "asc" } },
             buckets: { orderBy: { sortOrder: "asc" } },
           },
         },
         variantSpecs: {
+          where: { filterable: true },
           orderBy: { displayOrder: "asc" },
           include: {
-            // 🔥 THÊM SORT CHO OPTIONS VÀ BUCKETS
+            //  THÊM SORT CHO OPTIONS VÀ BUCKETS
             options: { orderBy: { sortOrder: "asc" } },
             buckets: { orderBy: { sortOrder: "asc" } },
           },
@@ -107,7 +109,7 @@ export const specTemplateService = {
       type: "brand",
       displayOrder: -1, // Đảm bảo Brand luôn lên đầu
       options: brandOptions,
-      // 🔥 ĐÃ KHẮC PHỤC LỖI: Thêm các trường 'name' và 'slug' bị thiếu
+      //  ĐÃ KHẮC PHỤC LỖI: Thêm các trường 'name' và 'slug' bị thiếu
       name: "brand-filter-root",
       slug: "brand-filter-root",
     };

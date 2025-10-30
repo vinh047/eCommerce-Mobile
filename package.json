@@ -33,7 +33,11 @@
     "react-select": "^5.10.2",
     "sonner": "^2.0.7",
     "swiper": "^12.0.2",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "@reduxjs/toolkit": "^2.9.0",
+    "antd": "^5.27.4",
+    "react-redux": "^9.2.0",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -46,7 +50,8 @@
     "prisma": "^6.16.3",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "babel-plugin-styled-components": "^2.1.4"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma",

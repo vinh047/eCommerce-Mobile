@@ -20,7 +20,7 @@ export function adaptBackendTemplateToFE(be) {
     const effectiveControl =
       def.control || (def.type === "brand" ? "multiselect" : "select");
 
-    // 🛑 BƯỚC 1: LỌC BỎ CÁC CONTROL KHÔNG CẦN THIẾT
+    //  BƯỚC 1: LỌC BỎ CÁC CONTROL KHÔNG CẦN THIẾT
     if (
       effectiveControl !== "select" &&
       effectiveControl !== "multiselect" &&
@@ -32,11 +32,11 @@ export function adaptBackendTemplateToFE(be) {
     const fieldKey = def.code;
     let adaptedField = { ...def, control: effectiveControl };
 
-    // 🔥 LOGIC ĐÃ SỬA: Kiểm tra nếu là range (valueType) bất kể là product hay variant type
+    //  LOGIC ĐÃ SỬA: Kiểm tra nếu là range (valueType) bất kể là product hay variant type
     let isRangeOrBucket =
       def.control === "bucket-select" || def.valueType === "range";
 
-    // 🛑 BƯỚC 2: ƯU TIÊN BUCKETS (RANGE)
+    //  BƯỚC 2: ƯU TIÊN BUCKETS (RANGE)
     if (
       isRangeOrBucket &&
       Array.isArray(def.buckets) &&
@@ -55,7 +55,7 @@ export function adaptBackendTemplateToFE(be) {
         control: "bucket-select", // Ép control thành bucket-select cho UI
       };
     }
-    // 🛑 BƯỚC 3: DÙNG OPTIONS
+    //  BƯỚC 3: DÙNG OPTIONS
     else if (Array.isArray(def.options) && def.options.length > 0) {
       adaptedField = {
         ...adaptedField,
@@ -73,7 +73,7 @@ export function adaptBackendTemplateToFE(be) {
       continue;
     }
 
-    // 🛑 BƯỚC 4: THÊM VÀO KẾT QUẢ
+    //  BƯỚC 4: THÊM VÀO KẾT QUẢ
     out.fields[fieldKey] = adaptedField;
     out.rawFields.push(fieldKey); // Lưu thứ tự hiển thị
   }
