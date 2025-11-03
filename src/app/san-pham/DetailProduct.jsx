@@ -117,8 +117,8 @@ const DetailProduct = ({ product }) => {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const elements = [
-    "Mô tả chi tiết",
     "Thông số kỹ thuật",
+    "Mô tả chi tiết",
     "Đánh giá từ khách hàng",
   ];
   return (
@@ -140,9 +140,19 @@ const DetailProduct = ({ product }) => {
               )}
             </div>
             <div
-              className={
-                "grid grid-cols-" + mediaCurrent.length + " gap-3 mt-4"
-              }
+              className={`grid gap-3 mt-4 ${
+                mediaCurrent.length === 1
+                  ? "grid-cols-1"
+                  : mediaCurrent.length === 2
+                  ? "grid-cols-2"
+                  : mediaCurrent.length === 3
+                  ? "grid-cols-3"
+                  : mediaCurrent.length === 4
+                  ? "grid-cols-4"
+                  : mediaCurrent.length === 5
+                  ? "grid-cols-5"
+                  : "grid-cols-6"
+              }`}
             >
               {mediaCurrent.map((item) => (
                 <button
@@ -460,7 +470,7 @@ const DetailProduct = ({ product }) => {
           <div className="p-5 md:p-6">
             {(() => {
               switch (activeIndex) {
-                case 0:
+                case 1:
                   return (
                     <div
                       className="tab-panel"
@@ -469,7 +479,7 @@ const DetailProduct = ({ product }) => {
                       {product.description}
                     </div>
                   );
-                case 1:
+                case 0:
                   return (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-gray-700">
                       {product.productSpecValues.map((item) => (
@@ -481,7 +491,12 @@ const DetailProduct = ({ product }) => {
                           <div>
                             {item.stringValue ??
                               item.numericValue ??
-                              item.booleanValue?.toString()}
+                              (item.booleanValue !== undefined
+                                ? item.booleanValue
+                                  ? "Có"
+                                  : "Không"
+                                : "")}
+                            {item.unit ?? ""}
                           </div>
                         </div>
                       ))}
