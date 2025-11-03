@@ -491,7 +491,12 @@ const DetailProduct = ({ product }) => {
                           <div>
                             {item.stringValue ??
                               item.numericValue ??
-                              item.booleanValue?.toString() + item.unit}
+                              (item.booleanValue !== undefined
+                                ? item.booleanValue
+                                  ? "Có"
+                                  : "Không"
+                                : "")}
+                            {item.unit ?? ""}
                           </div>
                         </div>
                       ))}
