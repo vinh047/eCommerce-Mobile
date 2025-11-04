@@ -2,49 +2,50 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 
-//GET - lấy 1 user theo id
+// GET - Lấy 1 user theo id
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: Number(params.id),
-      NOT: {
-        status: "deleted",
-      },
-    },
-    include: { addresses: true },
-  });
-  if (!user)
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  return NextResponse.json(user);
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(params.id) },
+      include: { addresses: true },
+    });
+
+    if (!user || user.status === "deleted") {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
+// PUT - Cập nhật toàn bộ thông tin user
 export async function PUT(
   req: Request,
-  { params }: { params: { id: Number } }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  const data = await req.json();
-
   try {
+    const data = await req.json();
     const updatedUser = await prisma.user.update({
-      where: { id: Number(id) },
+      where: { id: Number(params.id) },
       data,
     });
 
     return NextResponse.json(updatedUser);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating user:", error);
     return NextResponse.json(
-      { message: "Failed to update user" },
+      { message: "Failed to update user", error: error.message },
       { status: 500 }
     );
   }
 }
 
-//PATCH - cập nhật user hoặc đổi trạng thái
+// PATCH - Cập nhật một phần thông tin (name, avatar, status)
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
@@ -55,9 +56,9 @@ export async function PATCH(
     const updated = await prisma.user.update({
       where: { id: Number(params.id) },
       data: {
-        name: data.name,
-        avatar: data.avatar,
-        status: data.status,
+        ...(data.name && { name: data.name }),
+        ...(data.avatar && { avatar: data.avatar }),
+        ...(data.status && { status: data.status }),
       },
     });
 
@@ -67,14 +68,30 @@ export async function PATCH(
   }
 }
 
-//DELETE - xóa user
+//  DELETE - Xóa mềm user (đề xuất)
+// Nếu muốn xóa hẳn trong DB, bật `forceDelete` trong body.
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.user.delete({ where: { id: Number(params.id) } });
-    return NextResponse.json({ message: "User deleted successfully" });
+    const { searchParams } = new URL(req.url);
+    const force = searchParams.get("force") === "true"; // ?force=true => xóa cứng
+
+    if (force) {
+      await prisma.user.delete({ where: { id: Number(params.id) } });
+      return NextResponse.json({ message: "User permanently deleted" });
+    }
+
+    const deletedUser = await prisma.user.update({
+      where: { id: Number(params.id) },
+      data: { status: "deleted" },
+    });
+
+    return NextResponse.json({
+      message: "User soft deleted",
+      data: deletedUser,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }

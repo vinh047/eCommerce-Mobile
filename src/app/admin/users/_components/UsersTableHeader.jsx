@@ -1,28 +1,48 @@
+"use client";
+
+import { useQueryParams } from "@/hooks/useQueryParams";
+import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+
 export default function UsersTableHeader({
   columnVisibility,
-  sortConfig,
   selectedItems,
   currentPageUsers,
-  totalItems,
-  onSort,
   onSelectAll,
 }) {
+  const { getParam, setParam } = useQueryParams();
+
+  const sortParam = getParam("sort") || "";
+  const [sortColumn, sortDirection] = sortParam.split(":");
+
   const currentPageIds = currentPageUsers.map((p) => p.id);
   const allSelected = currentPageIds.every((id) => selectedItems.has(id));
   const someSelected = currentPageIds.some((id) => selectedItems.has(id));
 
-  const getSortIcon = (column) => {
-    if (sortConfig.column !== column) {
-      return "fas fa-sort text-gray-400";
+  const handleSort = (column) => {
+    if (sortColumn !== column) {
+      setParam("sort", `${column}:desc`);
+    } else if (sortDirection === "desc") {
+      setParam("sort", `${column}:asc`);
+    } else {
+      setParam("sort", null);
     }
-    return sortConfig.direction === "asc"
-      ? "fas fa-sort-up text-blue-600"
-      : "fas fa-sort-down text-blue-600";
+  };
+
+  const getSortIcon = (column) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="w-4 h-4 text-blue-600" />
+    ) : (
+      <ArrowDown className="w-4 h-4 text-blue-600" />
+    );
   };
 
   return (
     <thead className="bg-gray-50 dark:bg-gray-700">
       <tr>
+        {/* Checkbox chọn tất cả */}
         <th className="px-6 py-3 text-left">
           <input
             type="checkbox"
@@ -31,18 +51,18 @@ export default function UsersTableHeader({
               if (input) input.indeterminate = !allSelected && someSelected;
             }}
             onChange={onSelectAll}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
           />
         </th>
 
         {columnVisibility.id && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("id")}
+            onClick={() => handleSort("id")}
           >
             <div className="flex items-center space-x-1">
               <span>ID</span>
-              <i className={getSortIcon("id")}></i>
+              {getSortIcon("id")}
             </div>
           </th>
         )}
@@ -50,48 +70,11 @@ export default function UsersTableHeader({
         {columnVisibility.name && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("name")}
+            onClick={() => handleSort("name")}
           >
             <div className="flex items-center space-x-1">
               <span>Tên người dùng</span>
-              <i className={getSortIcon("name")}></i>
-            </div>
-          </th>
-        )}
-
-
-        {columnVisibility.status && (
-          <th
-            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("status")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Trạng thái</span>
-              <i className={getSortIcon("status")}></i>
-            </div>
-          </th>
-        )}
-
-        {/* {columnVisibility.createdAt && (
-          <th
-            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("createdAt")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Ngày tạo</span>
-              <i className={getSortIcon("createdAt")}></i>
-            </div>
-          </th>
-        )}
-
-        {columnVisibility.rating && (
-          <th
-            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("rating")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Đánh giá</span>
-              <i className={getSortIcon("rating")}></i>
+              {getSortIcon("name")}
             </div>
           </th>
         )}
@@ -99,23 +82,23 @@ export default function UsersTableHeader({
         {columnVisibility.status && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("status")}
+            onClick={() => handleSort("status")}
           >
             <div className="flex items-center space-x-1">
               <span>Trạng thái</span>
-              <i className={getSortIcon("status")}></i>
+              {getSortIcon("status")}
             </div>
           </th>
-        )} */}
+        )}
 
         {columnVisibility.createdAt && (
           <th
             className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-            onClick={() => onSort("createdAt")}
+            onClick={() => handleSort("createdAt")}
           >
             <div className="flex items-center space-x-1">
               <span>Ngày tạo</span>
-              <i className={getSortIcon("createdAt")}></i>
+              {getSortIcon("createdAt")}
             </div>
           </th>
         )}

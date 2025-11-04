@@ -1,4 +1,3 @@
-
 // src/app/page.jsx
 "use client";
 
@@ -8,7 +7,6 @@ import RecentOrders from "src/components/Dashboard/RecentOrders";
 import RecentReviews from "src/components/Dashboard/RecentReviews";
 import SalesCharts from "src/components/Dashboard/SalesCharts";
 import AdminLayout from "src/components/Layout/AdminLayout";
-
 
 export default function Home() {
   return (
@@ -28,4 +26,3 @@ export default function Home() {
     </AdminLayout>
   );
 }
-

@@ -1,17 +1,48 @@
-import axiosClient from "./axiosClient";
+import { apiFetch } from "./utils/apiFetch";
 
 const usersApi = {
-  getUsers: (params) => axiosClient.get("/users", { params }),
+  // Lấy danh sách users
+  getUsers: (params) =>
+    apiFetch(`/users?${new URLSearchParams(params)}`, {
+      method: "GET",
+      cache: "no-store",
+    }),
 
-  getUserById: (id) => axiosClient.get(`/users/${id}`),
+  // Lấy chi tiết user
+  getUserById: (id) =>
+    apiFetch(`/users/${id}`, {
+      method: "GET",
+      cache: "no-store",
+    }),
 
-  createUser: (data) => axiosClient.post("/users", data),
+  createUser: (data) =>
+    apiFetch("/users", {
+      method: "POST",
+      body: data,
+    }),
 
-  updateUser: (id, data) => axiosClient.put(`/users/${id}`, data),
+  updateUser: (id, data) =>
+    apiFetch(`/users/${id}`, {
+      method: "PUT",
+      body: data,
+    }),
 
-  deleteUser: (id) => axiosClient.delete(`/users/${id}`),
+  deleteUser: (id) =>
+    apiFetch(`/users/${id}`, {
+      method: "DELETE",
+    }),
 
-  bulkAction: (ids, action) => axiosClient.post(`/users/bulk`, { ids, action }),
+  getAllIds: (params) =>
+    apiFetch(`/users/ids?${new URLSearchParams(params)}`, {
+      method: "GET",
+      cache: "no-store",
+    }),
+
+  bulkAction: (ids, action) =>
+    apiFetch(`/users/bulk`, {
+      method: "POST",
+      body: { ids, action },
+    }),
 };
 
 export default usersApi;
