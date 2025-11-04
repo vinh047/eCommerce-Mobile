@@ -1,40 +1,23 @@
-// =========================================================
-// UsersClient.jsx (Phiên bản Hoàn Chỉnh & Tối ưu hóa)
-// =========================================================
 "use client";
 
 import { useState, lazy, Suspense } from "react";
-// Đảm bảo import đúng tên hàm/component từ _components
-import { UsersHeader, UsersToolbar, UserBulkActionsBar } from "./_components";
-import { useFetchUsers } from "./hooks/useFetchUsers"; // Tên hook đã được đổi thành useFetchUsers
-import { exportUsersCSV } from "./utils/exportUsersCSV";
-import UsersTableSkeleton from "./_components/UsersTableSkeleton";
+import { UsersHeader, UsersToolbar, UserBulkActionsBar } from "./index";
+import { useFetchUsers } from "../hooks/useFetchUsers";
+import { exportUsersCSV, useExportUsersCSV } from "../utils/exportUsersCSV";
+import PageHeader from "@/components/common/PageHeader";
+import TableSkeleton from "@/components/common/TableSkeleton";
 
-// Lazy load modals và table
-const UsersModal = lazy(() => import("./_components/UsersModal"));
-const UsersQuickViewModal = lazy(() => import("./_components/QuickViewModal"));
-const UsersTable = lazy(() => import("./_components/UsersTable"));
+const UsersModal = lazy(() => import("./UsersModal"));
+const UsersQuickViewModal = lazy(() => import("./QuickViewModal"));
+const UsersTable = lazy(() => import("./UsersTable"));
 
-// ⭐️ Nhận initialUsers (dữ liệu thô) và searchParams từ Server Component
 export default function UsersClient({ initialUsers, searchParams }) {
-  // 1. Hook Dữ liệu (Sử dụng tên hook mới và cấu trúc trả về mới)
   const {
     users,
     totalItems,
 
-    // Handlers & States từ useTableState
-    filters,
-    sortConfig,
-    currentPage,
-    pageSize,
-    onFilterChange,
-    onSortChange,
-    onPageChange,
-    onPageSizeChange,
-
     // Selection Handlers & States
     selectedItems,
-    selectAllForFilter,
     selectItem,
     selectAll,
     deselectAll,
@@ -43,8 +26,7 @@ export default function UsersClient({ initialUsers, searchParams }) {
     deleteUser,
     saveUser,
     handleBulkAction,
-    // fetchUsers (Không cần export nếu không dùng nút refresh thủ công)
-  } = useFetchUsers(initialUsers); // Truyền initial data vào hook
+  } = useFetchUsers(initialUsers);
 
   // 2. State UI (Quản lý Modal/Quick View)
   const [showUserModal, setShowUserModal] = useState(false);
@@ -56,7 +38,7 @@ export default function UsersClient({ initialUsers, searchParams }) {
 
   const handleCreateUser = () => {
     setModalMode("create");
-    setSelectedUser(null); // Đảm bảo null cho mode 'create'
+    setSelectedUser(null);
     setShowUserModal(true);
   };
 
@@ -71,20 +53,19 @@ export default function UsersClient({ initialUsers, searchParams }) {
     setShowQuickView(true);
   };
 
-  // Hàm tìm User bằng ID (dùng trong UsersTable)
   const findUserById = (id) => users.find((u) => u.id === id);
-
-  const handleExportCSV = () => exportUsersCSV(filters, sortConfig);
-
+  const { exportUsersCSV } = useExportUsersCSV();
   return (
     <div className="overflow-auto px-8 py-6">
-      <UsersHeader
-        onCreateUser={handleCreateUser}
-        onExportCSV={handleExportCSV}
+      <PageHeader
+        title="Quản lý Người dùng"
+        onExport={exportUsersCSV}
+        onCreate={handleCreateUser}
+        exportLabel="Xuất Excel"
+        createLabel="Tạo người dùng"
       />
 
-      {/* Điều chỉnh UsersToolbar để dùng onFilterChange */}
-      <UsersToolbar filters={filters} onFilterChange={onFilterChange} />
+      <UsersToolbar />
 
       <UserBulkActionsBar
         selectedCount={selectedItems.size}
@@ -94,24 +75,15 @@ export default function UsersClient({ initialUsers, searchParams }) {
         show={selectedItems.size > 0}
       />
 
-      <Suspense fallback={<UsersTableSkeleton />}>
+      <Suspense fallback={<TableSkeleton />}>
         <UsersTable
           users={users}
           selectedItems={selectedItems}
-          sortConfig={sortConfig}
-          currentPage={currentPage}
-          pageSize={pageSize}
           totalItems={totalItems}
-          // Handlers cho bảng
           onSelectItem={selectItem}
-          onSort={onSortChange}
-          // Handlers cho từng hàng
           onQuickView={handleQuickView}
           onEditUser={handleEditUser}
           onDeleteUser={deleteUser}
-          // Pagination Handlers
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
         />
       </Suspense>
 

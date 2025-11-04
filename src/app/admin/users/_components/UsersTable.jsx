@@ -1,28 +1,26 @@
 "use client";
 
-import { useState } from "react";
-
-import Pagination from "../../../../components/common/Pagination";
-import { User } from "lucide-react";
+import { useColumnVisibility } from "@/hooks/useColumnVisibility";
+import { ColumnVisibilityMenu } from "@/components/common/ColumnVisibilityMenu";
+import Pagination from "@/components/common/Pagination";
 import UsersTableHeader from "./UsersTableHeader";
 import UsersTableRow from "./UsersTableRow";
 
 export default function UsersTable({
   users,
   selectedItems,
-  sortConfig,
-  currentPage,
-  pageSize,
   totalItems,
   onSelectItem,
-  onSort,
   onQuickView,
   onEditUser,
   onDeleteUser,
-  onPageChange,
-  onPageSizeChange,
 }) {
-  const [columnVisibility, setColumnVisibility] = useState({
+  const {
+    columnVisibility,
+    showColumnFilter,
+    toggleColumnFilter,
+    handleColumnVisibilityChange,
+  } = useColumnVisibility({
     id: true,
     name: true,
     email: true,
@@ -30,29 +28,23 @@ export default function UsersTable({
     createdAt: true,
   });
 
-  const [showColumnFilter, setShowColumnFilter] = useState(false);
-
-  const handleColumnVisibilityChange = (column, visible) => {
-    setColumnVisibility((prev) => ({
-      ...prev,
-      [column]: visible,
-    }));
+  const columnLabels = {
+    id: "ID",
+    name: "Tên người dùng",
+    email: "Email",
+    status: "Trạng thái",
+    createdAt: "Ngày tạo",
   };
 
   const handleSelectAll = () => {
     const currentPageIds = users.map((u) => u.id);
     const allSelected = currentPageIds.every((id) => selectedItems.has(id));
 
-    if (allSelected) {
-      users.forEach((user) => onSelectItem(user.id, false));
-    } else {
-      users.forEach((user) => onSelectItem(user.id, true));
-    }
+    users.forEach((user) => onSelectItem(user.id, !allSelected));
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-      {/* Table Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -62,51 +54,14 @@ export default function UsersTable({
             Tổng: {totalItems} người dùng
           </span>
         </div>
-        <div className="flex items-center space-x-2">
-          {/* Column Visibility */}
-          <div className="relative">
-            <button
-              onClick={() => setShowColumnFilter(!showColumnFilter)}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            >
-              <i className="fas fa-columns"></i>
-            </button>
-            {showColumnFilter && (
-              <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
-                <div className="p-3 space-y-2">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                    Hiển thị cột
-                  </div>
-                  {Object.entries(columnVisibility).map(([column, visible]) => (
-                    <label key={column} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={visible}
-                        onChange={(e) =>
-                          handleColumnVisibilityChange(column, e.target.checked)
-                        }
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="text-sm dark:text-white capitalize">
-                        {column === "id"
-                          ? "ID"
-                          : column === "name"
-                          ? "Tên người dùng"
-                          : column === "email"
-                          ? "Email"
-                          : column === "status"
-                          ? "Trạng thái"
-                          : column === "createdAt"
-                          ? "Ngày tạo"
-                          : column}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+
+        <ColumnVisibilityMenu
+          columnVisibility={columnVisibility}
+          showColumnFilter={showColumnFilter}
+          toggleColumnFilter={toggleColumnFilter}
+          handleColumnVisibilityChange={handleColumnVisibilityChange}
+          columnLabels={columnLabels}
+        />
       </div>
 
       {/* Table */}
@@ -114,12 +69,10 @@ export default function UsersTable({
         <table className="w-full">
           <UsersTableHeader
             columnVisibility={columnVisibility}
-            sortConfig={sortConfig}
             selectedItems={selectedItems}
             currentPageUsers={users}
-            onSort={onSort}
             onSelectAll={handleSelectAll}
-          ></UsersTableHeader>
+          />
           <tbody>
             {users.length === 0 ? (
               <tr>
@@ -148,15 +101,7 @@ export default function UsersTable({
         </table>
       </div>
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        pageSize={pageSize}
-        totalItems={totalItems}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        label="người dùng"
-      />
+      <Pagination totalItems={totalItems} label="người dùng" />
     </div>
   );
 }
