@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 async function getUserIdFromSession() {
   // Khớp với seed trong database.sql: ORD002 thuộc user_id = 2 (Bob)
-  return 2;
+  return 1;
 }
 
 // GET /api/checkout/[orderCode]

@@ -52,33 +52,36 @@ export default function CheckoutPage() {
 
   // 1. Load pending order details and addresses
   const loadCheckoutData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axiosClient.get(`/api/checkout/${orderCode}`);
-      setOrder(response.data);
-      const userAddresses = response.data.user?.addresses || [];
-      setAddresses(userAddresses);
+  setLoading(true);
+  setError(null);
+  try {
+    const response = await axiosClient.get(`/api/checkout/${orderCode}`);
+    setOrder(response.data);
+    const userAddresses = response.data.user?.addresses || [];
+    setAddresses(userAddresses);
 
-      // Auto-select default or first address
-      const defaultAddress = userAddresses.find(
-        (a) => a.isDefault ?? a.is_default
-      ); // Check isDefault mapping
-      if (defaultAddress) {
-        setSelectedAddressId(defaultAddress.id);
-      } else if (userAddresses.length > 0) {
-        setSelectedAddressId(userAddresses[0].id);
-      }
-      setShowNewAddressForm(userAddresses.length === 0); // Show form if no address exists
-    } catch (err) {
-      console.error("Could not load order:", err);
-      setError(
-        err.response?.data?.error || "Could not find order or it has expired."
-      );
-    } finally {
-      setLoading(false);
+    const defaultAddress = userAddresses.find((a) => a.isDefault ?? a.is_default);
+    if (defaultAddress) setSelectedAddressId(defaultAddress.id);
+    else if (userAddresses.length > 0) setSelectedAddressId(userAddresses[0].id);
+
+    setShowNewAddressForm(userAddresses.length === 0);
+  } catch (err) {
+    console.error("Could not load order:", err);
+
+    // Nếu server trả 404 -> không tìm thấy đơn
+    const status = err?.response?.status;
+    if (status === 404) {
+      setError("Không tìm thấy đơn hàng. Có thể mã đơn đã hết hạn hoặc không tồn tại.");
+    } else if (err?.response?.data) {
+      // Hiện thông báo cụ thể từ server nếu có
+      setError(err.response.data.error || "Lỗi khi tải đơn hàng.");
+    } else {
+      setError("Lỗi kết nối tới server. Vui lòng thử lại sau.");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   // --- NEW: Handle adding a new address ---
   const handleNewAddressChange = (e) => {
@@ -206,13 +209,28 @@ export default function CheckoutPage() {
     );
   }
   if (error && !order) {
-    // Show full error page only if order loading failed
-    return (
-      <div className="min-h-screen grid place-items-center text-red-600 bg-gray-50">
-        {error}
+  return (
+    <div className="min-h-screen grid place-items-center text-red-600 bg-gray-50 p-6">
+      <div className="max-w-md text-center">
+        <p className="mb-4">{error}</p>
+        <div className="flex justify-center gap-3">
+          <a
+            href="/cart"
+            className="px-4 py-2 rounded bg-primary text-white"
+          >
+            Quay về giỏ hàng
+          </a>
+          <button
+            onClick={loadCheckoutData}
+            className="px-4 py-2 rounded border"
+          >
+            Thử lại
+          </button>
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
   if (!order) return null; // Should not happen
 
   return (

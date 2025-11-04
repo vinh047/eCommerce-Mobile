@@ -413,6 +413,25 @@ VALUES
     NULL
   ),
   ('bob@example.com', 'hash456', 'Bob Trần', NULL);
+  INSERT INTO orders (user_id, code, status, payment_method, subtotal, total, address_snapshot, created_at)
+VALUES (
+  1,
+  'ORDER003',
+  'pending',
+  'COD',
+  28990000,
+  28990000,
+  '{"line":"123 Lê Lợi","phone":"0909123456"}',
+  NOW()
+);
+
+-- Thêm item vào đơn vừa tạo (LAST_INSERT_ID() lấy order_id mới)
+INSERT INTO order_items (order_id, variant_id, price, quantity, name_snapshot)
+VALUES (LAST_INSERT_ID(), 1, 28990000, 1, 'iPhone 15 Pro Black');
+
+-- (Tuỳ chọn) Ghi giao dịch thanh toán (nếu cần)
+INSERT INTO payment_transactions (order_id, provider, provider_payment_id, amount, status, created_at)
+VALUES (LAST_INSERT_ID(), 'COD', 'COD-ORDER002', 28990000, 'pending', NOW());
 
 INSERT INTO
   address (
