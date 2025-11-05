@@ -9,3 +9,6 @@ export async function getProductsByFilters(categoryId, params) {
     next: { revalidate: 600 },
   });
 }
+export async function getProductBySlug(slug) {
+  return await apiFetch(`/products/detail/${slug}`)
+}

@@ -1,0 +1,21 @@
+
+    {
+      "id":1,
+      "name":"Iphone 13 Pro Max",
+      "slug":"iphone-13-pro-max",
+      "brand_id":1,
+      "category_id":1,
+      "description":"iPhone 13 Pro Max mang đến hiệu năng mạnh mẽ, camera nâng cấp và thiết kế hiện đại. Màn hình đẹp, pin bền bỉ, công nghệ an toàn Face ID, cùng cổng USB-C tiện dụng.\n\n• Màn hình Super Retina XDR 6.1\"\n• Chip A16 Bionic mượt mà\n• Camera kép 48MP sắc nét\n• Pin dùng thoải mái cả ngày",
+      "rating_avg": 4.5,
+      "rating_count": 300,
+      "specs_json":{
+        "Màn hình": "6.1\" OLED",
+        "Camera sau":"48MP + 12MP",
+        "Pin":"~3349 mAh",
+        "Chip":"A16 Bionic",
+        "Camera trước":"12MP",
+        "Cổng":"USB‑C"
+        },
+        "is_active":true
+        
+    }
