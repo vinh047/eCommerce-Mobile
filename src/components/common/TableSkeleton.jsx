@@ -1,6 +1,6 @@
 "use client";
 
-export default function UsersTableSkeleton() {
+export default function TableSkeleton() {
   const fakeCols = ["ID", "Tên người dùng", "Email", "Trạng thái", "Ngày tạo"];
 
   return (
