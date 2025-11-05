@@ -1,6 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getRootCategories, getCategories } from "@/lib/api/categoriesApi";
+import {
+  getRootCategories,
+  getCategories,
+  getCategoriesWithSpecTemplates,
+} from "@/lib/api/categoriesApi";
 import { getProductsByCategory } from "@/lib/api/productApi";
 import BannerSlider from "@/components/Home/banner/BannerSlider";
 import CategoryIcon from "@/components/Home/category/CategoryIcon";
@@ -12,7 +16,7 @@ const LIMIT = 10;
 
 export default async function HomePage() {
   const [categoriesSidbar, allCategories] = await Promise.all([
-    getRootCategories(),
+    getCategoriesWithSpecTemplates(),
     getCategories(),
   ]);
 
