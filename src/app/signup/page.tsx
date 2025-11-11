@@ -14,7 +14,7 @@ export default function RegisterPage() {
     const handleRegister = async (e: any) => {
         e.preventDefault();
         try {
-            const res = await fetch("/api/auth/register", {
+            const res = await fetch("/api/auth//signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),
@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
     const handleGoogleRegister = async (credentialResponse: any) => {
         try {
-            const res = await fetch("/api/auth/register", {
+            const res = await fetch("/api/auth//signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: credentialResponse.credential }), // 👈 Gửi token Google
