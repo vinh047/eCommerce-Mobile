@@ -54,6 +54,7 @@ export default function SpecsClient({ initialData, categories }) {
       <Suspense fallback={<TableSkeleton />}>
         <SpecsTable
           specs={specs}
+          totalItems={totalItems}
           onEdit={handleEditMeta}
           onConfigure={handleConfigure}
           onDelete={deleteSpec}

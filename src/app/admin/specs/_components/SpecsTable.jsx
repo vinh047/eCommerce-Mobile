@@ -3,9 +3,11 @@
 import { useState } from "react";
 import SpecsTableHeader from "./SpecsTableHeader";
 import SpecsTableRow from "./SpecsTableRow";
+import Pagination from "@/components/common/Pagination";
 
 export default function SpecsTable({
   specs = [],
+  totalItems,
   onEdit,
   onConfigure,
   onDelete,
@@ -83,6 +85,7 @@ export default function SpecsTable({
           mục
         </div>
       )}
+      <Pagination totalItems={totalItems} label="thông số" />
     </div>
   );
 }

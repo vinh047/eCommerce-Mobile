@@ -47,9 +47,21 @@ export async function GET(req: Request) {
       orderBy: { id: "desc" },
       include: {
         category: { select: { id: true, name: true } },
-        productSpecs: true,
-        variantSpecs: true,
-        _count: { select: { productSpecs: true } }, // Đếm số trường con
+        productSpecs: {
+          include: {
+            options: true,
+            buckets: true,
+            values: true,
+          },
+        },
+        variantSpecs: {
+          include: {
+            options: true,
+            buckets: true,
+            values: true,
+          },
+        },
+        _count: { select: { productSpecs: true } },
       },
     });
 
