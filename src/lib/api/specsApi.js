@@ -10,6 +10,12 @@ const specsApi = {
   getSpecById: (id) =>
     apiFetch(`/specs/${id}`, { method: "GET", cache: "no-store" }),
 
+  getTemplateByCategoryId: (categoryId) =>
+    apiFetch(`/specs/by-category/${categoryId}`, {
+      method: "GET",
+      cache: "no-store",
+    }),
+
   createSpec: (data) => apiFetch("/specs", { method: "POST", body: data }),
 
   updateSpec: (id, data) =>
@@ -18,7 +24,7 @@ const specsApi = {
   updateSpecConfig: (id, specsList) =>
     apiFetch(`/specs/${id}/config`, {
       method: "PUT",
-      body: { productSpecs: specsList },
+      body: JSON.stringify(specsList),
     }),
 
   deleteSpec: (id) => apiFetch(`/specs/${id}`, { method: "DELETE" }),
