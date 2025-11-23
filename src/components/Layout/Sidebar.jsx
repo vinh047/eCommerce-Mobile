@@ -52,7 +52,8 @@ const navItems = [
     icon: CreditCard,
     href: "/admin/transactions",
   },
-  { name: "Nhân sự & Phân quyền", icon: UserCheck, href: "/admin/staff" },
+  { name: "Nhân sự ", icon: UserCheck, href: "/admin/staff" },
+  { name: "Phân Quyền ", icon: UserCheck, href: "/admin/roles" },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
