@@ -1,5 +1,8 @@
+import compareTwoStrings from "string-similarity-js";
 import { prisma } from "@/lib/prisma";
 import { Prisma, ValueType } from "@prisma/client";
+import { variant } from "@/prisma/seedData2";
+import { includes } from "zod";
 
 export const productService = {
   async getProductsWithMinPriceByCategory(
@@ -353,7 +356,74 @@ export const productService = {
             variantSpecValues: true, // Lấy thông số riêng của biến thể (màu, dung lượng,…)
           },
         },
+        Review: {
+          where: { isActived: true },
+          take: 5,
+          include:{
+            user:true
+          }
+        }, // Lấy đánh giá của sản phẩm
       },
     });
   },
+  async getReviewsByProductId(
+    productId: number,
+    offset: number,
+    limit: number
+  ) {
+    const newReview= await prisma.review.findMany({
+      where: { productId, isActived: true },
+      skip: offset,
+      take: limit,
+      include: {
+        user: true
+      },
+    });
+    console.log(newReview)
+    return newReview
+  },
+  async findSimilarProductsById(
+  productId: number,
+  threshold = 0.6,
+  limit = 10
+) {
+  // Lấy sản phẩm gốc
+  const original = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!original) {
+    throw new Error("Sản phẩm không tồn tại");
+  }
+
+  // Lấy tất cả sản phẩm khác trong bảng
+  const allProducts = await prisma.product.findMany({
+    where: {
+      id: { not: productId },
+    },
+    include: {
+      variants:{
+        include:{
+          MediaVariant:{
+            include:{
+              Media:true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // So sánh tên và lọc
+  const similarProducts = allProducts
+    .map(p => ({
+      ...p,
+      similarity: compareTwoStrings(p.name, original.name),
+    }))
+    .filter(p => p.similarity > threshold)
+    .sort((a, b) => b.similarity - a.similarity) // ưu tiên giống nhất
+    .slice(0, limit); // tối đa `limit` sản phẩm
+
+  return similarProducts;
+}
 };

@@ -29,7 +29,16 @@ import {
   MediaArray,
   MediaVariant,
 } from "./seedData2";
-import { coupons, permissions, rolePermissions, roles, staffRoles, staffs, users } from "./seedData";
+import {
+  coupons,
+  permissions,
+  rolePermissions,
+  roles,
+  staffRoles,
+  staffs,
+  users,
+  reviews,
+} from "./seedData";
 
 const prisma = new PrismaClient();
 
@@ -56,6 +65,7 @@ async function main() {
   await prisma.brand.deleteMany();
   await prisma.category.deleteMany();
   await prisma.mediaVariant.deleteMany();
+  await prisma.review.deleteMany();
   console.log("Đã xóa xong dữ liệu cũ.");
 
   // --- 2.1. Tách category cha và con ---
@@ -212,7 +222,7 @@ async function main() {
   }
 
   // --- 14. Seed dữ liệu liên quan đến Permissions, Roles, Staffs ---
-  
+
   // 1 Permissions
   console.log("→ Seeding Permissions...");
   await prisma.permission.createMany({
@@ -254,7 +264,9 @@ async function main() {
     data: staffRoles,
     skipDuplicates: true,
   });
-
+  // --- 15. Seed Reviews ---
+  console.log(`Đang seed Reviews...`);
+  await prisma.review.createMany({ data: reviews, skipDuplicates: true });
   console.log(`✅ Quá trình seeding hoàn tất.`);
 }
 

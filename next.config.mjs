@@ -5,6 +5,10 @@ const nextConfig = {
             "fontawesome.com",
             "upload.wikimedia.org",
             "www.wikipedia.org",
+            'i.pravatar.cc',
+            'images.unsplash.com',
+            'res.cloudinary.com',
+            'lh3.googleusercontent.com',
         ],
     },
 };
