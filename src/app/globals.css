@@ -9,8 +9,6 @@
 
 html {
   font-family: var(--font-sans);
-
-  
 }
 
 .swiper-button-prev,
@@ -51,35 +49,6 @@ html {
   display: flex;
   flex-direction: column;
 }
-.scroll-area {
-  height: 100%;
-  overflow-y: auto;
-  scrollbar-gutter: stable; /* giữ layout khi hiện/ẩn thanh cuộn (trình duyệt mới) */
-  padding-bottom: 0; /* phần debug đã chèn pb-24 để không đè action bar */
-}
-
-/* Firefox */
-.scroll-area {
-  scrollbar-width: thin;
-  scrollbar-color: #9ca3af transparent;
-}
-
-/* WebKit (Chrome/Edge/Safari) */
-.scroll-area::-webkit-scrollbar {
-  width: 8px;
-}
-.scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scroll-area::-webkit-scrollbar-thumb {
-  background: #d1d5db; /* gray-300 */
-  border-radius: 9999px;
-  border: 2px solid transparent; /* tạo khoảng cách với track */
-  background-clip: padding-box;
-}
-.scroll-area:hover::-webkit-scrollbar-thumb {
-  background: #9ca3af;
-} /* gray-400 */
 
 /* Checkbox xanh, bo vuông nhẹ như mock */
 input.chk {
@@ -105,3 +74,20 @@ input.chk {
   }
 }
 
+.scroll-area {
+  scrollbar-width: none;
+}
+.scroll-area::-webkit-scrollbar {
+  width: 0;
+}
+
+.scroll-area:hover {
+  scrollbar-width: thin;
+}
+.scroll-area:hover::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+}
