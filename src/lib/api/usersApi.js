@@ -5,42 +5,39 @@ const usersApi = {
   getUsers: (params) =>
     apiFetch(`/users?${new URLSearchParams(params)}`, {
       method: "GET",
-      next: { revalidate: 60 },
+      cache: "no-store",
     }),
 
   // Lấy chi tiết user
   getUserById: (id) =>
     apiFetch(`/users/${id}`, {
       method: "GET",
+      cache: "no-store",
     }),
 
-  // Tạo user
   createUser: (data) =>
     apiFetch("/users", {
       method: "POST",
       body: data,
     }),
 
-  // Cập nhật user
   updateUser: (id, data) =>
     apiFetch(`/users/${id}`, {
       method: "PUT",
       body: data,
     }),
 
-  // Xóa user
   deleteUser: (id) =>
     apiFetch(`/users/${id}`, {
       method: "DELETE",
     }),
 
-  // Lấy tất cả id theo filter
   getAllIds: (params) =>
     apiFetch(`/users/ids?${new URLSearchParams(params)}`, {
       method: "GET",
+      cache: "no-store",
     }),
 
-  // Hành động hàng loạt
   bulkAction: (ids, action) =>
     apiFetch(`/users/bulk`, {
       method: "POST",

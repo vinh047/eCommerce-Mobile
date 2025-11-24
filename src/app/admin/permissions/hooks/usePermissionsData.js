@@ -1,17 +1,19 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
-import usersApi from "@/lib/api/usersApi";
+// Giả định bạn có API service cho Permission
 import { toast } from "sonner";
 import { usePaginationQuery } from "@/hooks/usePaginationQuery";
+import permissionsApi from "@/lib/api/permissionsApi";
 
-export function useUsersData() {
-  const [users, setUsers] = useState([]);
+export function usePermissionsData() {
+  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedItems, setSelectedItems] = useState(new Set());
-  const [filters, setFilters] = useState({ search: "", status: "" });
+  // Lọc theo search (Key hoặc Name)
+  const [filters, setFilters] = useState({ search: "" });
   const [sortConfig, setSortConfig] = useState({
-    column: "createdAt",
+    column: "id",
     direction: "desc",
   });
 
@@ -21,35 +23,34 @@ export function useUsersData() {
     pageSize,
     onPageChange,
     onPageSizeChange,
-  } = usePaginationQuery(10);
+  } = usePaginationQuery(10); // Mặc định 10 items/page
 
-  // Fetch users
-  const fetchUsers = useCallback(async () => {
+  // Fetch permissions
+  const fetchPermissions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await usersApi.getUsers({
+      const res = await permissionsApi.getPermissions({
         page: currentPage,
         pageSize,
         search: filters.search || "",
-        status: filters.status || "",
         sortBy: sortConfig.column,
         sortOrder: sortConfig.direction,
       });
-      setUsers(res.data);
+      setPermissions(res.data);
       setTotalItems(res.pagination.totalItems);
     } catch (err) {
-      console.error("Fetch users failed:", err);
-      toast.error("Không thể tải danh sách người dùng.");
+      console.error("Fetch permissions failed:", err);
+      toast.error("Không thể tải danh sách quyền hạn.");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, filters, sortConfig]);
+  }, [currentPage, pageSize, filters, sortConfig]); // Tương tự useCouponsData
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchPermissions();
+  }, [fetchPermissions]);
 
-  // Sort
+  // Sort: Tương tự như useCouponsData
   const updateSort = useCallback((column) => {
     setSortConfig((prev) => ({
       column,
@@ -58,7 +59,7 @@ export function useUsersData() {
     }));
   }, []);
 
-  // Select
+  // Select: Tương tự như useCouponsData
   const selectItem = useCallback((id, selected) => {
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
@@ -69,80 +70,80 @@ export function useUsersData() {
 
   const selectAll = useCallback(async () => {
     try {
-      const res = await usersApi.getAllIds(filters);
+      const res = await permissionsApi.getAllIds(filters); // ⭐ Gọi API lấy tất cả IDs
       setSelectedItems(new Set(res.ids));
     } catch {
-      toast.error("Không thể chọn tất cả người dùng.");
+      toast.error("Không thể chọn tất cả quyền hạn.");
     }
   }, [filters]);
 
   const deselectAll = useCallback(() => setSelectedItems(new Set()), []);
 
-  // Delete user
-  const deleteUser = useCallback(
+  // Delete permission
+  const deletePermission = useCallback(
     async (id) => {
-      if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
+      if (!confirm("Bạn có chắc muốn xóa quyền hạn này?")) return;
       setLoading(true);
       try {
-        await usersApi.deleteUser(id);
-        toast.success("Đã xóa người dùng thành công.");
-        fetchUsers();
+        await permissionsApi.deletePermission(id);
+        toast.success("Đã xóa quyền hạn thành công.");
+        fetchPermissions();
       } catch {
         toast.error("Xóa thất bại.");
       } finally {
         setLoading(false);
       }
     },
-    [fetchUsers]
+    [fetchPermissions]
   );
 
-  // Save user
-  const saveUser = useCallback(
-    async (data, mode, selectedUser) => {
+  // Save permission (Create/Update)
+  const savePermission = useCallback(
+    async (data, mode, selectedPermission) => {
       try {
         if (mode === "create") {
-          await usersApi.createUser(data);
-          toast.success("Tạo người dùng thành công");
+          await permissionsApi.createPermission(data);
+          toast.success("Tạo quyền hạn thành công");
         } else {
-          await usersApi.updateUser(selectedUser.id, data);
-          toast.success("Cập nhật người dùng thành công");
+          await permissionsApi.updatePermission(selectedPermission.id, data);
+          toast.success("Cập nhật quyền hạn thành công");
         }
-        fetchUsers(); 
+        fetchPermissions();
       } catch (err) {
         console.error(err);
         toast.error("Lưu thất bại");
       }
     },
-    [fetchUsers]
+    [fetchPermissions]
   );
 
   // Bulk Action
   const handleBulkAction = useCallback(
     async (action) => {
       if (selectedItems.size === 0)
-        return toast.warning("Chưa chọn người dùng nào.");
+        return toast.warning("Chưa chọn quyền hạn nào.");
 
       if (
         action === "delete" &&
-        !confirm(`Bạn có chắc muốn xóa ${selectedItems.size} người dùng?`)
+        !confirm(`Bạn có chắc muốn xóa ${selectedItems.size} quyền hạn?`)
       )
         return;
 
       try {
-        await usersApi.bulkAction(Array.from(selectedItems), action);
-        toast.success(`Đã ${action} ${selectedItems.size} người dùng.`);
+        await permissionsApi.bulkAction(Array.from(selectedItems), action);
+        toast.success(`Đã ${action} ${selectedItems.size} quyền hạn.`);
         setSelectedItems(new Set());
-        fetchUsers();
+        fetchPermissions();
       } catch (err) {
         console.error(err);
         toast.error("Thao tác thất bại.");
       }
     },
-    [selectedItems, fetchUsers]
+    [selectedItems, fetchPermissions]
   );
 
   return {
-    users,
+    permissions,
     loading,
     totalItems,
     filters,
@@ -151,13 +152,13 @@ export function useUsersData() {
     pageSize,
     selectedItems,
     setFilters,
-    fetchUsers,
+    fetchPermissions,
     updateSort,
     selectItem,
     selectAll,
     deselectAll,
-    deleteUser,
-    saveUser,
+    deletePermission,
+    savePermission,
     handleBulkAction,
     onPageChange,
     onPageSizeChange,

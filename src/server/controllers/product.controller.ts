@@ -70,7 +70,7 @@ export const productController = {
 
   async getBySlug(req: NextRequest, { params }: { params: { slug: string } }) {
     try {
-      const { slug } =params;
+      const { slug } = params;
 
       if (!slug) {
         return Response.json({ error: "Missing slug" }, { status: 400 });
@@ -88,4 +88,26 @@ export const productController = {
       return Response.json({ error: "Internal Server Error" }, { status: 500 });
     }
   },
+  async getReviewsByProductId(
+    { offset, limit, productId }: { offset: number; limit: number; productId: number }
+  ) {
+    try {
+
+      const reviews = await productService.getReviewsByProductId(productId,offset, limit);
+      return Response.json(reviews, { status: 200 });
+    } catch (err: any) {
+      console.error("getReviews error:", err);
+      return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  },
+  async getRelatedProduct(productId:number){
+    try {
+
+      const product = await productService.findSimilarProductsById(productId);
+      return Response.json(product, { status: 200 });
+    } catch (err: any) {
+      console.error("get Product error:", err);
+      return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  }
 };

@@ -6,11 +6,27 @@ import { produce } from "immer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faStarHalf } from "@fortawesome/free-solid-svg-icons";
 import { json } from "zod";
+import { getRelatedProduct, getReviewsProducts } from "@/lib/api/productApi";
+import ProductCard from "@/components/ui/product/ProductCard";
+import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 
-const DetailProduct = ({ product }) => {
+const DetailProduct = ({ product}) => {
   const [variantCurrent, setVariantCurrent] = useState(product.variants[0]); // lưu variant mặc định sẽ hiển thị đầu tiên
   const [mediaCurrent, setMediaCurrent] = useState(variantCurrent.MediaVariant); // lưu ảnh của variant hiện tại đang hiển thị
   const [quantity, setQuantity] = useState(1);
+  const [reviews, setReviews] = useState(product.Review || []);
+  const [loaded, setLoaded] = useState(false);
+
+  const [relatedProducts, setRelatedProducts] = useState(null);
+
+  useEffect(()=>{
+    async function fetchData(){
+      const related=await getRelatedProduct({productId:product.id});
+      console.log(related)
+      setRelatedProducts(related);
+    }
+    fetchData()
+  },[])
 
   useEffect(() => {
     setMediaCurrent(variantCurrent.MediaVariant);
@@ -121,6 +137,18 @@ const DetailProduct = ({ product }) => {
     "Mô tả chi tiết",
     "Đánh giá từ khách hàng",
   ];
+
+  const handleMoreReviews = async () => {
+    setLoaded(true);
+    const moreReviews = await getReviewsProducts({
+      productId: product.id,
+      limit: 5,
+      offset: reviews.length,
+    });
+    setLoaded(false);
+    setReviews((prev) => [...prev, ...moreReviews]);
+  };
+
   return (
     <main className="max-w-7xl mx-auto py-6">
       <div className="grid grid-cols-12 gap-8">
@@ -502,10 +530,101 @@ const DetailProduct = ({ product }) => {
                       ))}
                     </div>
                   );
+                case 2:
+                  return (
+                    <>
+                      <div className="max-w-3xl">
+                        {reviews.length === 0 ? (
+                          <div className="text-center text-gray-500">
+                            Chưa có đánh giá nào.
+                          </div>
+                        ) : (
+                          reviews.map(
+                            (review) =>
+                              review.isActived && (
+                                <div
+                                  key={review.id}
+                                  className="border-b border-gray-100 pb-4 mb-4"
+                                >
+                                  <div className="flex items-center mb-2">
+                                    <div className="h-6 w-6 border-transparent rounded-full border-2 mr-1.5">
+                                      <Image
+                                        src={review.user.avatar}
+                                        alt={review.user.name}
+                                        width={24}
+                                        height={24}
+                                        className="rounded-full object-cover"
+                                      />
+                                    </div>
+                                    <div className="font-medium text-gray-800 mr-4">
+                                      {review.user.name}
+                                    </div>
+                                    <div className="flex">
+                                      {[...Array(review.stars)].map((_, i) => (
+                                        <FontAwesomeIcon
+                                          key={i}
+                                          icon={faStar}
+                                          className="fa fa-star text-yellow-400"
+                                          style={{
+                                            width: "16px",
+                                            height: "16px",
+                                          }}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="text-gray-700">
+                                    {review.content}
+                                  </div>
+                                </div>
+                              )
+                          )
+                        )}
+                      </div>
+                      {loaded && (
+                        <div className="mt-2 text-sm text-gray-600 animate-pulse">
+                          Đang tải thêm đánh giá...
+                        </div>
+                      )}
+                      {reviews.length % 5 === 0 && (
+                        <button
+                          className="mt-2 px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-50 text-sm"
+                          onClick={handleMoreReviews}
+                        >
+                          Xem thêm đánh giá
+                        </button>
+                      )}
+                    </>
+                  );
+                default:
+                  return null;
               }
             })()}
           </div>
         </div>
+        {/* Sản phẩm liên quan  */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Sản phẩm liên quan</h2>
+          </div>
+
+          {relatedProducts ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedProducts.map((related) => {
+                const productRelated={...related,image: related.variants[0].MediaVariant[0].Media.url,price:related.variants[0].price};
+                return <ProductCard key={related.slug} product={productRelated} />
+})}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );
