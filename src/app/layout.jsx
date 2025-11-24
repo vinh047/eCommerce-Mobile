@@ -1,6 +1,7 @@
+import { GoogleAuthProvider } from "@/providers/google-auth-provider";
 import "./globals.css";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "vietnamese"],
@@ -10,19 +11,17 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "eCommerce Login",
-  description: "Google login + JWT demo",
+  referrer: 'origin-when-cross-origin',
 };
 
-// ⚠️ Lưu ý: Layout phải là server component, nên bạn không thể gọi hook ở đây.
-// Nhưng bạn có thể truyền children vào Provider (là client component).
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
       <body>
-        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+        <GoogleAuthProvider>
           {children}
-        </GoogleOAuthProvider>
+        </GoogleAuthProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
