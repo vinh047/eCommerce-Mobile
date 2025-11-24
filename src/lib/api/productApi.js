@@ -12,7 +12,16 @@ export async function getProductsByFilters(categoryId, params) {
 export async function getProductBySlug(slug) {
   return await apiFetch(`/products/detail/${slug}`);
 }
-
+export async function getReviewsProducts(params){
+  return await apiFetch(`/products/detail/reviews?${new URLSearchParams(params)}`, {
+    next: { revalidate: 600 },
+  });
+}
+export async function getRelatedProduct(params) {
+   return await apiFetch(`/products/detail/related?${new URLSearchParams(params)}`, {
+    next: { revalidate: 600 },
+  });
+}
 const productsApi = {
   getProducts: (params) =>
     apiFetch(`/products?${new URLSearchParams(params)}`, {

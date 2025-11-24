@@ -1,4 +1,5 @@
 import { AccountStatus, CouponType } from "@prisma/client";
+import { isDragActive } from "framer-motion";
 
 export const users = [
   // 1. John Doe (Đã có)
@@ -871,3 +872,61 @@ export const staffRoles = [
   { staffId: 2, roleId: 2, assignedAt: new Date() }, // nhân viên bán hàng
   { staffId: 3, roleId: 3, assignedAt: new Date() }, // nhân viên kho
 ];
+// Dữ liệu Review
+export const reviews = [
+  {
+    productId: 1,
+    userId: 1,
+    stars: 5,
+    content: "Sản phẩm tuyệt vời, chất lượng vượt mong đợi!",
+    isActived: true,
+  },
+  {
+    productId: 1,
+    userId: 2,
+    stars: 4,
+    content: "Rất hài lòng với sản phẩm, sẽ mua lại.",
+    isActived: true,
+
+  },
+  {
+    productId: 1,
+    userId: 3,
+    stars: 3,
+    content: "Sản phẩm ổn nhưng giao hàng hơi chậm.",
+    isActived: true,
+
+  },
+  {
+    productId: 1,
+    userId: 4,
+    stars: 2,
+    content: "Chất lượng không như quảng cáo, khá thất vọng.",
+    isActived: true,
+
+  },
+  {
+    productId: 1,
+    userId: 5,
+    stars: 5,
+    content: "Tuyệt vời! Sẽ giới thiệu cho bạn bè.",
+    isActived: true,
+
+  },
+  {
+    productId: 1,
+    userId: 6,
+    stars: 4,
+    isActived: true,
+    content: "Sản phẩm tốt, dịch vụ khách hàng cũng rất chu đáo.",
+  },
+  {
+    productId: 1,
+    userId: 7,
+    stars: 4,
+    isActived: false,
+    content: "Sản phẩm tốt, dịch vụ khách hàng cũng rất chu đáo.",
+  }
+];
+
+// Lưu ý: userId và productId trong reviews phải tương ứng với dữ liệu đã có trong database.

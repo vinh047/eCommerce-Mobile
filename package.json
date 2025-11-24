@@ -44,6 +44,8 @@
     "react-redux": "^9.2.0",
     "react-select": "^5.10.2",
     "sonner": "^2.0.7",
+    "string-similarity": "^4.0.4",
+    "string-similarity-js": "^2.1.4",
     "styled-components": "^6.1.19",
     "swiper": "^12.0.2",
     "zod": "^4.1.11"
