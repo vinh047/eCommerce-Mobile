@@ -129,7 +129,7 @@ export default function CouponsTable({
             onSelectAll={handleSelectAll}
           />
           <tbody>
-            {loading ? (
+            {loading || coupons.length === 0 ? (
               <LoadingSkeleton columnVisibility={columnVisibility} />
             ) : (
               coupons.map((coupon) => (

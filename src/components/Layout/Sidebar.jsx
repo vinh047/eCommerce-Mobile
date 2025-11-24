@@ -3,52 +3,57 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChartPie,
-  faShoppingCart,
-  faBox,
-  faPalette,
-  faImages,
-  faTags,
-  faAppleAlt,
-  faTicketAlt,
-  faUsers,
-  faStar,
-  faWarehouse,
-  faExchangeAlt,
-  faCreditCard,
-  faUserShield,
-  faMobileAlt,
-} from "@fortawesome/free-solid-svg-icons";
+  Home,
+  ShoppingCart,
+  Box,
+  Palette,
+  Image,
+  Tag,
+  Apple,
+  Ticket,
+  Users,
+  Star,
+  Archive,
+  Repeat,
+  CreditCard,
+  UserCheck,
+  Smartphone,
+} from "lucide-react";
 
 const navItems = [
-  { name: "Dashboard", icon: faChartPie, href: "/admin/dashboard" },
+  { name: "Dashboard", icon: Home, href: "/admin/dashboard" },
   {
     name: "Đơn hàng",
-    icon: faShoppingCart,
+    icon: ShoppingCart,
     href: "/admin/orders",
     badge: 12,
     badgeColor: "bg-red-100 text-red-600",
   },
-  { name: "Sản phẩm", icon: faBox, href: "/admin/products" },
-  { name: "Variants", icon: faPalette, href: "/admin/variants" },
-  { name: "Ảnh/Media", icon: faImages, href: "/admin/media" },
-  { name: "Danh mục", icon: faTags, href: "/admin/categories" },
-  { name: "Thương hiệu", icon: faAppleAlt, href: "/admin/brands" },
-  { name: "Mã giảm giá", icon: faTicketAlt, href: "/admin/coupons" },
-  { name: "Người dùng", icon: faUsers, href: "/admin/users" },
-  { name: "Đánh giá", icon: faStar, href: "/admin/reviews" },
-  { name: "Kho & Thiết bị", icon: faWarehouse, href: "/admin/inventory" },
+  { name: "Sản phẩm", icon: Box, href: "/admin/products" },
+  { name: "Variants", icon: Palette, href: "/admin/variants" },
+  { name: "Ảnh/Media", icon: Image, href: "/admin/media" },
+  { name: "Danh mục", icon: Tag, href: "/admin/category" },
+  { name: "Thương hiệu", icon: Apple, href: "/admin/brands" },
+  { name: "Thông số kỹ thuật", icon: Apple, href: "/admin/specs" },
+  { name: "Mã giảm giá", icon: Ticket, href: "/admin/coupons" },
+  { name: "Người dùng", icon: Users, href: "/admin/users" },
+  { name: "Đánh giá", icon: Star, href: "/admin/reviews" },
+  { name: "Kho & Thiết bị", icon: Archive, href: "/admin/inventory" },
   {
     name: "RMA (Đổi/Trả)",
-    icon: faExchangeAlt,
+    icon: Repeat,
     href: "/admin/rma",
     badge: 3,
     badgeColor: "bg-orange-100 text-orange-600",
   },
-  { name: "Giao dịch thanh toán", icon: faCreditCard, href: "/admin/transactions" },
-  { name: "Nhân sự & Phân quyền", icon: faUserShield, href: "/admin/staff" },
+  {
+    name: "Giao dịch thanh toán",
+    icon: CreditCard,
+    href: "/admin/transactions",
+  },
+  { name: "Nhân sự ", icon: UserCheck, href: "/admin/staff" },
+  { name: "Phân Quyền ", icon: UserCheck, href: "/admin/roles" },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
@@ -73,15 +78,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       <div
         id="sidebar"
         className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-30 sidebar-transition transform 
-          ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}  `}
+          ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
+        {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FontAwesomeIcon
-                icon={faMobileAlt}
-                className="text-white text-lg"
-              />
+              <Smartphone className="text-white w-5 h-5" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -94,15 +97,16 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </div>
         </div>
 
+        {/* Navigation */}
         <nav className="p-4 space-y-2 overflow-y-auto h-full pb-20">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
+            const Icon = item.icon;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`
-                  nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
+                className={`nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
                   ${
                     isActive
                       ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
@@ -111,7 +115,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 `}
                 onClick={() => window.innerWidth < 1024 && setIsOpen(false)}
               >
-                <FontAwesomeIcon icon={item.icon} className="w-5" />
+                <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
                 {item.badge && (
                   <span
@@ -126,7 +130,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </nav>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Overlay */}
       {isOpen && typeof window !== "undefined" && window.innerWidth < 1024 && (
         <div
           id="sidebarOverlay"

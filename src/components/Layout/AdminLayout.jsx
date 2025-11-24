@@ -1,22 +1,29 @@
-// src/components/Layout/AdminLayout.jsx
 "use client";
 import { useState, useEffect } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { Toaster } from "sonner";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 export default function AdminLayout({ children }) {
   const [isDark, setIsDark] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Dark Mode Logic
+  useEffect(() => {
+    AOS.init({
+      duration: 400,
+      easing: "ease-out-cubic",
+      once: true,
+    });
+  }, []);
+
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") || "light";
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"
     ).matches;
 
-    // Initial theme setting
     if (storedTheme === "dark" || (storedTheme === "light" && prefersDark)) {
       document.documentElement.classList.add("dark");
       setIsDark(true);
@@ -58,7 +65,7 @@ export default function AdminLayout({ children }) {
 
           {/* Content */}
           <main className="">
-            {children} 
+            {children}
             <Toaster richColors />
           </main>
         </div>

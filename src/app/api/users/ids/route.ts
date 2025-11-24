@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
-    const status = searchParams.get("status") || "";
+    const statusQuery = searchParams.get("statusQuery") || "";
 
     const where: any = {
       NOT: { status: "deleted" },
@@ -17,8 +17,9 @@ export async function GET(req: Request) {
         { email: { contains: search, mode: "insensitive" } },
       ];
     }
-    if (status) {
-      where.status = status;
+    if (statusQuery) {
+      const statuses = statusQuery.split(",");
+      where.status = { in: statuses };
     }
 
     const users = await prisma.user.findMany({

@@ -486,3 +486,388 @@ export const coupons = [
     brandId: null,
   },
 ];
+
+export const staffs = [
+  {
+    id: 1,
+    email: "admin@fastfood.vn",
+    passwordHash: "$2b$10$hashed_admin_password", // bcrypt hash
+    name: "Quản trị viên",
+    avatar: "/avatars/admin.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+  {
+    id: 2,
+    email: "staff1@fastfood.vn",
+    passwordHash: "$2b$10$hashed_staff1_password",
+    name: "Nhân viên bán hàng",
+    avatar: "/avatars/staff1.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+  {
+    id: 3,
+    email: "inventory@fastfood.vn",
+    passwordHash: "$2b$10$hashed_inventory_password",
+    name: "Nhân viên kho",
+    avatar: "/avatars/inventory.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+];
+
+export const roles = [
+  { id: 1, name: "Admin", createdAt: new Date() },
+  { id: 2, name: "Staff", createdAt: new Date() },
+  { id: 3, name: "Inventory", createdAt: new Date() },
+];
+
+export const permissions = [
+  // STAFF & ROLE
+  {
+    id: 1,
+    key: "VIEW_STAFF",
+    name: "Xem nhân viên",
+    description: "Xem danh sách và chi tiết nhân viên",
+    createdAt: new Date(),
+  },
+  {
+    id: 2,
+    key: "CREATE_STAFF",
+    name: "Thêm nhân viên",
+    description: "Thêm nhân viên mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 3,
+    key: "UPDATE_STAFF",
+    name: "Sửa nhân viên",
+    description: "Chỉnh sửa thông tin nhân viên",
+    createdAt: new Date(),
+  },
+  {
+    id: 4,
+    key: "DELETE_STAFF",
+    name: "Xoá nhân viên",
+    description: "Xoá nhân viên",
+    createdAt: new Date(),
+  },
+  {
+    id: 5,
+    key: "VIEW_ROLE",
+    name: "Xem Role",
+    description: "Xem danh sách vai trò",
+    createdAt: new Date(),
+  },
+  {
+    id: 6,
+    key: "CREATE_ROLE",
+    name: "Thêm Role",
+    description: "Tạo vai trò mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 7,
+    key: "UPDATE_ROLE",
+    name: "Sửa Role",
+    description: "Chỉnh sửa vai trò",
+    createdAt: new Date(),
+  },
+  {
+    id: 8,
+    key: "DELETE_ROLE",
+    name: "Xoá Role",
+    description: "Xoá vai trò",
+    createdAt: new Date(),
+  },
+  {
+    id: 9,
+    key: "ASSIGN_ROLE",
+    name: "Gán Role cho nhân viên",
+    description: "Gán/bỏ Role cho nhân viên",
+    createdAt: new Date(),
+  },
+
+  // CUSTOMER
+  {
+    id: 10,
+    key: "VIEW_CUSTOMER",
+    name: "Xem khách hàng",
+    description: "Xem danh sách/chi tiết khách hàng",
+    createdAt: new Date(),
+  },
+  {
+    id: 11,
+    key: "CREATE_CUSTOMER",
+    name: "Thêm khách hàng",
+    description: "Tạo khách hàng mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 12,
+    key: "UPDATE_CUSTOMER",
+    name: "Sửa khách hàng",
+    description: "Chỉnh sửa thông tin khách hàng",
+    createdAt: new Date(),
+  },
+  {
+    id: 13,
+    key: "DELETE_CUSTOMER",
+    name: "Xoá khách hàng",
+    description: "Xoá khách hàng",
+    createdAt: new Date(),
+  },
+
+  // PRODUCT & VARIANT
+  {
+    id: 14,
+    key: "VIEW_PRODUCT",
+    name: "Xem sản phẩm",
+    description: "Xem danh sách/chi tiết sản phẩm",
+    createdAt: new Date(),
+  },
+  {
+    id: 15,
+    key: "CREATE_PRODUCT",
+    name: "Thêm sản phẩm",
+    description: "Tạo sản phẩm mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 16,
+    key: "UPDATE_PRODUCT",
+    name: "Sửa sản phẩm",
+    description: "Chỉnh sửa sản phẩm",
+    createdAt: new Date(),
+  },
+  {
+    id: 17,
+    key: "DELETE_PRODUCT",
+    name: "Xoá sản phẩm",
+    description: "Xoá sản phẩm",
+    createdAt: new Date(),
+  },
+  {
+    id: 18,
+    key: "VIEW_VARIANT",
+    name: "Xem biến thể",
+    description: "Xem danh sách/chi tiết biến thể",
+    createdAt: new Date(),
+  },
+  {
+    id: 19,
+    key: "CREATE_VARIANT",
+    name: "Thêm biến thể",
+    description: "Tạo biến thể mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 20,
+    key: "UPDATE_VARIANT",
+    name: "Sửa biến thể",
+    description: "Chỉnh sửa biến thể",
+    createdAt: new Date(),
+  },
+  {
+    id: 21,
+    key: "DELETE_VARIANT",
+    name: "Xoá biến thể",
+    description: "Xoá biến thể",
+    createdAt: new Date(),
+  },
+
+  // ORDER & RMA
+  {
+    id: 22,
+    key: "VIEW_ORDER",
+    name: "Xem đơn hàng",
+    description: "Xem danh sách/chi tiết đơn hàng",
+    createdAt: new Date(),
+  },
+  {
+    id: 23,
+    key: "UPDATE_ORDER_STATUS",
+    name: "Cập nhật trạng thái đơn hàng",
+    description: "Cập nhật trạng thái đơn hàng",
+    createdAt: new Date(),
+  },
+  {
+    id: 24,
+    key: "VIEW_RMA",
+    name: "Xem RMA",
+    description: "Xem danh sách/chi tiết RMA",
+    createdAt: new Date(),
+  },
+  {
+    id: 25,
+    key: "PROCESS_RMA",
+    name: "Xử lý RMA",
+    description: "Duyệt / từ chối / hoàn thành RMA",
+    createdAt: new Date(),
+  },
+
+  // PAYMENT
+  {
+    id: 26,
+    key: "VIEW_PAYMENT_METHOD",
+    name: "Xem phương thức thanh toán",
+    description: "Xem danh sách/chi tiết phương thức thanh toán",
+    createdAt: new Date(),
+  },
+  {
+    id: 27,
+    key: "CREATE_PAYMENT_METHOD",
+    name: "Thêm phương thức thanh toán",
+    description: "Thêm mới phương thức thanh toán",
+    createdAt: new Date(),
+  },
+  {
+    id: 28,
+    key: "UPDATE_PAYMENT_METHOD",
+    name: "Sửa phương thức thanh toán",
+    description: "Chỉnh sửa thông tin phương thức",
+    createdAt: new Date(),
+  },
+  {
+    id: 29,
+    key: "DELETE_PAYMENT_METHOD",
+    name: "Xoá phương thức thanh toán",
+    description: "Xoá phương thức thanh toán",
+    createdAt: new Date(),
+  },
+  {
+    id: 30,
+    key: "VIEW_PAYMENT_TRANSACTION",
+    name: "Xem giao dịch",
+    description: "Xem các giao dịch thanh toán",
+    createdAt: new Date(),
+  },
+
+  // COUPON
+  {
+    id: 31,
+    key: "VIEW_COUPON",
+    name: "Xem mã giảm giá",
+    description: "Xem danh sách/chi tiết coupon",
+    createdAt: new Date(),
+  },
+  {
+    id: 32,
+    key: "CREATE_COUPON",
+    name: "Thêm coupon",
+    description: "Tạo coupon mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 33,
+    key: "UPDATE_COUPON",
+    name: "Sửa coupon",
+    description: "Chỉnh sửa coupon",
+    createdAt: new Date(),
+  },
+  {
+    id: 34,
+    key: "DELETE_COUPON",
+    name: "Xoá coupon",
+    description: "Xoá coupon",
+    createdAt: new Date(),
+  },
+
+  // INVENTORY & DEVICE
+  {
+    id: 35,
+    key: "VIEW_INVENTORY",
+    name: "Xem kho hàng",
+    description: "Xem tồn kho của các biến thể",
+    createdAt: new Date(),
+  },
+  {
+    id: 36,
+    key: "MANAGE_INVENTORY",
+    name: "Quản lý kho",
+    description: "Thêm/sửa/xoá/ghi nhận tồn kho",
+    createdAt: new Date(),
+  },
+  {
+    id: 37,
+    key: "VIEW_DEVICE",
+    name: "Xem thiết bị",
+    description: "Xem danh sách/chi tiết thiết bị",
+    createdAt: new Date(),
+  },
+  {
+    id: 38,
+    key: "MANAGE_DEVICE",
+    name: "Quản lý thiết bị",
+    description: "Thêm/sửa/xoá thiết bị",
+    createdAt: new Date(),
+  },
+
+  // REVIEW & BANNER
+  {
+    id: 39,
+    key: "VIEW_REVIEW",
+    name: "Xem đánh giá",
+    description: "Xem danh sách/chi tiết review",
+    createdAt: new Date(),
+  },
+  {
+    id: 40,
+    key: "DELETE_REVIEW",
+    name: "Xoá review",
+    description: "Xoá review xấu hoặc spam",
+    createdAt: new Date(),
+  },
+  {
+    id: 41,
+    key: "VIEW_BANNER",
+    name: "Xem banner",
+    description: "Xem banner trên trang chủ",
+    createdAt: new Date(),
+  },
+  {
+    id: 42,
+    key: "CREATE_BANNER",
+    name: "Thêm banner",
+    description: "Thêm banner mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 43,
+    key: "UPDATE_BANNER",
+    name: "Sửa banner",
+    description: "Chỉnh sửa banner",
+    createdAt: new Date(),
+  },
+  {
+    id: 44,
+    key: "DELETE_BANNER",
+    name: "Xoá banner",
+    description: "Xoá banner",
+    createdAt: new Date(),
+  },
+];
+
+export const rolePermissions = [
+  // Admin: full quyền
+  ...permissions.map((p) => ({
+    roleId: 1,
+    permissionId: p.id,
+    grantedAt: new Date(),
+  })),
+
+  // Staff: chỉ quản lý đơn hàng + xem dashboard
+  { roleId: 2, permissionId: 1, grantedAt: new Date() },
+  { roleId: 2, permissionId: 4, grantedAt: new Date() },
+
+  // Inventory: chỉ quản lý kho
+  { roleId: 3, permissionId: 1, grantedAt: new Date() },
+  { roleId: 3, permissionId: 5, grantedAt: new Date() },
+];
+
+export const staffRoles = [
+  { staffId: 1, roleId: 1, assignedAt: new Date() }, // admin
+  { staffId: 2, roleId: 2, assignedAt: new Date() }, // nhân viên bán hàng
+  { staffId: 3, roleId: 3, assignedAt: new Date() }, // nhân viên kho
+];
