@@ -8,58 +8,17 @@ export default function CartSummary({
   onCheckout 
 }) {
   return (
-    <div className="space-y-4">
-      {/* Coupon Input */}
-      <div className="bg-white rounded-2xl custom-shadow p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Mã giảm giá</h3>
-        <form onSubmit={onApplyCoupon} className="space-y-3">
-          <div className="relative">
-            <input 
-              type="text" 
-              id="couponInput"
-              placeholder="Nhập mã giảm giá"
-              aria-label="Nhập mã giảm giá"
-              className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus-ring focus:border-blue-600"
-            />
-            <div id="couponError" className="hidden mt-2 text-sm text-red-600" role="alert"></div>
-            <div id="couponSuccess" className="hidden mt-2 text-sm text-green-600" role="alert"></div>
-          </div>
-          <button 
-            type="submit"
-            className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-2xl hover:bg-gray-200 focus-ring font-medium transition-colors"
-            aria-label="Áp dụng mã giảm giá"
-          >
-            Áp dụng
-          </button>
-        </form>
-      </div>
-
+    <div className="space-y-4 sticky top-20 h-fit">
       {/* Order Summary */}
       <div className="bg-white rounded-2xl custom-shadow p-6">
         <h3 className="font-semibold text-gray-900 mb-4">Tóm tắt đơn hàng</h3>
         
         <div className="space-y-3" aria-live="polite" aria-label="Tóm tắt đơn hàng">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Tạm tính</span>
-            <span className="font-medium">{formatPrice(subtotal)}</span>
-          </div>
-          
-          {discount > 0 && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">Giảm giá</span>
-              <span className="font-medium text-green-600">-{formatPrice(discount)}</span>
-            </div>
-          )}
-          
-          <div className="flex justify-between">
-            <span className="text-gray-600">Phí vận chuyển</span>
-            <span className="font-medium">{shipping === 0 ? 'Miễn phí' : formatPrice(shipping)}</span>
-          </div>
           
           <hr className="border-gray-200"/>
           
           <div className="flex justify-between text-lg font-bold">
-            <span>Tổng cộng</span>
+            <span>Tạm tính</span>
             <span className="text-blue-600">{formatPrice(subtotal - discount + shipping)}</span>
           </div>
         </div>

@@ -457,6 +457,7 @@ model Coupon {
   type       CouponType
   value      Decimal       @db.Decimal(12, 2)
   minOrder   Decimal       @default(0.00) @map("min_order") @db.Decimal(12, 2)
+  maxOrder   Decimal?      @default(0.00) @map("max_order") @db.Decimal(12, 2) 
   startsAt   DateTime?     @map("starts_at") @db.Timestamp(0)
   endsAt     DateTime?     @map("ends_at") @db.Timestamp(0)
   usageLimit Int?          @map("usage_limit")

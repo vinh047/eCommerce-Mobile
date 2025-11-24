@@ -344,7 +344,6 @@ export const users = [
     ],
   },
 ];
-
 export const coupons = [
   // 1. Giảm cố định, hoạt động
   {
@@ -352,8 +351,9 @@ export const coupons = [
     type: CouponType.fixed,
     value: 200000.0, // 200,000 VND
     minOrder: 1000000.0, // Đơn hàng tối thiểu 1 triệu
+    maxOrder: 5000000.0, // Đơn hàng tối đa 5 triệu
     startsAt: new Date(),
-    endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Hết hạn sau 30 ngày
+    endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     usageLimit: 500,
     used: 150,
     status: AccountStatus.active,
@@ -364,65 +364,70 @@ export const coupons = [
   {
     code: "SALE15PERCENT",
     type: CouponType.percentage,
-    value: 15.0, // 15%
+    value: 15.0,
     minOrder: 500000.0,
-    startsAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Đã bắt đầu 7 ngày trước
-    endsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // Hết hạn sau 15 ngày
+    maxOrder: 3000000.0,
+    startsAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    endsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
     usageLimit: 2000,
     used: 1875,
     status: AccountStatus.active,
     categoryId: null,
     brandId: null,
   },
-  // 3. Giảm cố định, sắp hết hạn/đã hết giới hạn (blocked)
+  // 3. Giảm cố định, blocked
   {
     code: "GIAYDEP50K",
     type: CouponType.fixed,
     value: 50000.0,
     minOrder: 300000.0,
+    maxOrder: 2000000.0,
     startsAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Sắp hết hạn
+    endsAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     usageLimit: 100,
-    used: 100, // Đã hết giới hạn
+    used: 100,
     status: AccountStatus.blocked,
-    categoryId: null, // Dành cho danh mục Giày Dép
+    categoryId: null,
     brandId: null,
   },
-  // 4. Giảm phần trăm, bị xóa
+  // 4. Giảm phần trăm, deleted
   {
     code: "TESTCODE01",
     type: CouponType.percentage,
     value: 10.0,
     minOrder: 0.0,
+    maxOrder: 1000000.0,
     startsAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     endsAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
     usageLimit: 10,
     used: 1,
-    status: AccountStatus.deleted, // Đã xóa
+    status: AccountStatus.deleted,
     categoryId: null,
     brandId: null,
   },
-  // 5. Giảm cố định, không giới hạn sử dụng
+  // 5. Giảm cố định, không giới hạn
   {
     code: "FREE20K",
     type: CouponType.fixed,
     value: 20000.0,
     minOrder: 150000.0,
+    maxOrder: null, // Không giới hạn
     startsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    endsAt: null, // Không có ngày kết thúc
-    usageLimit: null, // Không giới hạn
+    endsAt: null,
+    usageLimit: null,
     used: 5000,
     status: AccountStatus.active,
     categoryId: null,
-    brandId: null, // Dành cho Brand ID 3
+    brandId: null,
   },
   // 6. Giảm phần trăm, chưa bắt đầu
   {
     code: "SUMMER40",
     type: CouponType.percentage,
-    value: 40.0,
+    value: 5.0,
     minOrder: 800000.0,
-    startsAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Bắt đầu sau 5 ngày
+    maxOrder: 4000000.0,
+    startsAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
     endsAt: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000),
     usageLimit: 50,
     used: 0,
@@ -436,20 +441,22 @@ export const coupons = [
     type: CouponType.fixed,
     value: 500000.0,
     minOrder: 2000000.0,
+    maxOrder: 10000000.0,
     startsAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // Đã hết hạn
+    endsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
     usageLimit: 10,
     used: 9,
     status: AccountStatus.blocked,
     categoryId: null,
     brandId: null,
   },
-  // 8. Giảm phần trăm, áp dụng cho cả category và brand
+  // 8. Giảm phần trăm, combo
   {
     code: "COMBO20",
     type: CouponType.percentage,
     value: 20.0,
     minOrder: 100000.0,
+    maxOrder: 5000000.0,
     startsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
     endsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
     usageLimit: 800,
@@ -458,12 +465,13 @@ export const coupons = [
     categoryId: null,
     brandId: null,
   },
-  // 9. Giảm cố định, minOrder bằng 0 (áp dụng cho mọi đơn)
+  // 9. Giảm cố định, minOrder = 0
   {
     code: "FREEFEE",
     type: CouponType.fixed,
     value: 15000.0,
     minOrder: 0.0,
+    maxOrder: 1000000.0,
     startsAt: new Date(),
     endsAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
     usageLimit: 99999,
@@ -476,8 +484,9 @@ export const coupons = [
   {
     code: "MAX99PERCENT",
     type: CouponType.percentage,
-    value: 99.0, // 99%
+    value: 99.0,
     minOrder: 500000.0,
+    maxOrder: 2000000.0,
     startsAt: new Date(),
     endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     usageLimit: 5,

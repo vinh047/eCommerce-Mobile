@@ -43,6 +43,12 @@ const usersApi = {
       method: "POST",
       body: { ids, action },
     }),
+
+  getCurrentUser: () => 
+    apiFetch('/users/current', {
+      method: "GET",
+      credentials: "include", 
+    })
 };
 
 export default usersApi;

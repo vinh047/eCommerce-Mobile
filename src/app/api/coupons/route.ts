@@ -18,6 +18,7 @@ export async function POST(req: Request) {
         status: data.status,
         categoryId: data.categoryId,
         brandId: data.brandId,
+        maxOrder:data.maxOrder,
       },
     });
     return NextResponse.json(coupon, { status: 201 });
@@ -88,4 +89,4 @@ export async function GET(req: Request) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+} 

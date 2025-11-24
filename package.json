@@ -31,6 +31,7 @@
     "cookie": "^1.0.2",
     "framer-motion": "^12.23.22",
     "google-auth-library": "^10.4.1",
+    "jose": "^6.1.2",
     "jsonwebtoken": "^9.0.2",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.544.0",
