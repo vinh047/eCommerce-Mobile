@@ -10,14 +10,17 @@ import {
   Palette,
   Image,
   Tag,
-  Apple,
-  Ticket,
+  BadgePercent,
   Users,
   Star,
-  Archive,
+  Warehouse,
   Repeat,
   CreditCard,
-  UserCheck,
+  UserCog,
+  ShieldCheck,
+  BarChart3,
+  Building2,
+  ListChecks,
   Smartphone,
 } from "lucide-react";
 
@@ -34,16 +37,16 @@ const navItems = [
   { name: "Variants", icon: Palette, href: "/admin/variants" },
   { name: "Ảnh/Media", icon: Image, href: "/admin/media" },
   { name: "Danh mục", icon: Tag, href: "/admin/category" },
-  { name: "Thương hiệu", icon: Apple, href: "/admin/brands" },
-  { name: "Thông số kỹ thuật", icon: Apple, href: "/admin/specs" },
-  { name: "Mã giảm giá", icon: Ticket, href: "/admin/coupons" },
+  { name: "Thương hiệu", icon: Building2, href: "/admin/brands" },
+  { name: "Thông số kỹ thuật", icon: ListChecks, href: "/admin/specs" },
+  { name: "Mã giảm giá", icon: BadgePercent, href: "/admin/coupons" },
   { name: "Người dùng", icon: Users, href: "/admin/users" },
   { name: "Đánh giá", icon: Star, href: "/admin/reviews" },
-  { name: "Kho & Thiết bị", icon: Archive, href: "/admin/inventory" },
+  { name: "Kho & Thiết bị", icon: Warehouse, href: "/admin/inventory" },
   {
     name: "RMA (Đổi/Trả)",
     icon: Repeat,
-    href: "/admin/rma",
+    href: "/admin/rmas",
     badge: 3,
     badgeColor: "bg-orange-100 text-orange-600",
   },
@@ -52,8 +55,9 @@ const navItems = [
     icon: CreditCard,
     href: "/admin/transactions",
   },
-  { name: "Nhân sự ", icon: UserCheck, href: "/admin/staff" },
-  { name: "Phân Quyền ", icon: UserCheck, href: "/admin/roles" },
+  { name: "Nhân sự", icon: UserCog, href: "/admin/staff" },
+  { name: "Phân Quyền", icon: ShieldCheck, href: "/admin/roles" },
+  { name: "Thống kê", icon: BarChart3, href: "/admin/reports" },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
@@ -98,7 +102,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2 overflow-y-auto h-full pb-20">
+        <nav className="overflow-y-auto h-[calc(100vh-80px)] p-4  space-y-2 pb-10 scroll-area">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
