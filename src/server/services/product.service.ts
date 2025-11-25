@@ -382,7 +382,7 @@ export const productService = {
     console.log(newReview)
     return newReview
   },
-  async findSimilarProductsById(
+async findSimilarProductsById(
   productId: number,
   threshold = 0.6,
   limit = 10
@@ -398,32 +398,43 @@ export const productService = {
 
   // Lấy tất cả sản phẩm khác trong bảng
   const allProducts = await prisma.product.findMany({
-    where: {
-      id: { not: productId },
-    },
+    where: { id: { not: productId } },
     include: {
-      variants:{
-        include:{
-          MediaVariant:{
-            include:{
-              Media:true
-            }
+      variants: {
+        include: {
+          MediaVariant: {
+            include: { Media: true }
           }
         }
       }
     }
   });
 
-  // So sánh tên và lọc
-  const similarProducts = allProducts
-    .map(p => ({
-      ...p,
-      similarity: compareTwoStrings(p.name, original.name),
-    }))
+  // So sánh tên và lọc theo threshold
+  let similarProducts = allProducts
+    .map(p => ({ ...p, similarity: compareTwoStrings(p.name, original.name) }))
     .filter(p => p.similarity > threshold)
-    .sort((a, b) => b.similarity - a.similarity) // ưu tiên giống nhất
-    .slice(0, limit); // tối đa `limit` sản phẩm
+    .sort((a, b) => b.similarity - a.similarity);
 
-  return similarProducts;
+  // Nếu chưa đủ limit, lấy thêm theo category
+  if (similarProducts.length < limit) {
+    const needed = limit - similarProducts.length;
+
+    const additionalProducts = allProducts
+      .filter(
+        p =>
+          p.categoryId === original.categoryId &&
+          !similarProducts.some(sp => sp.id === p.id)
+      )
+      .slice(0, needed)
+      .map(p => ({ ...p, similarity: 0 })); // gán similarity = 0
+
+    similarProducts = [...similarProducts, ...additionalProducts];
+  }
+
+  // Giới hạn tối đa `limit` sản phẩm
+  return similarProducts.slice(0, limit);
 }
+  
+
 };

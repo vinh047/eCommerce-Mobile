@@ -9,8 +9,11 @@ import { json } from "zod";
 import { getRelatedProduct, getReviewsProducts } from "@/lib/api/productApi";
 import ProductCard from "@/components/ui/product/ProductCard";
 import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
+import cartsApi from "@/lib/api/cartsApi";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-const DetailProduct = ({ product}) => {
+const DetailProduct = ({ product }) => {
   const [variantCurrent, setVariantCurrent] = useState(product.variants[0]); // lưu variant mặc định sẽ hiển thị đầu tiên
   const [mediaCurrent, setMediaCurrent] = useState(variantCurrent.MediaVariant); // lưu ảnh của variant hiện tại đang hiển thị
   const [quantity, setQuantity] = useState(1);
@@ -19,14 +22,26 @@ const DetailProduct = ({ product}) => {
 
   const [relatedProducts, setRelatedProducts] = useState(null);
 
-  useEffect(()=>{
-    async function fetchData(){
-      const related=await getRelatedProduct({productId:product.id});
-      console.log(related)
+  const router = useRouter();
+
+  const [showAll, setShowAll] = useState(false);
+  const initialDisplayCount = 5; // Hiển thị 5 sản phẩm đầu tiên
+
+  // Null-safe: tránh lỗi khi relatedProducts là null/undefined
+  const safeProducts = relatedProducts ?? [];
+
+  const displayedProducts = showAll
+    ? safeProducts
+    : safeProducts.slice(0, initialDisplayCount);
+
+  useEffect(() => {
+    async function fetchData() {
+      const related = await getRelatedProduct({ productId: product.id });
+      console.log(related);
       setRelatedProducts(related);
     }
-    fetchData()
-  },[])
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setMediaCurrent(variantCurrent.MediaVariant);
@@ -149,6 +164,26 @@ const DetailProduct = ({ product}) => {
     setReviews((prev) => [...prev, ...moreReviews]);
   };
 
+  const handleAddToCard = async () => {
+    try {
+      const cart = await cartsApi.addCart(variantCurrent.id, quantity);
+      toast.success("Thêm vào giỏ hàng thành công");
+    } catch (err) {
+      toast.error(err.payload.message);
+      if ((err.status = 401)) {
+        // useRouter.push("/login");
+      }
+    }
+  };
+  const handleBuyNow = async () => {
+    try {
+      const cart = await cartsApi.addCart(variantCurrent.id, quantity);
+      toast.success("Thêm vào giỏ hàng thành công");
+      router.push("/cart")
+    } catch (error) {
+      toast.error(err.payload.message);
+    }
+  };
   return (
     <main className="max-w-7xl mx-auto py-6">
       <div className="grid grid-cols-12 gap-8">
@@ -409,7 +444,10 @@ const DetailProduct = ({ product}) => {
                   <div className="w-12 text-center font-medium">{quantity}</div>
                   <button
                     className="w-10 h-10 grid place-items-center text-gray-600 hover:bg-gray-50"
-                    onClick={() => setQuantity((s) => s + 1)}
+                    onClick={() => {
+                      setQuantity((s) => s + 1);
+                    }}
+                    disabled={variantCurrent.stock <= quantity}
                   >
                     +
                   </button>
@@ -426,6 +464,7 @@ const DetailProduct = ({ product}) => {
                 <button
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 font-semibold text-gray-800 transition cursor-pointer  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                   disabled={variantCurrent.stock <= 0}
+                  onClick={handleAddToCard}
                 >
                   Thêm vào giỏ hàng
                 </button>
@@ -533,7 +572,7 @@ const DetailProduct = ({ product}) => {
                 case 2:
                   return (
                     <>
-                      <div className="max-w-3xl">
+                      <div>
                         {reviews.length === 0 ? (
                           <div className="text-center text-gray-500">
                             Chưa có đánh giá nào.
@@ -586,7 +625,7 @@ const DetailProduct = ({ product}) => {
                           Đang tải thêm đánh giá...
                         </div>
                       )}
-                      {reviews.length % 5 === 0 && (
+                      {reviews.length % 5 === 0 && reviews.length !== 0 && (
                         <button
                           className="mt-2 px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-50 text-sm"
                           onClick={handleMoreReviews}
@@ -608,20 +647,48 @@ const DetailProduct = ({ product}) => {
             <h2 className="text-xl font-semibold">Sản phẩm liên quan</h2>
           </div>
 
-          {relatedProducts ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedProducts.map((related) => {
-                const productRelated={...related,image: related.variants[0].MediaVariant[0].Media.url,price:related.variants[0].price};
-                return <ProductCard key={related.slug} product={productRelated} />
-})}
+          {safeProducts.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {displayedProducts.map((related) => {
+                  const productRelated = {
+                    ...related,
+                    image: related.variants[0].MediaVariant[0].Media.url,
+                    price: related.variants[0].price,
+                  };
+                  return (
+                    <ProductCard key={related.slug} product={productRelated} />
+                  );
+                })}
+              </div>
+
+              {/* Button Xem thêm / Thu gọn chỉ hiển thị khi SP > 5 */}
+              {safeProducts.length > initialDisplayCount && (
+                <div className="mt-4 text-center">
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    onClick={() => setShowAll(!showAll)}
+                  >
+                    {showAll ? "Thu gọn" : "Xem thêm"}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : relatedProducts === null ? (
+            // Skeleton loading khi data chưa có
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <ProductCardSkeleton />
-              <ProductCardSkeleton />
-              <ProductCardSkeleton />
-              <ProductCardSkeleton />
-
+            // Không tìm thấy sản phẩm
+            <div className="col-span-2 md:col-span-5 p-6 text-center text-gray-500">
+              <p className="text-lg font-semibold">
+                Không tìm thấy sản phẩm nào
+              </p>
             </div>
           )}
         </section>
