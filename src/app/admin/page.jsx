@@ -1,11 +1,11 @@
 // src/app/page.jsx
 "use client";
 
-import Alerts from "src/components/Dashboard/Alerts";
-import KPICards from "src/components/Dashboard/KPICards";
-import RecentOrders from "src/components/Dashboard/RecentOrders";
-import RecentReviews from "src/components/Dashboard/RecentReviews";
-import SalesCharts from "src/components/Dashboard/SalesCharts";
+import Alerts from "@/app/admin/dashboard/_components/Alerts";
+import KPICards from "@/app/admin/dashboard/_components/KPICards";
+import RecentOrders from "@/app/admin/dashboard/_components/RecentOrders";
+import RecentReviews from "@/app/admin/dashboard/_components/RecentReviews";
+import SalesCharts from "@/app/admin/dashboard/_components/SalesCharts";
 import AdminLayout from "src/components/Layout/AdminLayout";
 
 export default function Home() {

@@ -2,6 +2,7 @@ import { GoogleAuthProvider } from "@/providers/google-auth-provider";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import { ChatBox } from "@/components/chatbox/ChatBox";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "vietnamese"],
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="vi">
       <body>
         <GoogleAuthProvider>
+          <ChatBox/>
           {children}
         </GoogleAuthProvider>
         <Toaster position="top-center" richColors />
