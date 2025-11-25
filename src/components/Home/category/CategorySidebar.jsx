@@ -1,28 +1,61 @@
 import Link from "next/link";
-import CategoryIcon from "./CategoryIcon"; // Giả sử bạn có component này
+import CategoryIcon from "./CategoryIcon";
 
 export default function CategorySidebar({ categories }) {
+  if (!categories.length) return null;
+
   return (
-    <aside className="md:col-span-1">
-      <h2 className="text-base font-semibold text-neutral-800 mb-4 border-b pb-2">
-        Danh mục sản phẩm
-      </h2>
-      <div className="space-y-2">
-        {categories.map(({ id, icon_key: icon, name, slug }) => (
-          <Link
-            href={`/${slug}`}
-            key={id}
-            className="group flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-white to-slate-50 rounded-lg shadow-sm hover:shadow-md hover:from-blue-50 transition-all duration-300 cursor-pointer"
-          >
-            <div className="p-2 rounded-md bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-              <CategoryIcon keyName={icon} />
-            </div>
-            <span className="text-sm text-neutral-700 group-hover:text-blue-700 font-medium transition-colors duration-300">
-              {name}
-            </span>
-          </Link>
-        ))}
+    <section className="w-full  bg-white p-4">
+      {/* Wrapper để vừa căn giữa, vừa hỗ trợ scroll ngang */}
+      <div className="w-full overflow-x-auto scrollbar-hide">
+        <div
+          className="
+            flex justify-center items-center gap-6 
+            min-w-max py-1 px-1
+          "
+        >
+          {categories.map(({ id, icon_key: icon, name, slug }) => (
+            <Link
+              href={`/${slug}`}
+              key={id}
+              className="
+                flex flex-col items-center justify-start 
+                min-w-[90px]
+                group cursor-pointer select-none
+              "
+            >
+              {/* Icon tròn */}
+              <div
+                className="
+                  w-16 h-16 rounded-full 
+                  bg-white border border-gray-200 shadow-sm
+                  flex items-center justify-center
+                  transition-all duration-200 
+                  group-hover:shadow-lg group-hover:border-blue-400
+                  group-hover:bg-blue-50
+                "
+              >
+                <span className="text-blue-600 group-hover:text-blue-700 text-xl transition-colors">
+                  <CategoryIcon keyName={icon} />
+                </span>
+              </div>
+
+              {/* Tên danh mục */}
+              <span
+                className="
+                  mt-2 text-[12px] text-center leading-tight
+                  text-neutral-700 font-medium 
+                  group-hover:text-blue-700
+                  transition-colors duration-200 
+                  line-clamp-2
+                "
+              >
+                {name}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
-    </aside>
+    </section>
   );
 }

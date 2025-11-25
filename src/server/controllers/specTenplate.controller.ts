@@ -20,7 +20,7 @@ export const specTemplateController = {
   ) {
     try {
       // 1. Lấy và kiểm tra tham số categoryId
-      const { categoryId: categoryIdStr } = params;
+      const { categoryId: categoryIdStr } = await params;
       if (!categoryIdStr) {
         return NextResponse.json(
           { message: "Thiếu tham số Category ID." },

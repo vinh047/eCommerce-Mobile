@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import FilterSidebarSkeleton from "./FilterSidebarSkeleton";
 import FilterField from "./FilterField";
 import FilterActionBar from "./FilterActionBar";
@@ -10,6 +10,8 @@ import { buildQueryFromState } from "./utils/helpers";
 
 export default function FilterSidebar({ category, open = false }) {
   const router = useRouter();
+  const sp = useSearchParams();
+
   const {
     tpl,
     loading,
@@ -23,14 +25,25 @@ export default function FilterSidebar({ category, open = false }) {
   const query = useMemo(() => buildQueryFromState(filters), [filters]);
 
   const handleApply = () => {
-    const qs = query ? `?${query}` : "";
+    // current q from URL (if có)
+    const currentQ = sp?.get("q") || "";
+
+    // build params from query string returned by buildQueryFromState
+    const params = new URLSearchParams(query || "");
+
+    // nếu params chưa có q nhưng URL hiện tại có q => giữ lại
+    if (currentQ && !params.has("q")) {
+      params.set("q", currentQ);
+    }
+
+    const qs = params.toString() ? `?${params.toString()}` : "";
     const slug = category.slug;
     router.push(`/${slug}${qs}`);
   };
 
   const handleReset = () => {
     const slug = category.slug;
-    router.push(`/${slug}`)
+    router.push(`/${slug}`);
     setFilters(initialFilterState);
   };
 

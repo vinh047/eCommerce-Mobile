@@ -124,24 +124,83 @@ export const productService = {
     const orderBy: Prisma.ProductOrderByWithRelationInput = {};
     let priceSortDirection: "asc" | "desc" | null = null;
 
-    //  Mới: Xử lý page và limit
+    // Xử lý page và limit
     const page = parseInt(filters.page || "1", 10);
     const limit = parseInt(filters.limit || "10", 10);
-    // Đảm bảo giá trị hợp lệ
     const effectivePage = Math.max(1, page);
     const effectiveLimit = Math.max(1, limit);
-
     const skip = (effectivePage - 1) * effectiveLimit;
 
     const productSpecConditions: Prisma.ProductWhereInput[] = [];
     const variantSpecConditions: Prisma.VariantWhereInput[] = [];
 
+    // --- XỬ LÝ Q (từ khóa tìm kiếm trên tên sản phẩm) ---
+    const qRaw = String(filters.q || filters.search || "").trim();
+    if (qRaw) {
+      const q = qRaw.toLowerCase().trim();
+      const tokens = q.split(/\s+/).filter(Boolean);
+
+      const perTokenConditions: Prisma.ProductWhereInput[] = tokens.map((t) => {
+        return {
+          OR: [
+            // product fields
+            { name: { contains: t, mode: "insensitive" as Prisma.QueryMode } },
+            { slug: { contains: t, mode: "insensitive" as Prisma.QueryMode } },
+            // brand name
+            {
+              brand: {
+                name: { contains: t, mode: "insensitive" as Prisma.QueryMode },
+              },
+            },
+            // variant fields: color
+            {
+              variants: {
+                some: {
+                  color: {
+                    contains: t,
+                    mode: "insensitive" as Prisma.QueryMode,
+                  },
+                },
+              },
+            },
+            // variantSpecValues.stringValue (nơi lưu text của variant specs)
+            {
+              variants: {
+                some: {
+                  variantSpecValues: {
+                    some: {
+                      stringValue: {
+                        contains: t,
+                        mode: "insensitive" as Prisma.QueryMode,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        } as Prisma.ProductWhereInput;
+      });
+
+      if (perTokenConditions.length > 0) {
+        (whereClause.AND as Prisma.ProductWhereInput[]).push(
+          ...perTokenConditions
+        );
+      }
+    }
+
+    // Xử lý các filter khác (brand, sort, specs)
     for (const key in filters) {
       const value = filters[key];
       if (!value) continue;
 
-      // Bỏ qua page, limit trong vòng lặp chính
-      if (key === "page" || key === "limit") {
+      // Bỏ qua page, limit, q/search trong vòng lặp chính
+      if (
+        key === "page" ||
+        key === "limit" ||
+        key === "q" ||
+        key === "search"
+      ) {
         continue;
       }
 
@@ -164,6 +223,7 @@ export const productService = {
         whereClause.brand = { slug: { in: String(value).split(",") } };
         continue;
       }
+
       const specInfo = specInfoMap.get(key);
       if (!specInfo) continue;
       const filterValues = String(value).split(",");
@@ -237,7 +297,6 @@ export const productService = {
         skip: skip,
         take: effectiveLimit,
         select: {
-          // Chọn các trường của Product bạn cần
           id: true,
           name: true,
           slug: true,
@@ -245,17 +304,16 @@ export const productService = {
           brand: {
             select: { name: true, slug: true },
           },
-          // Áp dụng logic giống hệt hàm đầu tiên cho variants
           variants: {
             where: { isActive: true },
             orderBy: { price: "asc" },
-            take: 1, // Chỉ lấy variant rẻ nhất
+            take: 1,
             select: {
               price: true,
               compareAtPrice: true,
               MediaVariant: {
                 orderBy: { Media: { sortOrder: "asc" } },
-                take: 1, // Chỉ lấy 1 ảnh
+                take: 1,
                 select: {
                   Media: {
                     select: { url: true, isPrimary: true },
@@ -276,28 +334,22 @@ export const productService = {
         const cheapestVariant = product.variants[0];
         let primaryImage = null;
 
-        // Lấy ra danh sách media CHỈ của biến thể rẻ nhất
         const cheapestVariantMedia = cheapestVariant.MediaVariant.map(
           (mv) => mv.Media
         );
 
-        // ƯU TIÊN 1: Tìm ảnh isPrimary trong biến thể rẻ nhất
         primaryImage = cheapestVariantMedia.find(
           (media) => media.isPrimary
         )?.url;
 
-        // ƯU TIÊN 2: Nếu không có, lấy ảnh đầu tiên của biến thể rẻ nhất
         if (!primaryImage && cheapestVariantMedia.length > 0) {
           primaryImage = cheapestVariantMedia[0].url;
         }
 
-        // PHƯƠNG ÁN CUỐI CÙNG: Nếu biến thể rẻ nhất không có ảnh nào,
-        // thì mới tìm trong tất cả các biến thể khác để đảm bảo luôn có ảnh.
         if (!primaryImage) {
           const allMedia = product.variants.flatMap((variant) =>
             variant.MediaVariant.map((mv) => mv.Media)
           );
-          // Tìm bất kỳ ảnh primary nào, hoặc ảnh đầu tiên bất kỳ
           primaryImage =
             allMedia.find((media) => media.isPrimary)?.url ||
             allMedia[0]?.url ||
@@ -310,31 +362,36 @@ export const productService = {
           slug: product.slug,
           price: cheapestVariant.price,
           compareAtPrice: cheapestVariant.compareAtPrice,
-          image: primaryImage, // Ảnh giờ đã được lấy một cách nhất quán
+          image: primaryImage,
           ratingAvg: product.ratingAvg,
         };
       });
 
     if (priceSortDirection) {
       result.sort((a, b) => {
-        // Xử lý an toàn trường hợp giá có thể là null
-        const priceA = a.price?.toNumber() || 0;
-        const priceB = b.price?.toNumber() || 0;
-
-        // Sắp xếp tăng dần hoặc giảm dần dựa trên cờ
+        const priceA =
+          a.price && typeof (a.price as any).toNumber === "function"
+            ? (a.price as any).toNumber()
+            : Number(a.price ?? 0);
+        const priceB =
+          b.price && typeof (b.price as any).toNumber === "function"
+            ? (b.price as any).toNumber()
+            : Number(b.price ?? 0);
         return priceSortDirection === "asc" ? priceA - priceB : priceB - priceA;
       });
     }
 
     // === BƯỚC 7: TRẢ VỀ KẾT QUẢ VÀ METADATA  ===
-    const totalPages = Math.ceil(totalProducts / limit);
+    const totalItems = Number(totalProducts || 0);
+    const totalPages = Math.ceil(totalItems / effectiveLimit) || 1;
+
     return {
       data: result,
       meta: {
-        totalProducts,
+        totalItems, // tổng số item (sử dụng key totalItems)
         totalPages,
-        currentPage: page,
-        limit: limit,
+        currentPage: effectivePage,
+        limit: effectiveLimit,
       },
     };
   },
@@ -359,9 +416,9 @@ export const productService = {
         Review: {
           where: { isActived: true },
           take: 5,
-          include:{
-            user:true
-          }
+          include: {
+            user: true,
+          },
         }, // Lấy đánh giá của sản phẩm
       },
     });
@@ -371,59 +428,59 @@ export const productService = {
     offset: number,
     limit: number
   ) {
-    const newReview= await prisma.review.findMany({
+    const newReview = await prisma.review.findMany({
       where: { productId, isActived: true },
       skip: offset,
       take: limit,
       include: {
-        user: true
+        user: true,
       },
     });
-    console.log(newReview)
-    return newReview
+    console.log(newReview);
+    return newReview;
   },
   async findSimilarProductsById(
-  productId: number,
-  threshold = 0.6,
-  limit = 10
-) {
-  // Lấy sản phẩm gốc
-  const original = await prisma.product.findUnique({
-    where: { id: productId },
-  });
+    productId: number,
+    threshold = 0.6,
+    limit = 10
+  ) {
+    // Lấy sản phẩm gốc
+    const original = await prisma.product.findUnique({
+      where: { id: productId },
+    });
 
-  if (!original) {
-    throw new Error("Sản phẩm không tồn tại");
-  }
-
-  // Lấy tất cả sản phẩm khác trong bảng
-  const allProducts = await prisma.product.findMany({
-    where: {
-      id: { not: productId },
-    },
-    include: {
-      variants:{
-        include:{
-          MediaVariant:{
-            include:{
-              Media:true
-            }
-          }
-        }
-      }
+    if (!original) {
+      throw new Error("Sản phẩm không tồn tại");
     }
-  });
 
-  // So sánh tên và lọc
-  const similarProducts = allProducts
-    .map(p => ({
-      ...p,
-      similarity: compareTwoStrings(p.name, original.name),
-    }))
-    .filter(p => p.similarity > threshold)
-    .sort((a, b) => b.similarity - a.similarity) // ưu tiên giống nhất
-    .slice(0, limit); // tối đa `limit` sản phẩm
+    // Lấy tất cả sản phẩm khác trong bảng
+    const allProducts = await prisma.product.findMany({
+      where: {
+        id: { not: productId },
+      },
+      include: {
+        variants: {
+          include: {
+            MediaVariant: {
+              include: {
+                Media: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-  return similarProducts;
-}
+    // So sánh tên và lọc
+    const similarProducts = allProducts
+      .map((p) => ({
+        ...p,
+        similarity: compareTwoStrings(p.name, original.name),
+      }))
+      .filter((p) => p.similarity > threshold)
+      .sort((a, b) => b.similarity - a.similarity) // ưu tiên giống nhất
+      .slice(0, limit); // tối đa `limit` sản phẩm
+
+    return similarProducts;
+  },
 };

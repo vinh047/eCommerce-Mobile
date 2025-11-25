@@ -1,3 +1,4 @@
+import axiosClient from "./axiosClient";
 import { apiFetch } from "./utils/apiFetch";
 
 // Lấy giỏ hàng của user hiện tại
@@ -46,6 +47,11 @@ const cartsApi = {
     apiFetch(`/carts/bulk`, {
       method: "POST",
       body: { ids, action },
+    }),
+  addCart: (variantId,quantity) =>
+    axiosClient(`/cart/add`, {
+      method: "POST",
+      body: {variantId,quantity },
     }),
 };
 
