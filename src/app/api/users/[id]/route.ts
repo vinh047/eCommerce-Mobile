@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 // GET - Lấy 1 user theo id
 export async function GET(
@@ -30,9 +31,18 @@ export async function PUT(
 ) {
   try {
     const data = await req.json();
+    const updateData: any = { ...data };
+
+    // Nếu có password → hash và lưu vào passwordHash
+    if (data.password) {
+      const hashed = await bcrypt.hash(data.password, 10);
+      updateData.passwordHash = hashed;
+      delete updateData.password; // bỏ password để tránh ghi nhầm
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: Number(params.id) },
-      data,
+      data: updateData,
     });
 
     return NextResponse.json(updatedUser);
@@ -44,6 +54,7 @@ export async function PUT(
     );
   }
 }
+
 
 // PATCH - Cập nhật một phần thông tin (name, avatar, status)
 export async function PATCH(

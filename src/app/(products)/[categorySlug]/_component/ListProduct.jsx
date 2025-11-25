@@ -14,6 +14,12 @@ export default function ListProducts({ categoryId }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
+  const [meta, setMeta] = useState({
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: LIMIT,
+  });
 
   useEffect(() => {
     let active = true;
@@ -21,17 +27,37 @@ export default function ListProducts({ categoryId }) {
     async function load() {
       try {
         setLoading(true);
+        setErr(null);
+
+        const q = (sp.get("q") || "").trim();
+
         const params = new URLSearchParams(sp.toString());
         if (!params.has("page")) params.set("page", "1");
+        // map pageSize param name if your API expects `limit`
         params.set("limit", String(LIMIT));
 
-        const data = await getProductsByFilters(
-          categoryId,
-          params.toString()
-        );
+        if (q) params.set("q", q);
+        else params.delete("q");
 
+        const data = await getProductsByFilters(categoryId, params.toString());
 
-        if (active) setProducts(data.data ?? []);
+        if (!active) return;
+
+        setProducts(data?.data ?? []);
+        // set meta nếu API trả meta; fallback giữ nguyên
+        if (data?.meta) {
+          setMeta({
+            totalItems: Number(data.meta.totalItems ?? 0),
+            totalPages: Number(data.meta.totalPages ?? 1),
+            currentPage: Number(
+              data.meta.currentPage ?? params.get("page") ?? 1
+            ),
+            limit: Number(data.meta.limit ?? LIMIT),
+          });
+        } else {
+          // fallback: nếu API không trả meta, dùng tổng là products.length
+          setMeta((m) => ({ ...m, totalItems: data?.data?.length ?? 0 }));
+        }
       } catch (e) {
         if (active) setErr(e);
       } finally {
@@ -60,21 +86,14 @@ export default function ListProducts({ categoryId }) {
   if (!products.length) return <div>Không có sản phẩm phù hợp</div>;
 
   return (
-    <>
+    <div className="grid grid-cols-4 gap-2">
       {products.map((p) => (
-        <ProductCard
-          key={p.id}
-          product={p}
-        />
+        <ProductCard key={p.id} product={p} />
       ))}
-      {/* <Pagination
-        currentPage={1}
-        pageSize={LIMIT}
-        totalItems={data}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        showPageSizeOptions={false}
-      /> */}
-    </>
+
+      <div className="col-span-full mt-4">
+        <Pagination totalItems={meta.totalItems} showPageSizeOptions={false} />
+      </div>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+import HeaderLayout from '@/components/Layout/HeaderLayout'
 import '../globals.css'
 
 export const metadata = {
@@ -7,9 +8,9 @@ export const metadata = {
 
 export default function CartLayout({ children }) {
   return (
-    <>
+    <HeaderLayout>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       {children}
-    </>
+    </HeaderLayout>
   )
 }

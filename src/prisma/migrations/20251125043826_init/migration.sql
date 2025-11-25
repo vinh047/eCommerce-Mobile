@@ -280,6 +280,7 @@ CREATE TABLE "coupons" (
     "type" "CouponType" NOT NULL,
     "value" DECIMAL(12,2) NOT NULL,
     "min_order" DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    "max_order" DECIMAL(12,2) DEFAULT 0.00,
     "starts_at" TIMESTAMP(0),
     "ends_at" TIMESTAMP(0),
     "usage_limit" INTEGER,

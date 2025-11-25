@@ -1,9 +1,11 @@
-
-import DetailProductPage from "./[slug]/page"
+import HeaderLayout from "@/components/Layout/HeaderLayout";
+import DetailProductPage from "./[slug]/page";
 const ProductDetailRootPage = () => {
   return (
-    <DetailProductPage/>
-  )
-}
+    <HeaderLayout>
+      <DetailProductPage />
+    </HeaderLayout>
+  );
+};
 
-export default ProductDetailRootPage    
+export default ProductDetailRootPage;

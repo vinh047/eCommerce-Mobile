@@ -35,6 +35,14 @@ const ordersApi = {
       method: "POST",
       body: { ids, action },
     }),
+
+  getMyOrders: (params) =>
+    apiFetch(`/orders/me?${new URLSearchParams(params)}`, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include", // QUAN TRỌNG để gửi cookie token
+    }),
+
 };
 
 export default ordersApi;
