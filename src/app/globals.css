@@ -122,3 +122,11 @@ input.chk {
   background: rgba(0, 0, 0, 0.4);
   border-radius: 8px;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}

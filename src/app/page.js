@@ -11,6 +11,7 @@ import CategorySidebar from "@/components/Home/category/CategorySidebar";
 import CategorySidebarSkeleton from "@/components/Home/category/CategorySidebarSkeleton";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 import { getBanners } from "@/lib/api/bannerApi";
+import Footer from "@/components/Home/Footer";
 
 const LIMIT = 10;
 
@@ -29,7 +30,7 @@ export default async function HomePage() {
   return (
     <HeaderLayout>
       <main>
-        <div className="max-w-screen-xl mx-auto px-4 py-4 space-y-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
           {/* Banner ở trên cùng */}
           <section>
             <BannerSlider banners={banners} />
@@ -55,6 +56,7 @@ export default async function HomePage() {
               )
           )}
         </div>
+        <Footer />
       </main>
     </HeaderLayout>
   );
