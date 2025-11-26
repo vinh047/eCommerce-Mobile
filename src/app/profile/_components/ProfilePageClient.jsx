@@ -513,11 +513,6 @@ export function ProfilePageClient() {
               />
             </div>
           </div>
-
-          <p className="mt-4 text-xs text-gray-400">
-            Sau này bạn có thể cho phép cập nhật các thông tin này qua API (PUT
-            /api/profile).
-          </p>
         </section>
       </div>
 

@@ -61,7 +61,7 @@ const Signup = () => {
       setLoading(true);
       const res = await axios.post("/api/auth/register", { name, email, password });
       toast.success(res.data.message || "Đăng ký thành công!");
-      setTimeout(() => router.push("/signin"), 1000);
+      router.push("/signin")
     } catch (error) {
       const msg = error.response?.data?.error || "Đăng ký thất bại";
       toast.error(msg);
