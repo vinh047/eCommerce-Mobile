@@ -19,6 +19,7 @@ const DetailProduct = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState(product.Review || []);
   const [loaded, setLoaded] = useState(false);
+  const [loadedBtn, setLoadedBtn] = useState(false);
 
   const [relatedProducts, setRelatedProducts] = useState(null);
 
@@ -166,20 +167,26 @@ const DetailProduct = ({ product }) => {
 
   const handleAddToCard = async () => {
     try {
+      setLoadedBtn(true);
+
       const cart = await cartsApi.addCart(variantCurrent.id, quantity);
+      setLoadedBtn(false);
+
       toast.success("Thêm vào giỏ hàng thành công");
     } catch (err) {
       toast.error(err.payload.message);
       if ((err.status = 401)) {
-        // useRouter.push("/login");
+        router.push("/signin");
       }
     }
   };
   const handleBuyNow = async () => {
     try {
+      setLoadedBtn(true);
       const cart = await cartsApi.addCart(variantCurrent.id, quantity);
+      setLoadedBtn(false);
       toast.success("Thêm vào giỏ hàng thành công");
-      router.push("/cart")
+      router.push("/cart");
     } catch (error) {
       toast.error(err.payload.message);
     }
@@ -457,16 +464,17 @@ const DetailProduct = ({ product }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
                 <button
                   className="w-full px-4 py-3 rounded-xl bg-blue-700 text-white font-semibold hover:bg-blue-800 transition cursor-pointer disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed"
-                  disabled={variantCurrent.stock <= 0}
+                  disabled={variantCurrent.stock <= 0 || loadedBtn}
+                  onClick={handleBuyNow}
                 >
-                  Mua ngay
+                  {loadedBtn ? "Đang xử lý" : "Mua ngay"}
                 </button>
                 <button
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 font-semibold text-gray-800 transition cursor-pointer  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                  disabled={variantCurrent.stock <= 0}
+                  disabled={variantCurrent.stock <= 0 || loadedBtn}
                   onClick={handleAddToCard}
                 >
-                  Thêm vào giỏ hàng
+                  {loadedBtn ? "Đang xử lý" : "Thêm vào giỏ hàng"}
                 </button>
               </div>
               {/* Info  */}

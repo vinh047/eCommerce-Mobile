@@ -49,7 +49,7 @@ const cartsApi = {
       body: { ids, action },
     }),
   addCart: (variantId,quantity) =>
-    axiosClient(`/cart/add`, {
+    apiFetch(`/cart/add`, {
       method: "POST",
       body: {variantId,quantity },
     }),

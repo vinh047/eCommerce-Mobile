@@ -10,34 +10,37 @@ export const ChatBox: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false); // 👈 state typing
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () =>
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  useEffect(() => scrollToBottom(), [messages]);
+  useEffect(() => scrollToBottom(), [messages, isTyping]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    setMessages((prev) => [...prev, { user: true, text: input }]);
+    // Thêm tin nhắn user
+    setMessages(prev => [...prev, { user: true, text: input }]);
     const messageText = input;
     setInput("");
 
+    setIsTyping(true); // 👈 bắt đầu typing
+
+    // Gọi API GPT
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText }),
+        body: JSON.stringify({ message: messageText })
       });
 
       const data = await res.json();
-      setMessages((prev) => [...prev, { user: false, text: data.reply }]);
+      setMessages(prev => [...prev, { user: false, text: data.reply }]);
     } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { user: false, text: "Lỗi khi kết nối GPT API." },
-      ]);
+      setMessages(prev => [...prev, { user: false, text: "Lỗi khi kết nối GPT API." }]);
+    } finally {
+      setIsTyping(false); // 👈 kết thúc typing
     }
   };
 
@@ -53,9 +56,9 @@ export const ChatBox: React.FC = () => {
       )}
 
       {open && (
-        <div className="w-96 h-[450px] bg-white border border-gray-200 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div className=" w-80 h-[450px] bg-white border border-gray-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white border-b-2 border-gray-400">
             <span className="font-bold text-lg">Groq</span>
             <button
               onClick={() => setOpen(false)}
@@ -70,19 +73,24 @@ export const ChatBox: React.FC = () => {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`
-        px-4 py-2 rounded-2xl break-words 
-        ${
-          msg.user
-            ? "bg-blue-100 self-end text-right"
-            : "bg-gray-200 self-start text-left"
-        } 
-        inline-block max-w-[70%] shadow-sm
-      `}
+                className={`px-4 py-2 rounded-2xl break-words inline-block max-w-[70%] shadow-sm
+                  ${msg.user ? "bg-blue-100 self-end text-right" : "bg-gray-200 self-start text-left"}`}
               >
                 {msg.text}
               </div>
             ))}
+
+            {/* Hiệu ứng typing */}
+            {isTyping && (
+              <div className="px-4 py-2 rounded-2xl bg-gray-200 self-start text-left inline-block max-w-[50%] shadow-sm">
+                <div className="flex space-x-1">
+                  <span className="animate-bounce">•</span>
+                  <span className="animate-bounce delay-150">•</span>
+                  <span className="animate-bounce delay-300">•</span>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 

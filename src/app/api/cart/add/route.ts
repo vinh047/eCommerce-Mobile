@@ -1,18 +1,22 @@
 import prisma from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { NextRequest } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
+    const authHeader = req.cookies.get("token")?.value;
     if (!authHeader) {
-      return new Response(JSON.stringify({ message: "Vui lòng đăng nhập để thực hiện thao tác" }), {
-        status: 401,
-      });
+      return new Response(
+        JSON.stringify({ message: "Vui lòng đăng nhập để thực hiện thao tác" }),
+        {
+          status: 401,
+        }
+      );
     }
+    const token = authHeader;
+    console.log("your token :", token);
 
-    const token = authHeader.split(" ")[1];
     const payload = await verifyToken(token);
-
     if (!payload) {
       return new Response(
         JSON.stringify({ message: "Invalid or expired token" }),
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
 
     // 👉 Kiểm tra cart tồn tại
     let cart = await prisma.cart.findFirst({
-      where: { userId:Number(userId) },
+      where: { userId: Number(userId) },
       include: { items: true },
     });
 
@@ -108,7 +112,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return new Response(JSON.stringify({ cart,variantId }), { status: 200 });
+    return new Response(JSON.stringify({ cart, variantId }), { status: 200 });
   } catch (err: any) {
     console.error(err);
     return new Response(JSON.stringify({ message: "Server error" }), {
