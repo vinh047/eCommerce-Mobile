@@ -8,6 +8,7 @@ import {
   PaymentStatus,
   OrderStatus,
 } from "@prisma/client";
+import { verifyToken } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -64,7 +65,23 @@ export async function POST(req: NextRequest) {
     // Ví dụ với next-auth:
     // const session = await auth();
     // const userId = session?.user?.id;
-    const userId = 1; // ⚠️ DEMO: thay bằng userId thật
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Unauthorized: Vui lòng đăng nhập" },
+        { status: 401 }
+      );
+    }
+
+    const payload = await verifyToken(token);
+    if (!payload || !payload.id) {
+      return NextResponse.json(
+        { message: "Unauthorized: Token không hợp lệ" },
+        { status: 401 }
+      );
+    }
+
+    const userId = Number(payload.id);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

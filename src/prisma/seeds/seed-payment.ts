@@ -15,7 +15,7 @@ export const paymentMethods = [
 export const paymentAccounts = [
   {
     id: 1,
-    paymentMethodId: 1,
+    paymentMethodId: 2,
     accountName: "Nguyễn Đức Vinh",
     accountNumber: "3845632968",
     bankName: "Techcombank",

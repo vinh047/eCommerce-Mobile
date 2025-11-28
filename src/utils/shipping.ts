@@ -15,7 +15,9 @@ const FREE_THRESHOLD = 2_000_000_000;
 
 // geocode từ OpenStreetMap
 async function geocode(address: string) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+    address
+  )}`;
   const res = await fetch(url);
   if (!res.ok) return null;
 
@@ -71,7 +73,6 @@ export async function calcShippingSimple(
 
     // distance
     const meters = await getDistanceMeters(originGeo, destGeo);
-    console.log("meters: ", meters)
     if (!meters) return 25000; // fallback
 
     const km = meters / 1000;

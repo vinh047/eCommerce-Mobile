@@ -148,7 +148,11 @@ export default function CartPage() {
       // lưu vào sessionStorage để trang /checkout đọc
       // Lưu thêm trường timestamp để dễ debug/kiểm tra
       const payload = {
-        items: checkoutItems,
+        items: checkoutItems.map((item) => ({
+          ...item,
+          cartItemId: item.id,
+        })),
+
         createdAt: new Date().toISOString(),
       };
       sessionStorage.setItem("checkoutItems", JSON.stringify(payload));

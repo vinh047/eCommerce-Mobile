@@ -180,7 +180,7 @@ export default function Header() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm kiếm sản phẩm, thương hiệu, mã..."
+                  placeholder="Tìm kiếm sản phẩm..."
                   className="w-full border border-gray-200 rounded-full pl-10 pr-36 py-2.5 bg-white text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition"
                 />
 
@@ -215,11 +215,7 @@ export default function Header() {
             {!loadingUser && !user && (
               <div className="hidden sm:flex items-center gap-2">
                 <button
-                  onClick={() =>
-                    router.push(
-                      `/signin`
-                    )
-                  }
+                  onClick={() => router.push(`/signin`)}
                   className="px-3 py-1.5 rounded-md border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 transition"
                 >
                   Đăng nhập
@@ -227,9 +223,7 @@ export default function Header() {
                 <button
                   onClick={() =>
                     router.push(
-                      `/signup?redirect=${encodeURIComponent(
-                        router.pathname
-                      )}`
+                      `/signup?redirect=${encodeURIComponent(router.pathname)}`
                     )
                   }
                   className="px-3 py-1.5 rounded-md bg-gradient-to-r from-pink-500 to-indigo-600 text-white text-sm shadow hover:opacity-95 transition"
