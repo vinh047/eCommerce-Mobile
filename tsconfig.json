@@ -33,7 +33,9 @@
     "app",
     "next-env.d.ts",
     "src",
-    ".next/types/**/*.ts"
-, "export-data.mjs"  ],
+    ".next/types/**/*.ts",
+    "export-data.mjs",
+    "scripts"
+  ],
   "exclude": ["node_modules"]
 }

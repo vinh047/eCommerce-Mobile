@@ -1,0 +1,55 @@
+import { ControlType, DataType, ValueType } from "@prisma/client";
+
+export const variantSpecs = [
+  // specTemplateId; 1 (Điện thoại)
+  {
+    id: 1,
+    specTemplateId: 1,
+    code: "storage_variant",
+    label: "Dung lượng lưu trữ",
+    valueType: ValueType.range,
+    datatype: DataType.number,
+    unit: "GB",
+    filterable: true,
+    control: ControlType.multiselect,
+    isRequired: false,
+    isVariantKey: true,
+    orderIndex: 2,
+    groupLabel: null,
+    displayOrder: 2,
+  },
+
+  // specTemplateId; 2 (Laptop)
+  {
+    id: 2,
+    specTemplateId: 2,
+    code: "ram_variant",
+    label: "RAM",
+    valueType: ValueType.discrete,
+    datatype: DataType.number,
+    unit: "GB",
+    filterable: true,
+    control: ControlType.select,
+    isRequired: false,
+    isVariantKey: true,
+    orderIndex: 2,
+    groupLabel: null,
+    displayOrder: 2,
+  },
+  {
+    id: 3,
+    specTemplateId: 2,
+    code: "storage_variant",
+    label: "Dung lượng lưu trữ",
+    valueType: ValueType.range,
+    datatype: DataType.number,
+    unit: "GB",
+    filterable: true,
+    control: ControlType.multiselect,
+    isRequired: false,
+    isVariantKey: true,
+    orderIndex: 3,
+    groupLabel: null,
+    displayOrder: 3,
+  },
+];

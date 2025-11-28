@@ -343,154 +343,183 @@ export const users = [
       },
     ],
   },
+  // 18. Nguyễn Văn A - Customer
+  {
+    email: "user@gmail.com",
+    passwordHash:
+      "$2b$10$s6dclJkrQcNZopelH9QQUeICslmcnkEtzOR7jqQOSLAnpYYGl52Um",
+    name: "Nguyễn Văn A",
+    status: AccountStatus.active,
+    role: "customer",
+    createdAt: new Date(Date.now() - 15 * 30 * 24 * 60 * 60 * 1000),
+    addresses: [
+      {
+        line: "555 Phạm Văn Đồng",
+        phone: "0902468000",
+        ward: "Phường 13",
+        district: "Gò Vấp",
+        province: "TP.HCM",
+        isDefault: true,
+      },
+    ],
+  },
 ];
 export const coupons = [
-  // 1. Giảm cố định, hoạt động
+  // 1. Mã chào mừng khách mới – giảm cố định
   {
-    code: "WELCOME200K",
+    code: "NEWUSER50K",
     type: CouponType.fixed,
-    value: 200000.0, // 200,000 VND
-    minOrder: 1000000.0, // Đơn hàng tối thiểu 1 triệu
-    maxOrder: 5000000.0, // Đơn hàng tối đa 5 triệu
-    startsAt: new Date(),
-    endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    usageLimit: 500,
-    used: 150,
-    status: AccountStatus.active,
-    categoryId: null,
-    brandId: null,
-  },
-  // 2. Giảm phần trăm, hoạt động
-  {
-    code: "SALE15PERCENT",
-    type: CouponType.percentage,
-    value: 15.0,
-    minOrder: 500000.0,
-    maxOrder: 3000000.0,
-    startsAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-    usageLimit: 2000,
-    used: 1875,
-    status: AccountStatus.active,
-    categoryId: null,
-    brandId: null,
-  },
-  // 3. Giảm cố định, blocked
-  {
-    code: "GIAYDEP50K",
-    type: CouponType.fixed,
-    value: 50000.0,
-    minOrder: 300000.0,
-    maxOrder: 2000000.0,
-    startsAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    usageLimit: 100,
-    used: 100,
-    status: AccountStatus.blocked,
-    categoryId: null,
-    brandId: null,
-  },
-  // 4. Giảm phần trăm, deleted
-  {
-    code: "TESTCODE01",
-    type: CouponType.percentage,
-    value: 10.0,
-    minOrder: 0.0,
-    maxOrder: 1000000.0,
-    startsAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-    usageLimit: 10,
-    used: 1,
-    status: AccountStatus.deleted,
-    categoryId: null,
-    brandId: null,
-  },
-  // 5. Giảm cố định, không giới hạn
-  {
-    code: "FREE20K",
-    type: CouponType.fixed,
-    value: 20000.0,
-    minOrder: 150000.0,
-    maxOrder: null, // Không giới hạn
-    startsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    endsAt: null,
-    usageLimit: null,
-    used: 5000,
-    status: AccountStatus.active,
-    categoryId: null,
-    brandId: null,
-  },
-  // 6. Giảm phần trăm, chưa bắt đầu
-  {
-    code: "SUMMER40",
-    type: CouponType.percentage,
-    value: 5.0,
-    minOrder: 800000.0,
-    maxOrder: 4000000.0,
-    startsAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000),
-    usageLimit: 50,
+    value: 50000.0, // Giảm 50,000đ
+    minOrder: 500000.0, // Đơn tối thiểu 500k
+    maxOrder: 5000000.0, // Đơn tối đa 5 triệu (cho an toàn)
+    startsAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // Đã chạy 3 ngày
+    endsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // Còn 60 ngày nữa
+    usageLimit: 1000,
     used: 0,
     status: AccountStatus.active,
     categoryId: null,
     brandId: null,
   },
-  // 7. Giảm cố định, hết hạn
+
+  // 2. Mã giảm % toàn sàn cho chương trình khuyến mãi – đang chạy
   {
-    code: "FLASHBACK",
-    type: CouponType.fixed,
-    value: 500000.0,
-    minOrder: 2000000.0,
-    maxOrder: 10000000.0,
-    startsAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    usageLimit: 10,
-    used: 9,
-    status: AccountStatus.blocked,
-    categoryId: null,
-    brandId: null,
-  },
-  // 8. Giảm phần trăm, combo
-  {
-    code: "COMBO20",
+    code: "WEEKEND10",
     type: CouponType.percentage,
-    value: 20.0,
-    minOrder: 100000.0,
-    maxOrder: 5000000.0,
-    startsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    endsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-    usageLimit: 800,
-    used: 500,
+    value: 10.0, // Giảm 10%
+    minOrder: 300000.0, // Tối thiểu 300k
+    maxOrder: 3000000.0, // Áp dụng tốt nhất cho đơn dưới 3 triệu
+    startsAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Bắt đầu từ tuần trước
+    endsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Còn 2 tuần nữa
+    usageLimit: 5000,
+    used: 0,
     status: AccountStatus.active,
     categoryId: null,
     brandId: null,
   },
-  // 9. Giảm cố định, minOrder = 0
+
+  // 3. Mã giảm mạnh cho laptop – chương trình cũ đã khóa
+  {
+    code: "LAPTOP300K",
+    type: CouponType.fixed,
+    value: 300000.0, // Giảm 300k
+    minOrder: 10000000.0, // Đơn từ 10 triệu trở lên
+    maxOrder: 30000000.0, // Capping cho đơn quá lớn
+    startsAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000), // Bắt đầu 45 ngày trước
+    endsAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // Hết hạn 5 ngày trước
+    usageLimit: 200,
+    used: 0,
+    status: AccountStatus.blocked, // Đã khóa sau khi kết thúc
+    categoryId: 2, // Có thể gán category laptop nếu chắc ID
+    brandId: null,
+  },
+
+  // 4. Mã test nội bộ – đã xóa
+  {
+    code: "TESTCODE01",
+    type: CouponType.percentage,
+    value: 5.0,
+    minOrder: 0.0,
+    maxOrder: 500000.0,
+    startsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+    endsAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+    usageLimit: 50,
+    used: 0,
+    status: AccountStatus.deleted, // Đánh dấu là đã xóa
+    categoryId: null,
+    brandId: null,
+  },
+
+  // 5. Mã freeship – không giới hạn thời gian & lượt
+  {
+    code: "FREESHIP15K",
+    type: CouponType.fixed,
+    value: 15000.0, // Hỗ trợ phí ship 15k
+    minOrder: 150000.0, // Đơn từ 150k
+    maxOrder: null, // Không giới hạn giá trị đơn
+    startsAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Đã chạy 1 tháng
+    endsAt: null, // Chưa có ngày kết thúc
+    usageLimit: null, // Không giới hạn lượt
+    used: 0,
+    status: AccountStatus.active,
+    categoryId: null,
+    brandId: null,
+  },
+
+  // 6. Mã khuyến mãi mùa hè – chưa bắt đầu
+  {
+    code: "SUMMER2026",
+    type: CouponType.percentage,
+    value: 12.0, // Giảm 12%
+    minOrder: 800000.0,
+    maxOrder: 4000000.0,
+    startsAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // Bắt đầu sau 10 ngày
+    endsAt: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000), // Kéo dài 30 ngày
+    usageLimit: 500,
+    used: 0,
+    status: AccountStatus.active, // Active nhưng chưa tới thời gian
+    categoryId: null,
+    brandId: null,
+  },
+
+  // 7. Mã flash sale đã hết hạn
+  {
+    code: "FLASHSALE20",
+    type: CouponType.percentage,
+    value: 20.0, // Giảm 20%
+    minOrder: 1000000.0,
+    maxOrder: 5000000.0,
+    startsAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // Chạy cách đây 5 ngày
+    endsAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Hết hạn hôm qua
+    usageLimit: 300,
+    used: 0,
+    status: AccountStatus.blocked, // Hết chương trình, khóa mã
+    categoryId: null,
+    brandId: null,
+  },
+
+  // 8. Mã combo giảm % cho nhiều sản phẩm – đang chạy ổn định
+  {
+    code: "COMBO15",
+    type: CouponType.percentage,
+    value: 15.0, // Giảm 15%
+    minOrder: 200000.0,
+    maxOrder: 4000000.0,
+    startsAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+    endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    usageLimit: 2000,
+    used: 0,
+    status: AccountStatus.active,
+    categoryId: null,
+    brandId: null,
+  },
+
+  // 9. Mã freeship nhỏ, áp dụng cho đơn nhỏ – hay dùng
   {
     code: "FREEFEE",
     type: CouponType.fixed,
-    value: 15000.0,
-    minOrder: 0.0,
-    maxOrder: 1000000.0,
-    startsAt: new Date(),
-    endsAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-    usageLimit: 99999,
-    used: 12345,
+    value: 10000.0, // Hỗ trợ 10k phí ship
+    minOrder: 0.0, // Không yêu cầu min đơn
+    maxOrder: 1000000.0, // Đơn quá lớn thì không hợp lý để dùng mã này
+    startsAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    endsAt: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+    usageLimit: 50000,
+    used: 0,
     status: AccountStatus.active,
     categoryId: null,
     brandId: null,
   },
-  // 10. Giảm phần trăm tối đa
+
+  // 10. Mã Tết theo % – giới hạn lượt sử dụng
   {
-    code: "MAX99PERCENT",
+    code: "TET2026",
     type: CouponType.percentage,
-    value: 99.0,
-    minOrder: 500000.0,
-    maxOrder: 2000000.0,
-    startsAt: new Date(),
-    endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    usageLimit: 5,
-    used: 2,
+    value: 15.0, // Giảm 15%
+    minOrder: 700000.0,
+    maxOrder: 3000000.0,
+    startsAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // Bắt đầu khoảng 2 tháng nữa
+    endsAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // Kéo dài 1 tháng
+    usageLimit: 1000,
+    used: 0,
     status: AccountStatus.active,
     categoryId: null,
     brandId: null,
@@ -522,6 +551,15 @@ export const staffs = [
     passwordHash: "$2b$10$hashed_inventory_password",
     name: "Nhân viên kho",
     avatar: "/avatars/inventory.png",
+    status: AccountStatus.active,
+    createdAt: new Date(),
+  },
+  {
+    id: 4,
+    email: "admin@gmail.com",
+    passwordHash:
+      "$2a$12$0LeQl9vR9v74lTYEkjtzeOINruyOjKo5c9AN.9n9Y6J7mx1MNg3b2",
+    name: "Nguyễn Văn Admin",
     status: AccountStatus.active,
     createdAt: new Date(),
   },
@@ -896,7 +934,6 @@ export const reviews = [
     stars: 4,
     content: "Rất hài lòng với sản phẩm, sẽ mua lại.",
     isActived: true,
-
   },
   {
     productId: 1,
@@ -904,7 +941,6 @@ export const reviews = [
     stars: 3,
     content: "Sản phẩm ổn nhưng giao hàng hơi chậm.",
     isActived: true,
-
   },
   {
     productId: 1,
@@ -912,7 +948,6 @@ export const reviews = [
     stars: 2,
     content: "Chất lượng không như quảng cáo, khá thất vọng.",
     isActived: true,
-
   },
   {
     productId: 1,
@@ -920,7 +955,6 @@ export const reviews = [
     stars: 5,
     content: "Tuyệt vời! Sẽ giới thiệu cho bạn bè.",
     isActived: true,
-
   },
   {
     productId: 1,
@@ -935,7 +969,7 @@ export const reviews = [
     stars: 4,
     isActived: false,
     content: "Sản phẩm tốt, dịch vụ khách hàng cũng rất chu đáo.",
-  }
+  },
 ];
 
 // Lưu ý: userId và productId trong reviews phải tương ứng với dữ liệu đã có trong database.

@@ -16,7 +16,6 @@ export function ProfileSidebar() {
 
   return (
     <aside className="w-64 border-r border-gray-100 bg-white">
-
       <nav className="px-2 py-2 space-y-1 text-sm">
         <Link href="/profile" className={itemClass("/profile")}>
           Thông tin tài khoản
@@ -24,6 +23,11 @@ export function ProfileSidebar() {
 
         <Link href="/profile/orders" className={itemClass("/profile/orders")}>
           Đơn hàng của tôi
+        </Link>
+
+        {/* 🆕 Thêm mục quản lý địa chỉ */}
+        <Link href="/profile/addresses" className={itemClass("/profile/addresses")}>
+          Sổ địa chỉ
         </Link>
       </nav>
     </aside>

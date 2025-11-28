@@ -53,7 +53,7 @@ function ProductCard({ product }) {
         </div>
 
         {/* Tên sản phẩm */}
-        <h3 className="text-sm font-medium text-neutral-800 mb-1">
+        <h3 className="text-sm font-medium text-neutral-800 mb-1 line-clamp-2">
           {product.name}
         </h3>
 
