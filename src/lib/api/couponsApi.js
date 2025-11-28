@@ -46,6 +46,12 @@ const couponsApi = {
       method: "POST",
       body: { ids, action },
     }),
+
+  applyBestCoupon: (data) =>
+    apiFetch(`/coupons/apply-best`, {
+      method: "POST",
+      body: data,
+    }),
 };
 
 export default couponsApi;
