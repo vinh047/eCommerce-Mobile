@@ -85,7 +85,18 @@ export async function GET(req: Request) {
         product: { select: { name: true } },
         MediaVariant: {
           include: { Media: true },
-   
+        },
+        variantSpecValues: {
+          include: {
+            VariantSpec: {
+              include: {
+                template: true,
+                buckets: true,
+                options: true,
+                values: true,
+              },
+            },
+          },
         },
       },
     });

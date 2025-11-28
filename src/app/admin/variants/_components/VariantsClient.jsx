@@ -16,7 +16,11 @@ const VariantModal = lazy(() => import("./VariantModal"));
 const VariantQuickViewModal = lazy(() => import("./QuickViewModal"));
 const VariantsTable = lazy(() => import("./VariantsTable"));
 
-export default function VariantsClient({ initialVariants,initialProducts }) {
+export default function VariantsClient({
+  initialVariants,
+  initialProducts,
+  initialVariantSpecs,
+}) {
   const {
     variants,
     totalItems,
@@ -98,6 +102,7 @@ export default function VariantsClient({ initialVariants,initialProducts }) {
             mode={modalMode}
             variant={selectedVariant}
             allProducts={initialProducts}
+            allSpecs={initialVariantSpecs}
             onClose={() => setShowModal(false)}
             onSave={async (data) => {
               await saveVariant(data, modalMode, selectedVariant);

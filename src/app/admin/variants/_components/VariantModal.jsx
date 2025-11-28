@@ -1,132 +1,22 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   Box,
   DollarSign,
   Image as ImageIcon,
-  Search,
-  Check,
   ChevronRight,
   Plus,
   Trash2,
   Star,
+  Settings,
+  List,
 } from "lucide-react";
 import Image from "next/image";
+import variantsApi from "@/lib/api/variantsApi";
+import ProductSelector from "./ProductSelector";
 
-// --- COMPONENT SELECTOR (GIỮ NGUYÊN) ---
-function ProductSelector({ products, currentId, onSelect, onClose }) {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.id.toString().includes(searchTerm)
-    );
-  }, [products, searchTerm]);
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      ></div>
-
-      <div className="relative z-10 bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h3 className="font-semibold text-lg dark:text-white">
-            Chọn sản phẩm cha
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo tên hoặc ID sản phẩm..."
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 dark:text-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              autoFocus
-            />
-          </div>
-        </div>
-
-        {/* List */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-          {filteredProducts.length > 0 ? (
-            <div className="space-y-1">
-              {filteredProducts.map((product) => {
-                const isSelected = product.id === currentId;
-                return (
-                  <div
-                    key={product.id}
-                    onClick={() => onSelect(product)}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
-                      isSelected
-                        ? "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
-                        : "border-transparent hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                    }`}
-                  >
-                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-md flex-shrink-0 flex items-center justify-center text-xs text-gray-500 overflow-hidden relative">
-                      {product.image ? (
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_URL_IMAGE}${product.image}`}
-                          alt={product.name || "product image"}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <ImageIcon className="w-5 h-5" />
-                      )}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                          {product.name}
-                        </span>
-                        <span className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
-                          ID: {product.id}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex gap-2">
-                        <span>Giá: {product.price?.toLocaleString()}₫</span>
-                        <span>•</span>
-                        <span>Tồn: {product.stock || 0}</span>
-                      </div>
-                    </div>
-
-                    {isSelected && (
-                      <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-              Không tìm thấy sản phẩm nào.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- COMPONENT CHÍNH (VARIANT MODAL) ---
 export default function VariantModal({
   mode,
   variant,
@@ -138,6 +28,7 @@ export default function VariantModal({
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
 
+  const [allSpecs, setAllSpecs] = useState([]);
   const [formData, setFormData] = useState({
     productId: variant?.productId || "",
     color: variant?.color || "",
@@ -147,9 +38,26 @@ export default function VariantModal({
     lowStockThreshold: variant?.lowStockThreshold || 5,
     isActive: variant?.isActive ?? true,
     MediaVariant: variant?.MediaVariant || [],
+    variantSpecValues: variant?.variantSpecValues || [],
   });
 
   const selectedProduct = allProducts.find((p) => p.id === formData.productId);
+  useEffect(() => {
+    const fetchSpecs = async () => {
+      try {
+        const res = await variantsApi.getVariantByTemplateId(variant.productId);
+        if (res) {
+          setAllSpecs(res);
+        } else {
+          setAllSpecs([]);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy danh sách specs:", error);
+      }
+    };
+
+    fetchSpecs();
+  }, [selectedProduct]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -160,24 +68,17 @@ export default function VariantModal({
     setShowProductSelector(false);
   };
 
-  // --- LOGIC XỬ LÝ ẢNH (FIXED) ---
   const handleAddImage = () => {
     if (!tempImageUrl.trim()) return;
-
-    // Nếu chưa có ảnh nào, ảnh này sẽ là Primary
     const isFirstImage = formData.MediaVariant.length === 0;
-
-    // Tạo đúng cấu trúc object MediaVariant (có media nested bên trong)
     const newImage = {
       media: { url: tempImageUrl.trim() },
       isPrimary: isFirstImage,
     };
-
     setFormData((prev) => ({
       ...prev,
       MediaVariant: [...prev.MediaVariant, newImage],
     }));
-
     setTempImageUrl("");
   };
 
@@ -186,13 +87,10 @@ export default function VariantModal({
       const newImages = prev.MediaVariant.filter(
         (_, index) => index !== indexToRemove
       );
-
-      // Nếu xóa mất ảnh Primary, set ảnh đầu tiên còn lại làm Primary
       const wasPrimary = prev.MediaVariant[indexToRemove].isPrimary;
       if (wasPrimary && newImages.length > 0) {
         newImages[0].isPrimary = true;
       }
-
       return { ...prev, MediaVariant: newImages };
     });
   };
@@ -202,12 +100,64 @@ export default function VariantModal({
       ...prev,
       MediaVariant: prev.MediaVariant.map((item, index) => ({
         ...item,
-        Media: {
-          ...item.Media, //
-          isPrimary: index === indexToSet,
-        },
+        Media: { ...item.Media, isPrimary: index === indexToSet },
+        isPrimary: index === indexToSet,
       })),
     }));
+  };
+
+  const handleAddSpec = () => {
+    setFormData((prev) => ({
+      ...prev,
+      variantSpecValues: [
+        ...prev.variantSpecValues,
+        {
+          specKey: "",
+          label: "",
+          type: "STRING",
+          unit: "",
+          stringValue: "",
+          numericValue: null,
+          booleanValue: null,
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveSpec = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      variantSpecValues: prev.variantSpecValues.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSpecChange = (index, field, value) => {
+    setFormData((prev) => {
+      const newSpecs = [...prev.variantSpecValues];
+      newSpecs[index] = { ...newSpecs[index], [field]: value };
+      return { ...prev, variantSpecValues: newSpecs };
+    });
+  };
+
+  const handleSelectSpecTemplate = (index, specCode) => {
+    const selectedSpec = allSpecs.find((s) => s.code === specCode);
+    if (!selectedSpec) return;
+
+    setFormData((prev) => {
+      const newSpecs = [...prev.variantSpecValues];
+      newSpecs[index] = {
+        ...newSpecs[index],
+        specKey: selectedSpec.code,
+        label: selectedSpec.label,
+        type: selectedSpec.datatype,
+        unit: selectedSpec.unit,
+
+        stringValue: "",
+        numericValue: null,
+        booleanValue: null,
+      };
+      return { ...prev, variantSpecValues: newSpecs };
+    });
   };
 
   const handleSubmit = (e) => {
@@ -218,6 +168,7 @@ export default function VariantModal({
   const tabs = [
     { id: "basic", name: "Thông tin cơ bản", icon: Box },
     { id: "pricing", name: "Giá & Tồn kho", icon: DollarSign },
+    { id: "specs", name: "Thông số", icon: Settings },
     { id: "media", name: "Thư viện ảnh", icon: ImageIcon },
   ];
 
@@ -226,7 +177,6 @@ export default function VariantModal({
       ? "Thêm biến thể mới"
       : `Chỉnh sửa biến thể #${variant?.id}`;
 
-  // --- RENDER TABS ---
   const renderBasicTab = () => (
     <div className="space-y-6">
       <div>
@@ -253,14 +203,6 @@ export default function VariantModal({
           )}
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
         </div>
-        {/* Hidden input for validation */}
-        <input
-          type="number"
-          required
-          value={formData.productId}
-          onChange={() => {}}
-          className="sr-only"
-        />
       </div>
 
       <div>
@@ -276,10 +218,6 @@ export default function VariantModal({
             placeholder="Ví dụ: Red, #FF0000"
             required
           />
-          <div
-            className="w-10 h-10 rounded border border-gray-300 shadow-sm"
-            style={{ backgroundColor: formData.color || "#ffffff" }}
-          ></div>
         </div>
       </div>
 
@@ -373,6 +311,138 @@ export default function VariantModal({
     </div>
   );
 
+  const renderSpecsTab = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center mb-4">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Danh sách thông số kỹ thuật
+        </label>
+        <button
+          type="button"
+          onClick={handleAddSpec}
+          className="text-xs flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1.5 rounded-md hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" /> Thêm thông số
+        </button>
+      </div>
+
+      {formData.variantSpecValues.length === 0 ? (
+        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+          <List className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-sm text-gray-500">
+            Chưa có thông số nào được cấu hình.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {formData.variantSpecValues.map((spec, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+              {/* Cột 1: Chọn Loại Thông Số */}
+              <div className="flex-1 min-w-[150px]">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Tên thông số
+                </label>
+                <select
+                  value={spec.specKey}
+                  onChange={(e) =>
+                    handleSelectSpecTemplate(index, e.target.value)
+                  }
+                  className="w-full text-sm px-2 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">-- Chọn --</option>
+                  {allSpecs.map((s) => (
+                    <option key={s.id} value={s.code}>
+                      {s.label} ({s.code})
+                    </option>
+                  ))}
+                  {/* Nếu specKey hiện tại không nằm trong allSpecs (dữ liệu cũ), vẫn hiển thị */}
+                  {spec.specKey &&
+                    !allSpecs.find((s) => s.code === spec.specKey) && (
+                      <option value={spec.specKey}>
+                        {spec.label || spec.specKey}
+                      </option>
+                    )}
+                </select>
+              </div>
+
+              {/* Cột 2: Nhập Giá Trị (Dynamic theo Type) */}
+              <div className="flex-[2]">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Giá trị {spec.unit ? `(${spec.unit})` : ""}
+                </label>
+                {/* Xử lý hiển thị input dựa trên type */}
+                {(!spec.type || spec.type === "string") && (
+                  <input
+                    type="text"
+                    value={spec.stringValue || ""}
+                    onChange={(e) =>
+                      handleSpecChange(index, "stringValue", e.target.value)
+                    }
+                    placeholder="Nhập văn bản..."
+                    className="w-full text-sm px-2 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                )}
+                {spec.type === "number" ? (
+                  <input
+                    type="number"
+                    step={spec.type === "INT" ? "1" : "0.01"}
+                    value={spec.numericValue ?? ""}
+                    onChange={(e) =>
+                      handleSpecChange(
+                        index,
+                        "numericValue",
+                        e.target.value === ""
+                          ? null
+                          : parseFloat(e.target.value)
+                      )
+                    }
+                    placeholder="0"
+                    className="w-full text-sm px-2 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                ) : null}
+                {spec.type === "boolean" && (
+                  <div className="flex items-center h-[38px]">
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={spec.booleanValue === true}
+                        onChange={(e) =>
+                          handleSpecChange(
+                            index,
+                            "booleanValue",
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        {spec.booleanValue ? "Có" : "Không"}
+                      </span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Cột 3: Nút xóa */}
+              <button
+                type="button"
+                onClick={() => handleRemoveSpec(index)}
+                className="mt-6 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                title="Xóa thông số này"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const renderMediaTab = () => (
     <div className="space-y-6">
       {/* Input thêm ảnh */}
@@ -432,7 +502,6 @@ export default function VariantModal({
                 />
 
                 {/* --- CÁC NÚT ĐIỀU KHIỂN --- */}
-                {/* Nút Xóa */}
                 <button
                   type="button"
                   onClick={() => handleRemoveImage(index)}
@@ -442,30 +511,26 @@ export default function VariantModal({
                   <Trash2 className="w-4 h-4" />
                 </button>
 
-                {/* Nút Set Primary */}
                 <button
                   type="button"
                   onClick={() => handleSetPrimary(index)}
                   className={`absolute top-2 left-2 p-1.5 rounded-full shadow-sm border transition-all ${
-                    item.Media.isPrimary
+                    item.isPrimary
                       ? "bg-blue-600 text-white border-blue-600 opacity-100"
                       : "bg-white/90 dark:bg-gray-800/90 text-gray-400 border-gray-200 dark:border-gray-600 opacity-0 group-hover:opacity-100 hover:text-yellow-500"
                   }`}
                   title={
-                    item.Media.isPrimary
-                      ? "Đây là ảnh chính"
-                      : "Đặt làm ảnh chính"
+                    item.isPrimary ? "Đây là ảnh chính" : "Đặt làm ảnh chính"
                   }
                 >
                   <Star
                     className={`w-4 h-4 ${
-                      item.Media.isPrimary ? "fill-current" : ""
+                      item.isPrimary ? "fill-current" : ""
                     }`}
                   />
                 </button>
 
-                {/* Badge hiển thị rõ nếu là Primary */}
-                {item.Media.isPrimary && (
+                {item.isPrimary && (
                   <div className="absolute bottom-0 inset-x-0 bg-blue-600 text-white text-[10px] text-center py-1 font-semibold uppercase tracking-wider">
                     Ảnh đại diện
                   </div>
@@ -537,6 +602,7 @@ export default function VariantModal({
               <div className="px-6 py-6 overflow-y-auto flex-1 custom-scrollbar">
                 {activeTab === "basic" && renderBasicTab()}
                 {activeTab === "pricing" && renderPricingTab()}
+                {activeTab === "specs" && renderSpecsTab()} {/* Tab Mới */}
                 {activeTab === "media" && renderMediaTab()}
               </div>
 
