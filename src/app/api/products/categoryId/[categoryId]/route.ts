@@ -3,7 +3,8 @@ import { NextRequest } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  {params}: { params: { categoryId: string } }
+  {params}: { params: Promise<{ categoryId: string }> }
 ) {
-  return productController.getByCategory(req, {params});
+  const resolvedParams = await params;
+  return productController.getByCategory(req, {params: resolvedParams});
 }

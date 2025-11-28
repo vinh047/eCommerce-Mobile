@@ -31,7 +31,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            const jwtToken = signToken({ id: user.id, email: user.email });
+            const jwtToken = await signToken({ id: user.id, email: user.email });
             const cookie = serialize("token", jwtToken, {
                 httpOnly: true,
                 path: "/",
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
         if (!isValid)
             return NextResponse.json({ error: "Sai mật khẩu" }, { status: 401 });
 
-        const jwtToken = signToken({ id: user.id, email: user.email });
+        const jwtToken = await signToken({ id: user.id, email: user.email });
         const cookie = serialize("token", jwtToken, {
             httpOnly: true,
             path: "/",

@@ -12,7 +12,7 @@ export const brandController = {
         );
       }
 
-      const brands = await brandService.getBrandsByCategory(categoryId);
+      const brands = await brandService.getBrandsByCategoryId(categoryId);
 
       return NextResponse.json({ data: brands });
     } catch (error) {

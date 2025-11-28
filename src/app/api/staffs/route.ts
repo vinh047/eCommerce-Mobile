@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-
 // GET: Lấy danh sách Staff
 export async function GET(req: Request) {
   try {

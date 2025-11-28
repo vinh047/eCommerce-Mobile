@@ -7,13 +7,12 @@ import {
   CouponsTable,
   CouponModal,
   CouponQuickViewModal,
-} from "./_components"; 
+} from "./_components";
 import { useCouponsData } from "./hooks/useCouponsData";
-import { exportCouponsCSV } from "./utils/exportCouponCSV"; 
+import { exportCouponsCSV } from "./utils/exportCouponCSV";
 import { useState } from "react";
 
 export default function CouponsPage() {
-
   const {
     coupons,
     loading,
@@ -24,21 +23,21 @@ export default function CouponsPage() {
     pageSize,
     selectedItems,
     setFilters,
-    fetchCoupons, 
+    fetchCoupons,
     updateSort,
     selectItem,
     selectAll,
     deselectAll,
-    deleteCoupon, 
+    deleteCoupon,
     saveCoupon,
     handleBulkAction,
     onPageChange,
     onPageSizeChange,
-  } = useCouponsData(); 
+  } = useCouponsData();
 
-  const [showCouponModal, setShowCouponModal] = useState(false); 
+  const [showCouponModal, setShowCouponModal] = useState(false);
   const [modalMode, setModalMode] = useState("create");
-  const [selectedCoupon, setSelectedCoupon] = useState(null); 
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [showQuickView, setShowQuickView] = useState(false);
 
   const handleCreateCoupon = () => {
@@ -64,72 +63,68 @@ export default function CouponsPage() {
   const handleExportCSV = () => exportCouponsCSV(filters, sortConfig); // Xử lý xuất CSV
 
   return (
-    <AdminLayout>
-      <div className="overflow-auto px-8 py-6">
-        <CouponsHeader // Component Header
-          onCreateCoupon={handleCreateCoupon}
-          onExportCSV={handleExportCSV}
-        />
+    <div className="overflow-auto px-8 py-6">
+      <CouponsHeader // Component Header
+        onCreateCoupon={handleCreateCoupon}
+        onExportCSV={handleExportCSV}
+      />
 
-        <CouponsToolbar // Component Toolbar
-          filters={filters}
-          onFiltersChange={setFilters}
-          onClearFilters={() =>
-            setFilters({ search: "", status: "", type: "" })
-          } // Thêm type nếu cần filter
-        />
+      <CouponsToolbar // Component Toolbar
+        filters={filters}
+        onFiltersChange={setFilters}
+        onClearFilters={() => setFilters({ search: "", status: "", type: "" })} // Thêm type nếu cần filter
+      />
 
-        <CouponBulkActionsBar // Component Bulk Actions
-          selectedCount={selectedItems.size}
-          onSelectAll={selectAll}
-          onDeselectAll={deselectAll}
-          onBulkAction={handleBulkAction}
-          show={selectedItems.size > 0}
-        />
+      <CouponBulkActionsBar // Component Bulk Actions
+        selectedCount={selectedItems.size}
+        onSelectAll={selectAll}
+        onDeselectAll={deselectAll}
+        onBulkAction={handleBulkAction}
+        show={selectedItems.size > 0}
+      />
 
-        <CouponsTable // Component Table
-          coupons={coupons} // Dữ liệu coupons
-          selectedItems={selectedItems}
-          loading={loading}
-          sortConfig={sortConfig}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          totalItems={totalItems}
-          onSelectItem={selectItem}
-          onSort={updateSort}
-          onQuickView={handleQuickView}
-          onEditCoupon={(id) =>
-            handleEditCoupon(coupons.find((c) => c.id === id))
-          }
-          onDeleteCoupon={deleteCoupon}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
+      <CouponsTable // Component Table
+        coupons={coupons} // Dữ liệu coupons
+        selectedItems={selectedItems}
+        loading={loading}
+        sortConfig={sortConfig}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onSelectItem={selectItem}
+        onSort={updateSort}
+        onQuickView={handleQuickView}
+        onEditCoupon={(id) =>
+          handleEditCoupon(coupons.find((c) => c.id === id))
+        }
+        onDeleteCoupon={deleteCoupon}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
 
-        {showCouponModal && ( // Modal tạo/chỉnh sửa Coupon
-          <CouponModal
-            mode={modalMode}
+      {showCouponModal && ( // Modal tạo/chỉnh sửa Coupon
+        <CouponModal
+          mode={modalMode}
+          coupon={selectedCoupon}
+          onClose={() => setShowCouponModal(false)}
+          onSave={async (data) => {
+            await saveCoupon(data, modalMode, selectedCoupon);
+            setShowCouponModal(false);
+          }}
+        />
+      )}
+
+      {showQuickView &&
+        selectedCoupon && ( // Modal xem nhanh Coupon
+          <CouponQuickViewModal
             coupon={selectedCoupon}
-            onClose={() => setShowCouponModal(false)}
-            onSave={async (data) => {
-              await saveCoupon(data, modalMode, selectedCoupon);
-              setShowCouponModal(false);
+            onClose={() => setShowQuickView(false)}
+            onEdit={() => {
+              setShowQuickView(false);
+              handleEditCoupon(selectedCoupon);
             }}
           />
         )}
-
-        {showQuickView &&
-          selectedCoupon && ( // Modal xem nhanh Coupon
-            <CouponQuickViewModal
-              coupon={selectedCoupon}
-              onClose={() => setShowQuickView(false)}
-              onEdit={() => {
-                setShowQuickView(false);
-                handleEditCoupon(selectedCoupon);
-              }}
-            />
-          )}
-      </div>
-    </AdminLayout>
+    </div>
   );
 }

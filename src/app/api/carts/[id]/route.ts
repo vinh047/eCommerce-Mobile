@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET - Lấy chi tiết 1 Cart theo ID
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-
-    if (isNaN(id)) {
+    const { id } = await params;
+    const numericId = parseInt(id);
+    if (isNaN(numericId)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
     const cart = await prisma.cart.findUnique({
-      where: { id },
+      where: { id: numericId },
       include: {
         user: {
           select: {
@@ -44,19 +44,20 @@ export async function GET(
 
 // DELETE - Xóa giỏ hàng
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params;
+    const numericId = parseInt(id);
 
-    if (isNaN(id)) {
+    if (isNaN(numericId)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
     // Xóa cart (Prisma relation onDelete: Cascade sẽ tự xóa cartItems)
     await prisma.cart.delete({
-      where: { id },
+      where: { id: numericId },
     });
 
     return NextResponse.json({ message: "Cart deleted successfully" });

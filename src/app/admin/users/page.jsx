@@ -10,9 +10,5 @@ export default async function UsersPage({ searchParams }) {
 
   const queryString = new URLSearchParams(paramsArray).toString();
   const initialData = await usersApi.getUsers(queryString);
-  return (
-    <AdminLayout>
-      <UsersClient initialUsers={initialData} />
-    </AdminLayout>
-  );
+  return <UsersClient initialUsers={initialData} />;
 }

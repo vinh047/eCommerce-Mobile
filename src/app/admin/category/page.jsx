@@ -23,9 +23,5 @@ export default async function CategoriesPage({ searchParams }) {
     console.error("Failed to fetch initial categories data:", error);
   }
 
-  return (
-    <AdminLayout>
-      <CategoriesClient initialCategories={initialData} />
-    </AdminLayout>
-  );
+  return <CategoriesClient initialCategories={initialData} />;
 }

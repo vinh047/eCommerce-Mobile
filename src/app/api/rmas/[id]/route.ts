@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const rma = await prisma.rma.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         order: {
           select: {
@@ -32,15 +33,16 @@ export async function GET(
 }
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const { status, adminNote } = body;
 
     const updatedRma = await prisma.rma.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: {
         status,
       },
@@ -57,12 +59,13 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = Number(params.id);
-    await prisma.rma.delete({ where: { id } });
+    const { id } = await params;
+    const numericId = Number(id);
+    await prisma.rma.delete({ where: { id: numericId } });
     return NextResponse.json({ message: "RMA deleted successfully" });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });

@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const role = await prisma.role.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         rolePermissions: {
           include: { permission: true },
@@ -26,14 +27,14 @@ export async function GET(
 }
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await req.json();
     const { name, permissionIds } = body;
-    const roleId = Number(params.id);
-
+    const { id } = await params;
+    const roleId = Number(id);
     const updatedRole = await prisma.$transaction(async (tx) => {
       const role = await tx.role.update({
         where: { id: roleId },
@@ -72,14 +73,15 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = Number(params.id);
+    const { id } = await params;
+    const numericId = Number(id);
 
     const staffCount = await prisma.staffRole.count({
-      where: { roleId: id },
+      where: { roleId: numericId },
     });
 
     if (staffCount > 0) {
@@ -91,7 +93,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.role.delete({ where: { id } });
+    await prisma.role.delete({ where: { id: numericId } });
 
     return NextResponse.json({ message: "Role deleted successfully" });
   } catch (err: any) {
