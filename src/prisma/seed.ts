@@ -9,26 +9,30 @@
 
   Chạy seed (nếu có thay đổi dữ liệu seed thì mới chạy lệnh này , nó vẫn giữ nguyên dữ liệu cũ trong db):
   npx prisma db seed
-  
 */
 import { PrismaClient, Prisma } from "@prisma/client";
-import {
-  categories,
-  brands,
-  specTemplates,
-  productSpecs,
-  productSpecOptions,
-  productBuckets,
-  variantSpecs,
-  variantSpecOptions,
-  variantBuckets,
-  productsToCreate,
-  productSpecValuesToCreate,
-  variant as variantsToCreate, // Đổi tên để tránh trùng với model 'variant'
-  variantSpecValuesToCreate,
-  MediaArray,
-  MediaVariant,
-} from "./seedData2";
+
+// ---------- IMPORT DỮ LIỆU SEED ----------
+import { specTemplates } from "./seeds/Seed Spectemplate/seed-specTemplate";
+import { productBuckets } from "./seeds/Seed Spectemplate/seed-productBucket";
+import { productSpecs } from "./seeds/Seed Spectemplate/seed-productSpec";
+import { productSpecOptions } from "./seeds/Seed Spectemplate/seed-productSpecOption";
+import { variantBuckets } from "./seeds/Seed Spectemplate/seed-variantBucket";
+import { variantSpecs } from "./seeds/Seed Spectemplate/seed-variantSpec";
+import { variantSpecOptions } from "./seeds/Seed Spectemplate/seed-variantSpecOption";
+
+import { banners } from "./seeds/seed-banners";
+import { brands } from "./seeds/seed-brands";
+import { categories } from "./seeds/seed-categories";
+import { media } from "./seeds/seed-media";
+import { MediaVariant } from "./seeds/seed-mediaVariant";
+import { paymentMethods, paymentAccounts } from "./seeds/seed-payment";
+import { products } from "./seeds/seed-products";
+import { productSpecValues } from "./seeds/seed-productSpecValue";
+import { variants } from "./seeds/seed-variants";
+import { variantSpecValues } from "./seeds/seed-variantSpecValue";
+import { devices } from "./seeds/seed-devices"; // 👈 THÊM DÒNG NÀY
+
 import {
   coupons,
   permissions,
@@ -43,97 +47,146 @@ import {
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log(`Bắt đầu quá trình seeding...`);
+  console.log("🚀 Bắt đầu quá trình seeding...");
 
-  // --- 1. Xóa dữ liệu cũ ---
-  // Xóa theo thứ tự ngược lại của các quan hệ để tránh lỗi khóa ngoại
-  console.log("Đang xóa dữ liệu cũ...");
-  await prisma.user.deleteMany();
-  await prisma.mediaVariant.deleteMany();
-  await prisma.media.deleteMany();
-  await prisma.variantSpecValue.deleteMany();
-  await prisma.variant.deleteMany();
-  await prisma.productSpecValue.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.variantBucket.deleteMany();
-  await prisma.variantSpecOption.deleteMany();
-  await prisma.variantSpec.deleteMany();
-  await prisma.productBucket.deleteMany();
-  await prisma.productSpecOption.deleteMany();
-  await prisma.productSpec.deleteMany();
-  await prisma.specTemplate.deleteMany();
-  await prisma.brand.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.mediaVariant.deleteMany();
-  await prisma.review.deleteMany();
-  console.log("Đã xóa xong dữ liệu cũ.");
+  // =====================================================
+  // 1. XÓA DỮ LIỆU CŨ (THEO THỨ TỰ FKs)
+  // =====================================================
+  console.log("🗑️ Đang xóa dữ liệu cũ...");
 
-  // --- 2.1. Tách category cha và con ---
-  const parentCategories = categories.filter((cat) => !cat.parent);
-  const childCategories = categories.filter((cat) => cat.parent);
+  // Các bảng “đuôi” của Order / Device / Inventory
+  await prisma.orderDevice.deleteMany().catch(() => {});
+  await prisma.device.deleteMany().catch(() => {});
+  await prisma.inventoryTransaction.deleteMany().catch(() => {});
+  await prisma.paymentTransaction.deleteMany().catch(() => {});
+  await prisma.rma.deleteMany().catch(() => {});
+  await prisma.orderItem.deleteMany().catch(() => {});
+  await prisma.order.deleteMany().catch(() => {});
 
-  // --- 2.2. Seed các category cha trước bằng createMany cho nhanh ---
-  console.log(`Đang seed ${parentCategories.length} category cha...`);
+  // Cart
+  await prisma.cartItem.deleteMany().catch(() => {});
+  await prisma.cart.deleteMany().catch(() => {});
+
+  // Review
+  await prisma.review.deleteMany().catch(() => {});
+
+  // Media & Variant
+  await prisma.mediaVariant.deleteMany().catch(() => {});
+  await prisma.media.deleteMany().catch(() => {});
+
+  await prisma.variantSpecValue.deleteMany().catch(() => {});
+  await prisma.variant.deleteMany().catch(() => {});
+
+  // Product spec values & product
+  await prisma.productSpecValue.deleteMany().catch(() => {});
+  await prisma.product.deleteMany().catch(() => {});
+
+  // Variant spec/bucket/option
+  await prisma.variantBucket.deleteMany().catch(() => {});
+  await prisma.variantSpecOption.deleteMany().catch(() => {});
+  await prisma.variantSpec.deleteMany().catch(() => {});
+
+  // Product spec/bucket/option
+  await prisma.productBucket.deleteMany().catch(() => {});
+  await prisma.productSpecOption.deleteMany().catch(() => {});
+  await prisma.productSpec.deleteMany().catch(() => {});
+
+  await prisma.specTemplate.deleteMany().catch(() => {});
+
+  // Banner, Coupon
+  await prisma.banner.deleteMany().catch(() => {});
+  await prisma.coupon.deleteMany().catch(() => {});
+
+  // Payment
+  await prisma.paymentAccount.deleteMany().catch(() => {});
+  await prisma.paymentMethod.deleteMany().catch(() => {});
+
+  // Staff / Role / Permission
+  await prisma.staffRole.deleteMany().catch(() => {});
+  await prisma.rolePermission.deleteMany().catch(() => {});
+  await prisma.staff.deleteMany().catch(() => {});
+  await prisma.role.deleteMany().catch(() => {});
+  await prisma.permission.deleteMany().catch(() => {});
+
+  // User & Address
+  await prisma.address.deleteMany().catch(() => {});
+  await prisma.user.deleteMany().catch(() => {});
+
+  // Brand / Category
+  await prisma.brand.deleteMany().catch(() => {});
+  await prisma.category.deleteMany().catch(() => {});
+
+  console.log("✅ Đã xóa xong dữ liệu cũ.");
+
+  // =====================================================
+  // 2. DANH MỤC, THƯƠNG HIỆU, PAYMENT METHOD/ACCOUNT
+  // =====================================================
+
+  console.log("📦 Seeding Categories...");
   await prisma.category.createMany({
-    data: parentCategories,
+    data: categories,
   });
 
-  // --- 2.3. Seed các category con bằng vòng lặp và create để xử lý quan hệ ---
-  console.log(`Đang seed ${childCategories.length} category con...`);
-  for (const cat of childCategories) {
-    await prisma.category.create({
-      data: {
-        name: cat.name,
-        slug: cat.slug,
-        parent: {
-          // Dùng create thì cú pháp này hoàn toàn hợp lệ
-          connect: {
-            slug: cat.parent.connect.slug,
-          },
-        },
-      },
-    });
-  }
+  console.log("🏷️ Seeding Brands...");
+  await prisma.brand.createMany({
+    data: brands,
+  });
 
-  console.log(`Đang seed Brands...`);
-  await prisma.brand.createMany({ data: brands });
+  console.log("💳 Seeding PaymentMethods...");
+  await prisma.paymentMethod.createMany({
+    data: paymentMethods,
+  });
 
-  // --- 3. Seed Spec Templates (phụ thuộc vào Category) ---
-  console.log(`Đang seed SpecTemplates...`);
-  await prisma.specTemplate.createMany({ data: specTemplates });
+  console.log("🏦 Seeding PaymentAccounts...");
+  await prisma.paymentAccount.createMany({
+    data: paymentAccounts,
+  });
 
-  // LƯU Ý QUAN TRỌNG:
-  // Dữ liệu bạn cung cấp sử dụng ID được hard-code (ví dụ: specTemplateId: 1).
-  // Đoạn script này sẽ hoạt động đúng nếu DB trống (sau khi xóa)
-  // và ID tự tăng bắt đầu từ 1.
+  // =====================================================
+  // 3. SPEC TEMPLATES / PRODUCT SPECS / BUCKETS
+  // =====================================================
 
-  // --- 4. Seed Product Specs và các bảng liên quan ---
-  console.log(`Đang seed ProductSpecs...`);
-  await prisma.productSpec.createMany({ data: productSpecs });
+  console.log("📘 Seeding SpecTemplates...");
+  await prisma.specTemplate.createMany({
+    data: specTemplates,
+  });
 
-  console.log(`Đang seed ProductSpecOptions...`);
-  await prisma.productSpecOption.createMany({ data: productSpecOptions });
+  console.log("📘 Seeding ProductSpecs...");
+  await prisma.productSpec.createMany({
+    data: productSpecs as Prisma.ProductSpecCreateManyInput[],
+  });
 
-  console.log(`Đang seed ProductBuckets...`);
+  console.log("📘 Seeding ProductSpecOptions...");
+  await prisma.productSpecOption.createMany({
+    data: productSpecOptions as Prisma.ProductSpecOptionCreateManyInput[],
+  });
+
+  console.log("📘 Seeding ProductBuckets...");
   for (const bucket of productBuckets) {
     await prisma.productBucket.create({
       data: {
         ...bucket,
-        // Chuyển đổi string sang Decimal
         gt: bucket.gt ? new Prisma.Decimal(bucket.gt) : null,
         lte: bucket.lte ? new Prisma.Decimal(bucket.lte) : null,
       },
     });
   }
 
-  // --- 5. Seed Variant Specs và các bảng liên quan ---
-  console.log(`Đang seed VariantSpecs...`);
-  await prisma.variantSpec.createMany({ data: variantSpecs });
+  // =====================================================
+  // 4. VARIANT SPECS / OPTIONS / BUCKETS
+  // =====================================================
 
-  console.log(`Đang seed VariantSpecOptions...`);
-  await prisma.variantSpecOption.createMany({ data: variantSpecOptions });
+  console.log("🧩 Seeding VariantSpecs...");
+  await prisma.variantSpec.createMany({
+    data: variantSpecs as Prisma.VariantSpecCreateManyInput[],
+  });
 
-  console.log(`Đang seed VariantBuckets...`);
+  console.log("🧩 Seeding VariantSpecOptions...");
+  await prisma.variantSpecOption.createMany({
+    data: variantSpecOptions as Prisma.VariantSpecOptionCreateManyInput[],
+  });
+
+  console.log("🧩 Seeding VariantBuckets...");
   for (const bucket of variantBuckets) {
     await prisma.variantBucket.create({
       data: {
@@ -144,48 +197,72 @@ async function main() {
     });
   }
 
-  // --- 6. Seed Products ---
-  console.log(`Đang seed Products...`);
-  await prisma.product.createMany({ data: productsToCreate });
+  // =====================================================
+  // 5. PRODUCTS & PRODUCT SPEC VALUES
+  // =====================================================
 
-  // --- 7. Seed Product Spec Values ---
-  console.log(`Đang seed ProductSpecValues...`);
-  await prisma.productSpecValue.createMany({ data: productSpecValuesToCreate });
+  console.log("📦 Seeding Products...");
+  await prisma.product.createMany({
+    data: products as Prisma.ProductCreateManyInput[],
+  });
 
-  // --- 8. Seed Media (Tạo tất cả ảnh trước) ---
-  console.log(`Đang seed Media...`);
-  await prisma.media.createMany({ data: MediaArray });
+  console.log("📦 Seeding ProductSpecValues...");
+  // Bỏ id để tránh trùng PK, để DB tự autoincrement
+  await prisma.productSpecValue.createMany({
+    data: productSpecValues.map(({ id, ...rest }) => ({
+      ...rest,
+    })) as Prisma.ProductSpecValueCreateManyInput[],
+  });
 
-  // --- 9. Seed Variants (Tạo tất cả biến thể) ---
-  console.log(`Đang seed Variants...`);
+  // =====================================================
+  // 6. MEDIA, VARIANTS, VARIANT SPEC VALUES, MEDIA-VARIANT, DEVICES
+  // =====================================================
+
+  console.log("🖼️ Seeding Media...");
+  await prisma.media.createMany({
+    data: media as Prisma.MediaCreateManyInput[],
+  });
+
+  console.log("🎨 Seeding Variants...");
   await prisma.variant.createMany({
-    data: variantsToCreate.map((v) => ({
-      productId: v.productId,
-      color: v.color || "Default",
-      price: new Prisma.Decimal(v.price),
-      compareAtPrice: v.compareAtPrice
-        ? new Prisma.Decimal(v.compareAtPrice)
-        : null,
-      stock: v.stock,
-      isActive: v.isActive,
-      lowStockThreshold: v.lowStockThreshold,
-    })),
+    data: variants as Prisma.VariantCreateManyInput[],
   });
 
-  // --- 10. Seed Variant Spec Values ---
-  console.log(`Đang seed VariantSpecValues...`);
-  await prisma.variantSpecValue.createMany({ data: variantSpecValuesToCreate });
+  // 👉 SEED DEVICES TỪ FILE seed-devices
+  console.log("📱 Seeding Devices...");
+  await prisma.device.createMany({
+    data: devices as Prisma.DeviceCreateManyInput[],
+  });
 
-  // --- 11. Seed MediaVariant (Tạo liên kết giữa Media và Variant) ---
-  console.log(`Đang seed MediaVariant...`);
+  console.log("🎨 Seeding VariantSpecValues...");
+  // Bỏ id để tránh trùng PK
+  await prisma.variantSpecValue.createMany({
+    data: variantSpecValues.map(({ id, ...rest }) => ({
+      ...rest,
+    })) as Prisma.VariantSpecValueCreateManyInput[],
+  });
+
+  console.log("🔗 Seeding MediaVariant...");
   await prisma.mediaVariant.createMany({
-    data: MediaVariant, // Dùng trực tiếp mảng JSON bạn đã tạo
+    data: MediaVariant as Prisma.MediaVariantCreateManyInput[],
   });
 
-  // --- 12. Seed Users ---
-  console.log(`Đang seed Users...`);
+  // =====================================================
+  // 7. BANNERS (PHẢI SAU KHI PRODUCTS ĐÃ CÓ)
+  // =====================================================
+
+  console.log("🖼️ Seeding Banners...");
+  await prisma.banner.createMany({
+    data: banners,
+  });
+
+  // =====================================================
+  // 8. USERS + ADDRESSES
+  // =====================================================
+
+  console.log("👤 Seeding Users...");
   for (const user of users) {
-    const createdUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: user.email,
         passwordHash: user.passwordHash,
@@ -193,59 +270,65 @@ async function main() {
         avatar: user.avatar,
         status: user.status,
         createdAt: user.createdAt,
-        addresses: {
-          create: user.addresses,
-        },
+        addresses: user.addresses
+          ? {
+              create: user.addresses,
+            }
+          : undefined,
       },
     });
   }
 
-  // --- 13.Seeding Coupons ---
-  console.log(`Đang seed Coupons...`);
+  // =====================================================
+  // 9. COUPONS
+  // =====================================================
 
+  console.log("💸 Seeding Coupons...");
   for (const coupon of coupons) {
     await prisma.coupon.create({
       data: {
         code: coupon.code,
         type: coupon.type,
         value: new Prisma.Decimal(coupon.value),
-        minOrder: new Prisma.Decimal(coupon.minOrder || 0),
-        startsAt: coupon.startsAt ? new Date(coupon.startsAt) : null,
-        endsAt: coupon.endsAt ? new Date(coupon.endsAt) : null,
+        minOrder: new Prisma.Decimal(coupon.minOrder ?? 0),
+        maxOrder:
+          coupon.maxOrder === null || coupon.maxOrder === undefined
+            ? null
+            : new Prisma.Decimal(coupon.maxOrder),
+        startsAt: coupon.startsAt ?? null,
+        endsAt: coupon.endsAt ?? null,
         usageLimit: coupon.usageLimit ?? null,
         used: coupon.used ?? 0,
-        status: coupon.status || "active",
+        status: coupon.status,
         categoryId: coupon.categoryId ?? null,
         brandId: coupon.brandId ?? null,
       },
     });
   }
 
-  // --- 14. Seed dữ liệu liên quan đến Permissions, Roles, Staffs ---
+  // =====================================================
+  // 10. PERMISSIONS / ROLES / STAFFS
+  // =====================================================
 
-  // 1 Permissions
-  console.log("→ Seeding Permissions...");
+  console.log("🛡️ Seeding Permissions...");
   await prisma.permission.createMany({
     data: permissions,
     skipDuplicates: true,
   });
 
-  // 2️ Roles
-  console.log("→ Seeding Roles...");
+  console.log("🛡️ Seeding Roles...");
   await prisma.role.createMany({
     data: roles,
     skipDuplicates: true,
   });
 
-  // 3️ RolePermissions
-  console.log("→ Seeding RolePermissions...");
+  console.log("🛡️ Seeding RolePermissions...");
   await prisma.rolePermission.createMany({
     data: rolePermissions,
     skipDuplicates: true,
   });
 
-  // 4️ Staffs
-  console.log("→ Seeding Staffs...");
+  console.log("🧑‍💼 Seeding Staffs...");
   await prisma.staff.createMany({
     data: staffs.map((s) => ({
       email: s.email,
@@ -258,16 +341,23 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 5️ StaffRoles
-  console.log("→ Seeding StaffRoles...");
+  console.log("🧑‍💼 Seeding StaffRoles...");
   await prisma.staffRole.createMany({
     data: staffRoles,
     skipDuplicates: true,
   });
-  // --- 15. Seed Reviews ---
-  console.log(`Đang seed Reviews...`);
-  await prisma.review.createMany({ data: reviews, skipDuplicates: true });
-  console.log(`✅ Quá trình seeding hoàn tất.`);
+
+  // =====================================================
+  // 11. REVIEWS
+  // =====================================================
+
+  console.log("⭐ Seeding Reviews...");
+  await prisma.review.createMany({
+    data: reviews,
+    skipDuplicates: true,
+  });
+
+  console.log("🎉 Quá trình seeding hoàn tất.");
 }
 
 main()
@@ -277,6 +367,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    // Đảm bảo ngắt kết nối Prisma Client
     await prisma.$disconnect();
   });

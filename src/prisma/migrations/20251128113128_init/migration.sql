@@ -205,6 +205,7 @@ CREATE TABLE "products" (
     "rating_count" INTEGER NOT NULL DEFAULT 0,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "warrantyMonths" INTEGER,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("id")
 );
@@ -455,7 +456,7 @@ CREATE TABLE "inventory_transactions" (
 CREATE TABLE "devices" (
     "id" SERIAL NOT NULL,
     "variant_id" INTEGER NOT NULL,
-    "imei" VARCHAR(20) NOT NULL,
+    "identifier" VARCHAR(20) NOT NULL,
     "status" "DeviceStatus" NOT NULL DEFAULT 'in_stock',
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -689,7 +690,7 @@ CREATE UNIQUE INDEX "roles_name_key" ON "roles"("name");
 CREATE UNIQUE INDEX "permissions_key_key" ON "permissions"("key");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "devices_imei_key" ON "devices"("imei");
+CREATE UNIQUE INDEX "devices_identifier_key" ON "devices"("identifier");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "order_devices_device_id_key" ON "order_devices"("device_id");

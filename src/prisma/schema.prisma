@@ -334,6 +334,8 @@ model Product {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
 
+  warrantyMonths Int?
+
   brand    Brand    @relation(fields: [brandId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
 
@@ -700,7 +702,7 @@ model InventoryTransaction {
 model Device {
   id        Int          @id @default(autoincrement())
   variantId Int          @map("variant_id")
-  imei      String       @unique @db.VarChar(20)
+  identifier      String       @unique @db.VarChar(20)
   status    DeviceStatus @default(in_stock)
   createdAt DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
 
