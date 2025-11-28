@@ -205,6 +205,7 @@ CREATE TABLE "products" (
     "rating_count" INTEGER NOT NULL DEFAULT 0,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "warrantyMonths" INTEGER,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("id")
 );
@@ -452,10 +453,19 @@ CREATE TABLE "inventory_transactions" (
 );
 
 -- CreateTable
+CREATE TABLE "inventory_transaction_devices" (
+    "id" SERIAL NOT NULL,
+    "inventory_txn_id" INTEGER NOT NULL,
+    "device_id" INTEGER NOT NULL,
+
+    CONSTRAINT "inventory_transaction_devices_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "devices" (
     "id" SERIAL NOT NULL,
     "variant_id" INTEGER NOT NULL,
-    "imei" VARCHAR(20) NOT NULL,
+    "identifier" VARCHAR(20) NOT NULL,
     "status" "DeviceStatus" NOT NULL DEFAULT 'in_stock',
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -689,7 +699,13 @@ CREATE UNIQUE INDEX "roles_name_key" ON "roles"("name");
 CREATE UNIQUE INDEX "permissions_key_key" ON "permissions"("key");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "devices_imei_key" ON "devices"("imei");
+CREATE INDEX "inventory_transaction_devices_device_id_idx" ON "inventory_transaction_devices"("device_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "inventory_transaction_devices_inventory_txn_id_device_id_key" ON "inventory_transaction_devices"("inventory_txn_id", "device_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "devices_identifier_key" ON "devices"("identifier");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "order_devices_device_id_key" ON "order_devices"("device_id");
@@ -819,6 +835,12 @@ ALTER TABLE "inventory_transactions" ADD CONSTRAINT "inventory_transactions_vari
 
 -- AddForeignKey
 ALTER TABLE "inventory_transactions" ADD CONSTRAINT "inventory_transactions_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "staffs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inventory_transaction_devices" ADD CONSTRAINT "inventory_transaction_devices_inventory_txn_id_fkey" FOREIGN KEY ("inventory_txn_id") REFERENCES "inventory_transactions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inventory_transaction_devices" ADD CONSTRAINT "inventory_transaction_devices_device_id_fkey" FOREIGN KEY ("device_id") REFERENCES "devices"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "devices" ADD CONSTRAINT "devices_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

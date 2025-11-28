@@ -8,6 +8,7 @@ import { getPaymentMethod } from "@/lib/api/paymentMethodApi";
 // import { validateCoupon } from "@/lib/api/couponApi";
 import CheckoutStep2 from "./CheckoutStep2/CheckoutStep2";
 import CheckoutStep1 from "./CheckoutStep1/CheckoutStep1";
+import { removeItem as removeCartItem } from "@/lib/api/cartsApi";
 
 const HCMC_PROVINCE = "Hồ Chí Minh";
 
@@ -314,6 +315,12 @@ export default function CheckoutPage() {
       return false;
     }
 
+    // ✅ Nếu nhận tại cửa hàng: chỉ cần SĐT liên hệ (customer.phone)
+    if (deliveryMethod === "pickup") {
+      return true;
+    }
+
+    // ✅ Nếu giao hàng: dùng phone từ địa chỉ
     const phone = getCurrentAddressPhone();
     if (!phone) {
       showToast("Vui lòng nhập số điện thoại nhận hàng", "error");
@@ -584,15 +591,30 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
-      const chosenAddress =
-        selectedAddressId === "new"
-          ? addressForm
-          : addresses.find((a) => a.id === selectedAddressId) || addressForm;
+      // ✅ Xác định address theo deliveryMethod
+      let chosenAddress;
+      let addressPhone = "";
 
-      const addressPhone =
-        selectedAddressId === "new"
-          ? addressForm.phone
-          : chosenAddress.phone || addressForm.phone || "";
+      if (deliveryMethod === "pickup") {
+        chosenAddress = {
+          line: "Nhận tại cửa hàng",
+          ward: "P. Chợ Quán",
+          district: "Q.5",
+          province: "TP.HCM",
+        };
+        addressPhone = customer.phone || "";
+      } else {
+        // shipping như cũ
+        chosenAddress =
+          selectedAddressId === "new"
+            ? addressForm
+            : addresses.find((a) => a.id === selectedAddressId) || addressForm;
+
+        addressPhone =
+          selectedAddressId === "new"
+            ? addressForm.phone
+            : chosenAddress.phone || addressForm.phone || "";
+      }
 
       const itemsPayload = items.map((it) => ({
         variantId: it.variantId,
@@ -611,9 +633,10 @@ export default function CheckoutPage() {
 
       const payload = {
         subtotal,
-        shippingFee,
+        shippingFee: deliveryMethod === "pickup" ? 0 : shippingFee, // ✅ pickup thì ship = 0
         discount,
         total,
+        deliveryMethod, // ✅ gửi lên backend luôn
         addressSnapshot: {
           customer: {
             name: customer.name,
@@ -673,13 +696,27 @@ export default function CheckoutPage() {
         return;
       }
 
-      sessionStorage.removeItem("checkoutItems");
-      showToast("Đặt hàng thành công", "success");
-      if (data && data.orderId) {
-        router.replace(`/order/${data.orderId}`);
-      } else {
-        router.replace("/order/thank-you");
+      // ✅ Đến đây là ĐẶT HÀNG THÀNH CÔNG
+
+      // 1) Gọi API xoá các CartItem tương ứng sản phẩm đã mua
+      try {
+        const itemsWithCartId = items.filter((it) => it.cartItemId);
+        if (itemsWithCartId.length > 0) {
+          await Promise.all(
+            itemsWithCartId.map((it) => removeCartItem(it.cartItemId))
+          );
+        }
+      } catch (clearErr) {
+        console.error("Clear cart after checkout error:", clearErr);
+        // Không chặn flow, chỉ log cho dev xem
       }
+
+      // 2) Clear checkoutItems trên FE
+      sessionStorage.removeItem("checkoutItems");
+
+      // 3) Thông báo + điều hướng
+      showToast("Đặt hàng thành công", "success");
+      router.replace("/profile/orders");
     } catch (err) {
       console.error("Place order error:", err);
       showToast("Đặt hàng thất bại. Vui lòng thử lại", "error");
