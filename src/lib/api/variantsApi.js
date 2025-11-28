@@ -13,6 +13,12 @@ const variantsApi = {
       cache: "no-store",
     }),
 
+  getVariantByTemplateId: (productID) =>
+    apiFetch(`/variant-spec/by-template/${productID}`, {
+      method: "GET",
+      cache: "no-store",
+    }),
+
   createVariant: (data) =>
     apiFetch("/variants", {
       method: "POST",
