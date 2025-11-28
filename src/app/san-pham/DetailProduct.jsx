@@ -188,7 +188,7 @@ const DetailProduct = ({ product }) => {
       toast.success("Thêm vào giỏ hàng thành công");
       router.push("/cart");
     } catch (error) {
-      toast.error(err.payload.message);
+      toast.error(error.payload.message);
     }
   };
   return (

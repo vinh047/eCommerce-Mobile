@@ -1,299 +1,335 @@
-// src/app/api/checkout/create/route.ts
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth";
+// app/api/checkout/create/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import {
+  PrismaClient,
+  InventoryTxnType,
+  DeviceStatus,
+  PaymentTxnStatus,
+  PaymentStatus,
+  OrderStatus,
+} from "@prisma/client";
 
-/**
- * Simple shipping calc (server-side)
- * - free if subtotal >= FREE_THRESHOLD
- * - else: same province / neighbor / far
- */
-const FREE_THRESHOLD = 2_000_000; // VND
-const BASE_LOCAL = 25000;
-const BASE_NEIGHBOR = 45000;
-const BASE_FAR = 80000;
-const ORIGIN_PROVINCE = "Hồ Chí Minh";
-const NEIGHBOR_MAP: Record<string, string[]> = {
-  "Hồ Chí Minh": ["Bình Dương", "Bình Phước", "Long An", "Tiền Giang"],
-  "Hà Nội": ["Hưng Yên", "Hà Nam", "Hải Dương", "Bắc Ninh"],
-};
+const prisma = new PrismaClient();
 
-function normalizeProv(p?: string | null) {
-  if (!p) return "";
-  return String(p).trim();
+// Custom error riêng cho coupon
+class CouponError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CouponError";
+  }
 }
 
-function calcShippingSimple(subtotal: number, address?: { province?: string | null }) {
-  if (subtotal >= FREE_THRESHOLD) return 0;
-  const prov = normalizeProv(address?.province);
-  if (!prov) return BASE_FAR;
-  if (prov === ORIGIN_PROVINCE) return BASE_LOCAL;
-  const neighbors = NEIGHBOR_MAP[ORIGIN_PROVINCE] || [];
-  if (neighbors.includes(prov)) return BASE_NEIGHBOR;
-  return BASE_FAR;
-}
-
-/**
- * Payload item type
- */
-type PayloadItem = {
+// Kiểu dữ liệu request body (khớp với bên frontend bạn đang gửi)
+type CheckoutItemPayload = {
   variantId: number;
-  price: number;
   quantity: number;
-  nameSnapshot?: string;
-  categoryId?: number | null;
-  brandId?: number | null;
+  price: number;
+  nameSnapshot: string;
 };
 
-/**
- * Parse items from request
- */
-function parseItems(raw: any): PayloadItem[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((it) => ({
-    variantId: Number(it.variantId),
-    price: Number(it.price || 0),
-    quantity: Number(it.quantity || 0),
-    nameSnapshot: it.nameSnapshot || "",
-    categoryId: it.categoryId === undefined ? null : (it.categoryId === null ? null : Number(it.categoryId)),
-    brandId: it.brandId === undefined ? null : (it.brandId === null ? null : Number(it.brandId)),
-  }));
-}
+type CheckoutBody = {
+  subtotal: number;
+  shippingFee: number;
+  discount: number;
+  total: number;
+  addressSnapshot: any;
+  items: CheckoutItemPayload[];
+  paymentMethodId: number;
+  note?: string;
+  couponCode?: string;
+  paymentMeta?: {
+    idempotencyKey: string;
+    qrUrl?: string;
+    orderCode?: string;
+  };
+};
 
-/**
- * Server-side coupon validation (compatible with your Coupon model)
- */
-async function validateCouponServer(code: string, items: PayloadItem[], subtotal: number) {
-  const codeNormalized = String(code || "").trim();
-  if (!codeNormalized) return { ok: false, reason: "missing_code" };
-
-  const coupon = await prisma.coupon.findFirst({ where: { code: codeNormalized } });
-  if (!coupon) return { ok: false, reason: "not_found" };
-
-  const now = new Date();
-  if (coupon.status !== "active") return { ok: false, reason: "inactive", coupon };
-  if (coupon.startsAt && now < new Date(coupon.startsAt)) return { ok: false, reason: "not_started", coupon };
-  if (coupon.endsAt && now > new Date(coupon.endsAt)) return { ok: false, reason: "expired", coupon };
-
-  const eligibleAmount = items && items.length > 0
-    ? items
-        .filter((it) => {
-          if (coupon.categoryId !== null && coupon.categoryId !== undefined) {
-            if (Number(it.categoryId) !== Number(coupon.categoryId)) return false;
-          }
-          if (coupon.brandId !== null && coupon.brandId !== undefined) {
-            if (Number(it.brandId) !== Number(coupon.brandId)) return false;
-          }
-          return true;
-        })
-        .reduce((s, it) => s + (Number(it.price || 0) * Number(it.quantity || 0)), 0)
-    : (subtotal ?? 0);
-
-  const minOrder = Number(coupon.minOrder ?? 0);
-  const maxOrder = Number(coupon.maxOrder ?? 0);
-
-  if (eligibleAmount < minOrder) return { ok: false, reason: "min_order_not_met", coupon, eligibleAmount };
-  if (maxOrder > 0 && eligibleAmount > maxOrder) return { ok: false, reason: "max_order_exceeded", coupon, eligibleAmount };
-  if ((coupon.categoryId || coupon.brandId) && eligibleAmount <= 0) return { ok: false, reason: "scope_mismatch", coupon, eligibleAmount };
-
-  if (coupon.usageLimit !== null && coupon.usageLimit !== undefined) {
-    if (Number(coupon.used ?? 0) >= Number(coupon.usageLimit)) {
-      return { ok: false, reason: "usage_limit_exceeded", coupon, eligibleAmount };
-    }
-  }
-
-  // compute discount
-  let computedDiscount = 0;
-  if (coupon.type === "fixed") {
-    computedDiscount = Math.min(Number(coupon.value ?? 0), eligibleAmount);
-  } else {
-    const pct = Math.max(0, Math.min(100, Number(coupon.value ?? 0)));
-    computedDiscount = Math.floor((eligibleAmount * pct) / 100);
-  }
-
-  return { ok: true, coupon, eligibleAmount, computedDiscount };
-}
-
-/**
- * Helper: extract token cookie from Request headers
- */
-function extractTokenFromCookieHeader(req: Request): string | null {
+export async function POST(req: NextRequest) {
   try {
-    const cookieHeader = req.headers.get("cookie") || "";
-    if (!cookieHeader) return null;
-    const parts = cookieHeader.split(";").map((s) => s.trim());
-    const tokenPart = parts.find((p) => p.startsWith("token="));
-    if (!tokenPart) return null;
-    return tokenPart.split("=")[1] || null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * POST /api/checkout/create
- * - Auth via token cookie
- * - Validate coupon, check stock, create order + items + paymentTransaction
- * - Decrement variant stock
- * - Sync user's cart (decrement or delete cart items)
- * All DB writes happen inside a single transaction for atomicity.
- */
-export async function POST(req: Request) {
-  try {
-    // auth
-    const token = extractTokenFromCookieHeader(req);
-    if (!token) return NextResponse.json({ error: "Unauthorized: missing token" }, { status: 401 });
-    const payload = await verifyToken(token);
-    if (!payload || !payload.id) return NextResponse.json({ error: "Unauthorized: invalid token" }, { status: 401 });
-    const userId = Number(payload.id);
-
-    const body = await req.json();
+    const body = (await req.json()) as CheckoutBody;
     const {
-      subtotal: clientSubtotal,
+      subtotal,
+      shippingFee,
+      discount,
+      total,
       addressSnapshot,
-      items: rawItems,
+      items,
       paymentMethodId,
       note,
       couponCode,
       paymentMeta,
-    } = body || {};
+    } = body;
 
-    const items = parseItems(rawItems || []);
-    const subtotal = Number(clientSubtotal ?? items.reduce((s, it) => s + (Number(it.price || 0) * Number(it.quantity || 0)), 0));
+    // TODO: Lấy userId từ auth của bạn (next-auth, JWT, custom,...)
+    // Ví dụ với next-auth:
+    // const session = await auth();
+    // const userId = session?.user?.id;
+    const userId = 1; // ⚠️ DEMO: thay bằng userId thật
 
-    // compute shipping server-side
-    const shippingFee = calcShippingSimple(subtotal, addressSnapshot?.address || null);
-
-    // validate coupon if provided
-    let appliedCouponRecord: any = null;
-    let computedDiscount = 0;
-    if (couponCode) {
-      const couponValidation = await validateCouponServer(couponCode, items, subtotal);
-      if (!couponValidation.ok) {
-        return NextResponse.json({ error: "Coupon invalid", reason: couponValidation.reason }, { status: 400 });
-      }
-      appliedCouponRecord = couponValidation.coupon;
-      computedDiscount = Number(couponValidation.computedDiscount || 0);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // quick pre-check stock availability to fail fast (we will re-check inside tx)
-    for (const it of items) {
-      if (!it.variantId || it.quantity <= 0) {
-        return NextResponse.json({ error: "Invalid item payload" }, { status: 400 });
-      }
-      const variant = await prisma.variant.findUnique({ where: { id: Number(it.variantId) } });
-      if (!variant) return NextResponse.json({ error: `Variant ${it.variantId} not found` }, { status: 400 });
-      if (variant.stock < it.quantity) {
-        return NextResponse.json({ error: "Insufficient stock", variantId: it.variantId, available: variant.stock }, { status: 400 });
-      }
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Giỏ hàng trống" }, { status: 400 });
     }
 
-    // final total
-    const total = Math.max(0, subtotal + shippingFee - computedDiscount);
+    // Một chút validate đơn giản
+    if (total <= 0 || subtotal <= 0) {
+      return NextResponse.json(
+        { error: "Tổng tiền không hợp lệ" },
+        { status: 400 }
+      );
+    }
 
-    // create order + items + paymentTransaction + update stock + coupon.used + sync cart in a transaction
-    const orderCode = `ORD${Date.now()}`; // simple generator
+    // Thời điểm hiện tại dùng cho validate coupon
     const now = new Date();
 
     const result = await prisma.$transaction(async (tx) => {
-      // re-check stock inside transaction and decrement
-      for (const it of items) {
-        const v = await tx.variant.findUnique({ where: { id: Number(it.variantId) } });
-        if (!v) throw new Error(`Variant ${it.variantId} not found`);
-        if (v.stock < it.quantity) throw new Error(`Insufficient stock for variant ${it.variantId}`);
-        await tx.variant.update({
-          where: { id: Number(it.variantId) },
-          data: { stock: { decrement: Number(it.quantity) } },
+      // 1. Validate & chuẩn bị dữ liệu coupon (nếu có)
+      let coupon = null as Awaited<
+        ReturnType<typeof tx.coupon.findUnique>
+      > | null;
+
+      if (couponCode) {
+        coupon = await tx.coupon.findUnique({
+          where: { code: couponCode },
         });
+
+        if (!coupon || coupon.status !== "active") {
+          throw new CouponError("Mã giảm giá không tồn tại hoặc đã bị khóa");
+        }
+
+        if (coupon.startsAt && now < coupon.startsAt) {
+          throw new CouponError("Mã giảm giá chưa bắt đầu");
+        }
+
+        if (coupon.endsAt && now > coupon.endsAt) {
+          throw new CouponError("Mã giảm giá đã hết hạn");
+        }
+
+        if (
+          coupon.usageLimit !== null &&
+          typeof coupon.usageLimit !== "undefined" &&
+          coupon.used >= coupon.usageLimit
+        ) {
+          throw new CouponError("Mã giảm giá đã hết lượt sử dụng");
+        }
+
+        if (subtotal < Number(coupon.minOrder || 0)) {
+          throw new CouponError(
+            `Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã`
+          );
+        }
+
+        // TODO nếu bạn có logic ràng buộc theo brand/category
+        // thì check items + variant + product ở đây
       }
 
-      // create order
+      // 2. Chuẩn bị lấy paymentMethod & paymentAccount (nếu cần)
+      const paymentMethod = await tx.paymentMethod.findUnique({
+        where: { id: paymentMethodId },
+        include: { accounts: true },
+      });
+
+      if (!paymentMethod || !paymentMethod.isActive) {
+        throw new Error("Phương thức thanh toán không hợp lệ");
+      }
+
+      // Chọn 1 account active (nếu có) để map vào Order.paymentAccountId
+      const defaultAccount = paymentMethod.accounts.find((a) => a.isActive);
+
+      // Tạo mã đơn hàng đơn giản
+      const orderCode = `ORD-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)
+        .toUpperCase()}`;
+
+      // 3. Tạo Order
       const order = await tx.order.create({
         data: {
-          userId: userId,
+          userId,
           code: orderCode,
-          status: "pending",
-          paymentStatus: "pending",
-          discount: computedDiscount,
-          shippingFee: shippingFee,
-          subtotal: subtotal,
-          total: total,
-          addressSnapshot: addressSnapshot ? addressSnapshot : null,
+          status: OrderStatus.pending,
+          paymentStatus: PaymentStatus.pending,
+          paymentAccountId: defaultAccount?.id ?? null,
+          subtotal,
+          shippingFee,
+          discount,
+          total,
+          addressSnapshot,
           note: note || null,
-          createdAt: now,
         },
       });
 
-      // create order items
-      for (const it of items) {
-        await tx.orderItem.create({
+      // 4. Tạo OrderItems + OrderDevices + cập nhật stock + InventoryTransaction
+      for (const item of items) {
+        const qty = Number(item.quantity) || 0;
+        if (!item.variantId || qty <= 0) {
+          throw new Error("Dữ liệu sản phẩm không hợp lệ");
+        }
+
+        const variant = await tx.variant.findUnique({
+          where: { id: item.variantId },
+          select: {
+            id: true,
+            stock: true,
+            productId: true,
+          },
+        });
+
+        if (!variant) {
+          throw new Error("Variant không tồn tại");
+        }
+
+        if (variant.stock < qty) {
+          throw new Error(
+            `Sản phẩm đã hết hàng hoặc không đủ số lượng (variantId: ${variant.id})`
+          );
+        }
+
+        // 4.1. Tạo OrderItem
+        const orderItem = await tx.orderItem.create({
           data: {
             orderId: order.id,
-            variantId: Number(it.variantId),
-            price: Number(it.price || 0),
-            quantity: Number(it.quantity || 0),
-            nameSnapshot: it.nameSnapshot || "",
+            variantId: item.variantId,
+            price: item.price,
+            quantity: qty,
+            nameSnapshot: item.nameSnapshot,
+          },
+        });
+
+        // 4.2. Nếu có Device cho variant này => gán device vào order (OrderDevice)
+        // Lấy đúng số lượng device đang in_stock
+        const devices = await tx.device.findMany({
+          where: {
+            variantId: item.variantId,
+            status: DeviceStatus.in_stock,
+          },
+          take: qty,
+          orderBy: { id: "asc" },
+        });
+
+        // Nếu bạn muốn BẮT BUỘC phải đủ device thì bỏ if này
+        if (devices.length < qty) {
+          // Có thể throw lỗi hoặc cho phép thiếu
+          throw new Error(
+            `Không đủ thiết bị (Device) cho variantId=${item.variantId}`
+          );
+        }
+
+        for (const device of devices) {
+          // Tạo mapping OrderDevice
+          await tx.orderDevice.create({
+            data: {
+              orderItemId: orderItem.id,
+              deviceId: device.id,
+            },
+          });
+
+          // Cập nhật trạng thái device thành sold
+          await tx.device.update({
+            where: { id: device.id },
+            data: { status: DeviceStatus.sold },
+          });
+        }
+
+        // 4.3. Giảm stock của Variant
+        await tx.variant.update({
+          where: { id: variant.id },
+          data: {
+            stock: {
+              decrement: qty,
+            },
+          },
+        });
+
+        // 4.4. Ghi log InventoryTransaction (type: out)
+        await tx.inventoryTransaction.create({
+          data: {
+            variantId: variant.id,
+            type: InventoryTxnType.out,
+            quantity: qty,
+            reason: `Bán hàng cho đơn ${order.code}`,
+            referenceJson: {
+              orderId: order.id,
+              orderItemId: orderItem.id,
+            } as any,
+            createdBy: null, // nếu có staff xử lý thì set id staff
+          },
+        });
+
+        // 5. (OPTIONAL) cập nhật số lượt mua sp
+        // Hiện trong schema chưa có cột purchaseCount.
+        // Nếu bạn thêm cột ví dụ Product.purchasedCount thì:
+        //
+        // await tx.product.update({
+        //   where: { id: variant.productId },
+        //   data: {
+        //     purchasedCount: { increment: qty },
+        //   },
+        // });
+      }
+
+      // 6. Tạo PaymentTransaction
+      let providerPaymentId: string | null = null;
+
+      if (paymentMeta?.orderCode) {
+        providerPaymentId = paymentMeta.orderCode;
+      }
+
+      // Với COD, status vẫn là pending.
+      // Với thanh toán online, bạn có thể set success sau khi webhook báo về.
+      await tx.paymentTransaction.create({
+        data: {
+          orderId: order.id,
+          paymentMethodId,
+          providerPaymentId,
+          amount: total,
+          status: PaymentTxnStatus.pending,
+        },
+      });
+
+      // 7. Cập nhật Coupon.used (nếu có)
+      if (coupon) {
+        await tx.coupon.update({
+          where: { id: coupon.id },
+          data: {
+            used: {
+              increment: 1,
+            },
           },
         });
       }
 
-      // create payment transaction record
-      // Note: schema includes providerPaymentId; providerResponse/idempotencyKey not present in your schema
-      const paymentTxn = await tx.paymentTransaction.create({
-        data: {
-          orderId: order.id,
-          paymentMethodId: paymentMethodId ? Number(paymentMethodId) : null,
-          amount: total,
-          status: "pending",
-          providerPaymentId: paymentMeta?.providerPaymentId || null,
-          createdAt: now,
-        },
-      });
-
-      // increment coupon used if applied
-      if (appliedCouponRecord) {
-        await tx.coupon.update({
-          where: { id: Number(appliedCouponRecord.id) },
-          data: { used: { increment: 1 } },
-        });
-      }
-
-      // sync user's cart: decrement or delete cart items that were purchased
-      const userCart = await tx.cart.findUnique({
-        where: { userId: userId },
-        include: { items: true },
-      });
-
-      if (userCart && Array.isArray(userCart.items)) {
-        for (const it of items) {
-          const cartItem = userCart.items.find((ci) => Number(ci.variantId) === Number(it.variantId));
-          if (!cartItem) continue;
-          if (cartItem.quantity <= it.quantity) {
-            await tx.cartItem.delete({ where: { id: cartItem.id } });
-          } else {
-            await tx.cartItem.update({
-              where: { id: cartItem.id },
-              data: { quantity: { decrement: Number(it.quantity) } },
-            });
-          }
-        }
-      }
-
-      return { order, paymentTxn };
+      // 👉 Có thể trả order code / id về cho FE
+      return {
+        orderId: order.id,
+        orderCode: order.code,
+      };
     });
 
-    return NextResponse.json({
-      ok: true,
-      orderId: result.order.id,
-      orderCode: result.order.code,
-      paymentTransactionId: result.paymentTxn.id,
-    }, { status: 201 });
+    return NextResponse.json(result, { status: 200 });
   } catch (err: any) {
-    console.error("POST /api/checkout/create error:", err);
-    const msg = String(err?.message || "");
-    if (msg.toLowerCase().includes("insufficient stock")) {
-      return NextResponse.json({ error: msg }, { status: 400 });
+    console.error("checkout/create error:", err);
+
+    // Lỗi coupon -> trả về đúng format FE đang dùng: { reason }
+    if (err instanceof CouponError) {
+      return NextResponse.json(
+        {
+          error: "Coupon error",
+          reason: err.message,
+        },
+        { status: 400 }
+      );
     }
-    return NextResponse.json({ error: err?.message || "Order creation failed" }, { status: 500 });
+
+    // Các lỗi khác
+    return NextResponse.json(
+      {
+        error: err?.message || "Đặt hàng thất bại, vui lòng thử lại sau",
+      },
+      { status: 500 }
+    );
   }
 }

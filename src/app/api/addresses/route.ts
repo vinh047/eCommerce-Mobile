@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/addresses
- * Body: { line, ward?, district, province, isDefault? }
+ * Body: { line, ward?, district, province, phone?, isDefault? }
  * - Yêu cầu auth (token cookie)
  * - Nếu isDefault = true, unset các địa chỉ default khác trong transaction
  * - Trả về address vừa tạo (201)
@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
       ward = null,
       district,
       province = "Hồ Chí Minh",
+      phone = null,
       isDefault = false,
     } = body || {};
 
@@ -97,6 +98,7 @@ export async function POST(req: NextRequest) {
             ward: ward ? String(ward) : null,
             district: String(district),
             province: String(province),
+            phone: phone ? String(phone) : null,
             isDefault: true,
           },
         });
@@ -110,6 +112,7 @@ export async function POST(req: NextRequest) {
           ward: ward ? String(ward) : null,
           district: String(district),
           province: String(province),
+          phone: phone ? String(phone) : null,
           isDefault: Boolean(isDefault),
         },
       });
