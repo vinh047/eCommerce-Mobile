@@ -1,34 +1,34 @@
-'use client'
+// 'use client'
 
-import { useState, useCallback } from 'react'
+// import { useState, useCallback } from 'react'
 
-export function useToast() {
-  const [toasts, setToasts] = useState([])
+// export function useToast() {
+//   const [toasts, setToasts] = useState([])
 
-  const showToast = useCallback((message, type = 'info', duration = 3000) => {
-    const id = Date.now()
-    const toast = {
-      id,
-      message,
-      type,
-      duration
-    }
+//   const showToast = useCallback((message, type = 'info', duration = 3000) => {
+//     const id = Date.now()
+//     const toast = {
+//       id,
+//       message,
+//       type,
+//       duration
+//     }
 
-    setToasts(prev => [...prev, toast])
+//     setToasts(prev => [...prev, toast])
 
-    // Auto remove after duration
-    setTimeout(() => {
-      removeToast(id)
-    }, duration)
-  }, [])
+//     // Auto remove after duration
+//     setTimeout(() => {
+//       removeToast(id)
+//     }, duration)
+//   }, [])
 
-  const removeToast = useCallback((id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id))
-  }, [])
+//   const removeToast = useCallback((id) => {
+//     setToasts(prev => prev.filter(toast => toast.id !== id))
+//   }, [])
 
-  return {
-    toasts,
-    showToast,
-    removeToast
-  }
-}
+//   return {
+//     toasts,
+//     showToast,
+//     removeToast
+//   }
+// }

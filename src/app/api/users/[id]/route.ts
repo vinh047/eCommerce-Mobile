@@ -1,16 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 // GET - Lấy 1 user theo id
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await prisma.user.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: { addresses: true },
     });
 
@@ -26,10 +27,11 @@ export async function GET(
 
 // PUT - Cập nhật toàn bộ thông tin user
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const data = await req.json();
     const updateData: any = { ...data };
 
@@ -41,7 +43,7 @@ export async function PUT(
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: updateData,
     });
 
@@ -55,17 +57,17 @@ export async function PUT(
   }
 }
 
-
 // PATCH - Cập nhật một phần thông tin (name, avatar, status)
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const _ = await params;
     const data = await req.json();
 
     const updated = await prisma.user.update({
-      where: { id: Number(params.id) },
+      where: { id: Number((await params).id) },
       data: {
         ...(data.name && { name: data.name }),
         ...(data.avatar && { avatar: data.avatar }),
@@ -82,20 +84,21 @@ export async function PATCH(
 //  DELETE - Xóa mềm user (đề xuất)
 // Nếu muốn xóa hẳn trong DB, bật `forceDelete` trong body.
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { searchParams } = new URL(req.url);
     const force = searchParams.get("force") === "true"; // ?force=true => xóa cứng
 
     if (force) {
-      await prisma.user.delete({ where: { id: Number(params.id) } });
+      await prisma.user.delete({ where: { id: Number(id) } });
       return NextResponse.json({ message: "User permanently deleted" });
     }
 
     const deletedUser = await prisma.user.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: { status: "deleted" },
     });
 

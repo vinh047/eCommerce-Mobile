@@ -13,9 +13,5 @@ export default async function BrandsPage({ searchParams }) {
 
   let initialData = await brandsApi.getBrands(queryString);
 
-  return (
-    <AdminLayout>
-      <BrandsClient initialBrands={initialData} />
-    </AdminLayout>
-  );
+  return <BrandsClient initialBrands={initialData} />;
 }

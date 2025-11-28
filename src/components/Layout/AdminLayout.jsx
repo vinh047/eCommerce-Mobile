@@ -1,15 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, Suspense } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { Toaster } from "sonner";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-export default function AdminLayout({ children }) {
+export default function AdminLayoutClient({ children }) {
   const [isDark, setIsDark] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // AOS init
   useEffect(() => {
     AOS.init({
       duration: 400,
@@ -18,6 +19,7 @@ export default function AdminLayout({ children }) {
     });
   }, []);
 
+  // Theme init
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") || "light";
     const prefersDark = window.matchMedia(
@@ -46,29 +48,34 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className={`min-h-screen ${isDark ? "dark" : ""}`}>
-      <div className="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        {/* Sidebar */}
+      {/* Sidebar */}
+      <Suspense fallback={null}>
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      </Suspense>
 
-        {/* Main Content */}
-        <div
-          className={`min-h-screen transition-all duration-300 ${
-            isSidebarOpen ? "ml-64" : "lg:ml-64"
-          }`}
-        >
-          {/* Header */}
+      {/* Main */}
+      <div
+        className={`min-h-screen transition-all duration-300 ${
+          isSidebarOpen ? "ml-64" : "lg:ml-64"
+        }`}
+      >
+        {/* Header */}
+        <Suspense fallback={null}>
           <Header
             isDark={isDark}
             toggleTheme={toggleTheme}
             toggleSidebar={toggleSidebar}
           />
+        </Suspense>
 
-          {/* Content */}
-          <main className="">
+        {/* Content */}
+        <main>
+          <Suspense
+            fallback={<div className="p-8 text-center">Loading...</div>}
+          >
             {children}
-            <Toaster richColors />
-          </main>
-        </div>
+          </Suspense>
+        </main>
       </div>
     </div>
   );

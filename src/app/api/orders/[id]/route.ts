@@ -1,13 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    const numericId = Number(id);
     const order = await prisma.order.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: numericId },
       include: {
         user: {
           select: { id: true, name: true, email: true, addresses: true },
@@ -32,8 +34,8 @@ export async function GET(
 }
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await req.json();
@@ -47,7 +49,8 @@ export async function PUT(
       shippingFee,
     } = body;
 
-    const orderId = Number(params.id);
+    const { id } = await params;
+    const orderId = Number(id);
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const updateData: any = {
@@ -116,14 +119,14 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = Number(params.id);
+    const { id } = await params;
+    const numericId = Number(id);
 
-    await prisma.order.delete({ where: { id } });
-
+    await prisma.order.delete({ where: { id: numericId } });
     return NextResponse.json({ message: "Order deleted successfully" });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });

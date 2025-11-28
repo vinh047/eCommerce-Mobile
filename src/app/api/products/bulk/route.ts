@@ -1,6 +1,59 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("categoryId");
+    const isActive = searchParams.get("isActive");
+
+    const where: any = {
+      AND: [
+        search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" } },
+                { slug: { contains: search, mode: "insensitive" } },
+              ],
+            }
+          : {},
+
+        categoryId ? { categoryId: Number(categoryId) } : {},
+
+        isActive !== null ? { isActive: isActive === "true" } : {},
+      ],
+    };
+
+    const products = await prisma.product.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        category: { select: { id: true, name: true } },
+        brand: { select: { id: true, name: true } },
+        variants: {
+          select: {
+            id: true,
+            color: true,
+            price: true,
+            stock: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ data: products });
+  } catch (error) {
+    console.error("GET All Products Error:", error);
+    return NextResponse.json(
+      { message: "Failed to get full product data" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { ids, action } = await req.json();

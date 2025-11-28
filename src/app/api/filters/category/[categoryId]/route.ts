@@ -3,7 +3,10 @@ import { specTemplateController } from "@/server/controllers/specTenplate.contro
 
 export async function GET(
   request: NextRequest,
-  context: { params: { categoryId: string } }
+  context: { params: Promise<{ categoryId: string }> }
 ) {
-  return specTemplateController.getFiltersByCategoryId(request, context);
+  const resolvedParams = await context.params;
+  return specTemplateController.getFiltersByCategoryId(request, {
+    params: resolvedParams,
+  });
 }

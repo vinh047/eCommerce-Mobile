@@ -18,11 +18,12 @@ export default function ReviewsModal({ review, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+      <div className="flex items-center justify-center min-h-screen px-4 text-center">
+        {/* Background overlay */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+        {/* Modal */}
+        <div className="relative z-10 bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-4xl w-full">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
