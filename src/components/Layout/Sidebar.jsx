@@ -110,6 +110,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={true}
                 className={`nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
                   ${
                     isActive

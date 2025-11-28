@@ -18,9 +18,5 @@ export default async function CartsPage({ searchParams }) {
 
   const initialData = await cartsApi.getCarts(queryString);
 
-  return (
-    <AdminLayout>
-      <CartsClient initialCarts={initialData} />
-    </AdminLayout>
-  );
+  return <CartsClient initialCarts={initialData} />;
 }

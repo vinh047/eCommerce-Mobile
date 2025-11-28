@@ -31,7 +31,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            const jwtToken = signToken({ id: user.id, email: user.email });
+            const jwtToken = await signToken({ id: user.id, email: user.email });
             const cookie = serialize("token", jwtToken, {
                 httpOnly: true,
                 path: "/",
@@ -62,7 +62,8 @@ export async function POST(req: Request) {
             data: { name, email, passwordHash },
         });
 
-        const jwtToken = signToken({ id: user.id, email: user.email });
+                    const jwtToken = await signToken({ id: user.id, email: user.email });
+
         const cookie = serialize("token", jwtToken, {
             httpOnly: true,
             path: "/",

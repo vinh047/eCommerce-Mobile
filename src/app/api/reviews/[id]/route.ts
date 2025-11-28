@@ -1,14 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET: Lấy chi tiết 1 review
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const review = await prisma.review.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         user: {
           select: { id: true, name: true, email: true, avatar: true },
@@ -31,15 +32,17 @@ export async function GET(
 
 // PUT: Cập nhật review (Duyệt/Ẩn hoặc Sửa nội dung)
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    const numericId = Number(id);
     const body = await req.json();
     const { content, isActived } = body;
 
     const updatedReview = await prisma.review.update({
-      where: { id: Number(params.id) },
+      where: { id: numericId },
       data: {
         content,
         isActived,
@@ -58,12 +61,13 @@ export async function PUT(
 
 // DELETE: Xóa vĩnh viễn review
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = Number(params.id);
-    await prisma.review.delete({ where: { id } });
+    const { id } = await params;
+    const numericId = Number(id);
+    await prisma.review.delete({ where: { id: numericId } });
     return NextResponse.json({ message: "Review deleted successfully" });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });

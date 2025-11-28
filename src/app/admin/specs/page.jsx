@@ -28,15 +28,11 @@ export default async function SpecsPage({ searchParams }) {
         return { data: [] };
       }),
   ]);
-  console.log("SpecsPage specsRes:", specsRes);
-  console.log("SpecsPage categoriesRes:", categoriesRes);
 
   return (
-    <AdminLayout>
       <SpecsClient
         initialData={specsRes}
         categories={categoriesRes.data  || []}
       />
-    </AdminLayout>
   );
 }

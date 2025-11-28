@@ -3,8 +3,9 @@ import { productController } from "@/server/controllers/product.controller";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  console.log("🧩 API params:", params);
-  return productController.getBySlug(req, { params });
+  const resolvedParams = await params;
+  console.log("🧩 API params:", resolvedParams);
+  return productController.getBySlug(req, { params: resolvedParams });
 }

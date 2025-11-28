@@ -5,7 +5,7 @@ const couponsApi = {
   getCoupons: (params) =>
     apiFetch(`/coupons?${new URLSearchParams(params)}`, {
       method: "GET",
-      next: { revalidate: 60 },
+      cache: "no-store"
     }),
 
   // Lấy chi tiết coupon theo id

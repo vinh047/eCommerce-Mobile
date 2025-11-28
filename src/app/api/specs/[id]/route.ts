@@ -1,14 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET Detail
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+ req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const spec = await prisma.specTemplate.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         category: true,
         productSpecs: {
@@ -27,13 +28,14 @@ export async function GET(
 
 // PUT (Update Meta info only)
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const data = await req.json();
     const updated = await prisma.specTemplate.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: {
         name: data.name,
         categoryId: Number(data.categoryId),
@@ -48,12 +50,13 @@ export async function PUT(
 
 // DELETE
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.specTemplate.delete({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
     return NextResponse.json({ message: "Deleted" });
   } catch (err: any) {

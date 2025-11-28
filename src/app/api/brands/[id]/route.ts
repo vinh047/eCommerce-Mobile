@@ -1,14 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET - Lấy chi tiết 1 brand
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const brand = await prisma.brand.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: {
         _count: { select: { products: true, coupons: true } },
       },
@@ -26,17 +27,18 @@ export async function GET(
 
 // PUT - Cập nhật brand
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const data = await req.json();
+    const { id } = await params;
 
     if (data.slug) {
       const existing = await prisma.brand.findFirst({
         where: {
           slug: data.slug,
-          NOT: { id: Number(params.id) },
+          NOT: { id: Number(id) },
         },
       });
       if (existing) {
@@ -45,7 +47,7 @@ export async function PUT(
     }
 
     const updatedBrand = await prisma.brand.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: {
         name: data.name,
         slug: data.slug,
@@ -64,12 +66,13 @@ export async function PUT(
 
 // DELETE - Xóa brand
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const brand = await prisma.brand.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       include: { _count: { select: { products: true } } },
     });
 
@@ -81,7 +84,7 @@ export async function DELETE(
     }
 
     await prisma.brand.delete({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
 
     return NextResponse.json({ message: "Brand deleted successfully" });

@@ -24,11 +24,9 @@ export default async function RolesPage({ searchParams }) {
   ]);
 
   return (
-    <AdminLayout>
-      <RolesClient
-        initialRoles={rolesRes}
-        initialPermissions={permissionsRes.data}
-      />
-    </AdminLayout>
+    <RolesClient
+      initialRoles={rolesRes}
+      initialPermissions={permissionsRes.data}
+    />
   );
 }

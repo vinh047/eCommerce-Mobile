@@ -24,12 +24,10 @@ export default async function ProductsPage({ searchParams }) {
   ]);
 
   return (
-    <AdminLayout>
-      <ProductsClient 
-        initialData={productsRes} 
-        categories={categoriesRes.data || []} 
-        brands={brandsRes.data || []}
-      />
-    </AdminLayout>
+    <ProductsClient
+      initialData={productsRes}
+      categories={categoriesRes.data || []}
+      brands={brandsRes.data || []}
+    />
   );
 }
