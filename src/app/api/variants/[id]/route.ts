@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { VariantSpecValue } from "@prisma/client";
@@ -46,31 +47,43 @@ export async function PUT(
     const { id } = await params;
     const data = await req.json();
 
-    // 1. Tách variantSpecValues ra riêng để xử lý relation
-    // Tách cả productId (thường không cho sửa) và MediaVariant (xử lý riêng nếu cần)
     const {
       productId,
       MediaVariant,
-      variantSpecValues, // Tách cái này ra
-      id: _, // Bỏ id ra khỏi updateData để tránh lỗi Prisma
+      variantSpecValues,
+      id: _,
       ...updateData
     } = data;
 
     const updated = await prisma.variant.update({
       where: { id: Number(id) },
       data: {
-        ...updateData, // Chỉ update các field cơ bản (price, stock, color...)
+        ...updateData,
 
-        // Xử lý relation variantSpecValues
+        MediaVariant: {
+          deleteMany: {},
+          create: Array.isArray(MediaVariant)
+            ? MediaVariant.map((mv: any) => ({
+                Media: {
+                  create: {
+                    url: mv.Media.url,
+                    isPrimary: mv.Media.isPrimary ?? false,
+                    sortOrder: mv.Media.sortOrder ?? 0,
+                  },
+                },
+              }))
+            : [],
+        },
+
         variantSpecValues: {
-          deleteMany: {}, // Xóa hết specs cũ
+          deleteMany: {},
+
           create: Array.isArray(variantSpecValues)
             ? variantSpecValues.map((v: any) => ({
                 specKey: v.specKey,
                 label: v.label,
                 type: v.type,
                 unit: v.unit,
-                // Đảm bảo convert đúng kiểu dữ liệu
                 stringValue: v.stringValue ?? "",
                 numericValue: v.numericValue ? Number(v.numericValue) : null,
                 booleanValue: v.booleanValue ?? null,
@@ -82,7 +95,7 @@ export async function PUT(
 
     return NextResponse.json(updated);
   } catch (error: any) {
-    console.error("Update Error:", error); // Log lỗi ra để dễ debug
+    console.error("Update Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

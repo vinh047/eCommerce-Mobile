@@ -4,16 +4,15 @@ import { useState, useMemo, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 import {
   transformFormToAPIValues,
   transformProductToFormValues,
-} from "../utils/form-helpers"; // Đảm bảo đường dẫn đúng
+} from "../utils/form-helpers";
 
 import BasicInfoForm from "./tabs/BasicInfoForm";
 import SpecsForm from "./tabs/SpecsForm";
 import VariantsForm from "./tabs/VariantsForm";
-import MediaForm from "./tabs/MediaForm";
 
 import { useProductMutations } from "../hooks/useProductMutations";
 import { useTemplateFetcher } from "../hooks/useTemplateFetcher";
@@ -25,8 +24,9 @@ export default function ProductEditor({
   brands,
 }) {
   const [activeTab, setActiveTab] = useState(1);
+  const router = useRouter();
 
-  // 1. Chuẩn bị dữ liệu ban đầu
+  // 1. Setup Default Values
   const defaultValues = useMemo(() => {
     if (mode === "edit" && initialData) {
       return transformProductToFormValues(initialData);
@@ -44,7 +44,6 @@ export default function ProductEditor({
     };
   }, [initialData, mode]);
 
-  // 2. Khởi tạo Form
   const methods = useForm({
     defaultValues,
     mode: "onSubmit",
@@ -52,37 +51,46 @@ export default function ProductEditor({
 
   const { watch, handleSubmit, reset } = methods;
 
-  // Reset form khi data API tải xong (quan trọng cho trang Edit)
+  // 2. Sync data when initialData loads (useful for async fetches)
   useEffect(() => {
     if (mode === "edit" && initialData) {
       reset(transformProductToFormValues(initialData));
     }
   }, [initialData, reset, mode]);
 
-  // 3. Lấy Template Specs dựa trên Category
   const selectedCategoryId = watch("categoryId");
+
+  // 3. Hooks
   const { template, isLoadingTemplate } =
     useTemplateFetcher(selectedCategoryId);
-
-  // 4. Xử lý Submit
   const { isMutating, createProduct, updateProduct } = useProductMutations();
 
-  const onSubmit = (data) => {
-    const apiPayload = transformFormToAPIValues(data);
-    // console.log("Payload gửi đi:", apiPayload); // Debug nếu cần
+  // 4. Fixed Submit Handler
+  const onSubmit = async (data) => {
+    try {
+      const apiPayload = transformFormToAPIValues(data);
+      console.log("Final Payload:", apiPayload);
 
-    if (mode === "create") {
-      createProduct(apiPayload);
-    } else {
-      updateProduct(initialData.id, apiPayload);
+      // We await the mutation here to ensure it finishes before redirecting
+      if (mode === "create") {
+        await createProduct(apiPayload);
+      } else {
+        await updateProduct(initialData.id, apiPayload);
+      }
+
+      // Only redirect if no error was thrown above
+      router.push("/admin/products");
+    } catch (error) {
+      console.error("Failed to save product:", error);
+      // Optional: Add toast notification here (e.g., toast.error("Có lỗi xảy ra"))
     }
   };
 
+  // 5. Updated Tabs Configuration
   const tabs = [
     { id: 1, label: "Thông tin chung" },
     { id: 2, label: "Thông số kỹ thuật" },
     { id: 3, label: "Phiên bản & Giá" },
-    { id: 4, label: "Hình ảnh" },
   ];
 
   return (
@@ -141,6 +149,7 @@ export default function ProductEditor({
         </div>
 
         {/* Tabs Content */}
+        {/* Using 'hidden' class keeps the state mounted so data isn't lost when switching tabs */}
         <div className="min-h-[400px]">
           <div className={activeTab === 1 ? "block" : "hidden"}>
             <BasicInfoForm categories={categories} brands={brands} />
@@ -152,10 +161,6 @@ export default function ProductEditor({
 
           <div className={activeTab === 3 ? "block" : "hidden"}>
             <VariantsForm template={template} />
-          </div>
-
-          <div className={activeTab === 4 ? "block" : "hidden"}>
-            <MediaForm />
           </div>
         </div>
       </form>
