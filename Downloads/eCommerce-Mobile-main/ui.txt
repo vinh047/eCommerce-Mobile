@@ -1,0 +1,102 @@
+Bối cảnh & mục tiêu
+
+Dự án: Website bán thiết bị di động (Next.js).
+
+Thiết kế màn hình: [điền tên màn hình: vd. Product List / Product Detail / Cart / Checkout / Admin Orders].
+
+Kết quả mong muốn: UI sẵn sàng implement bằng Tailwind CSS, khả dụng, dễ đọc, tối ưu chuyển đổi.
+
+Ràng buộc thiết kế
+
+Layout: grid-based, header cố định với search; container max-w-screen-2xl.
+
+Responsive: mobile-first (375px), tablet (768px), desktop (1280px+).
+
+A11y: WCAG 2.1 AA, focus state rõ, contrast ≥ 4.5:1, hỗ trợ keyboard.
+
+SEO: heading hierarchy chuẩn (h1…h3), breadcrumbs, semantic HTML.
+
+Thiết kế hệ thống (design tokens)
+
+Font: Inter (heading 700, body 400/500).
+
+Scale chữ: 12, 14, 16, 18, 20, 24, 32.
+
+Spacing: 4/8/12/16/24/32/48.
+
+Radius: 12px (rounded-2xl).
+
+Shadow: subtle, không quá đậm.
+
+Màu (có thể tùy biến theme):
+
+Primary: #2563EB, Primary/hover: #1D4ED8
+
+Neutral: #111827 / #6B7280 / #E5E7EB / #F9FAFB
+
+Accent success: #16A34A, warning: #F59E0B, danger: #DC2626
+
+Component & thư viện
+
+
+Các state bắt buộc: default, hover, focus, disabled, loading, empty, error.
+
+Icon: lucide-react (nhẹ, rõ).
+
+Hình ảnh: tỷ lệ 1:1/4:5; lazy-load.
+
+Nội dung & dữ liệu mẫu
+
+Dùng tên/giá thật của vài mẫu điện thoại (iPhone 15, Galaxy S23…) + biến thể màu/dung lượng.
+
+Giá có giá gốc + giá khuyến mại, hiển thị % giảm nếu có.
+
+Rating dạng số + 5 sao (4.5/5 – 230 reviews).
+
+Bộ lọc tiêu chuẩn: Brand, Giá (min–max), RAM/ROM, Kết nối (5G), Tình trạng.
+
+CTA rõ: “Mua ngay”, “Thêm vào giỏ”.
+
+Luồng tương tác tối thiểu
+
+Tìm kiếm > xem danh sách > xem chi tiết > thêm giỏ > xem giỏ (drawer) > checkout.
+
+Với admin: lọc, sort, bulk action, confirm dialog.
+
+Đầu ra bắt buộc
+
+Mô tả layout (header/main/sidebar/footer) + wireframe ngắn.
+
+Danh sách component dùng + props quan trọng.
+
+Trạng thái Empty/Loading/Error/Success.
+
+Hướng dẫn mapping sang Tailwind (class gợi ý).
+
+Lưu ý A11y (aria-label, tabindex, live region khi thêm giỏ).
+
+Tiêu chí chấp nhận (acceptance)
+
+Đọc được, bấm được trên mobile; TTFB/UI gọn (không dùng hiệu ứng nặng).
+
+CTA nổi bật, khoảng cách đủ thoáng; nội dung quan trọng nằm trong first viewport.
+
+Có breadcrumb, sort + filter rõ ràng; pagination/“load more” nhất quán.
+
+Code-friendly: tránh layout “pixel perfect” khó cắt; giữ spacing theo token.
+
+Định dạng trả về
+
+Trả về:
+
+(A) Mô tả bằng chữ + cấu trúc component (liệt kê)
+
+(B) Bảng props cho mỗi component (tên, kiểu, mặc định)
+
+(C) Gợi ý class Tailwind (chỉ những class chính)
+
+(D) Danh sách state + cách thể hiện
+
+(E) Checklist A11y
+
+Không chèn mã CSS thuần; ưu tiên Tailwind 

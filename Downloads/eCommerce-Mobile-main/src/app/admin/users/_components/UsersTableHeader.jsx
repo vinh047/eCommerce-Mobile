@@ -1,0 +1,112 @@
+"use client";
+
+import { useQueryParams } from "@/hooks/useQueryParams";
+import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+
+export default function UsersTableHeader({
+  columnVisibility,
+  selectedItems,
+  currentPageUsers,
+  onSelectAll,
+}) {
+  const { getParam, setParam } = useQueryParams();
+
+  const sortParam = getParam("sort") || "";
+  const [sortColumn, sortDirection] = sortParam.split(":");
+
+  const currentPageIds = currentPageUsers.map((p) => p.id);
+  const allSelected = currentPageIds.every((id) => selectedItems.has(id));
+  const someSelected = currentPageIds.some((id) => selectedItems.has(id));
+
+  const handleSort = (column) => {
+    if (sortColumn !== column) {
+      setParam("sort", `${column}:desc`);
+    } else if (sortDirection === "desc") {
+      setParam("sort", `${column}:asc`);
+    } else {
+      setParam("sort", null);
+    }
+  };
+
+  const getSortIcon = (column) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="w-4 h-4 text-blue-600" />
+    ) : (
+      <ArrowDown className="w-4 h-4 text-blue-600" />
+    );
+  };
+
+  return (
+    <thead className="bg-gray-50 dark:bg-gray-700">
+      <tr>
+        {/* Checkbox chọn tất cả */}
+        <th className="px-6 py-3 text-left">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            ref={(input) => {
+              if (input) input.indeterminate = !allSelected && someSelected;
+            }}
+            onChange={onSelectAll}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+          />
+        </th>
+
+        {columnVisibility.id && (
+          <th
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+            onClick={() => handleSort("id")}
+          >
+            <div className="flex items-center space-x-1">
+              <span>ID</span>
+              {getSortIcon("id")}
+            </div>
+          </th>
+        )}
+
+        {columnVisibility.name && (
+          <th
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+            onClick={() => handleSort("name")}
+          >
+            <div className="flex items-center space-x-1">
+              <span>Tên người dùng</span>
+              {getSortIcon("name")}
+            </div>
+          </th>
+        )}
+
+        {columnVisibility.status && (
+          <th
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+            onClick={() => handleSort("status")}
+          >
+            <div className="flex items-center space-x-1">
+              <span>Trạng thái</span>
+              {getSortIcon("status")}
+            </div>
+          </th>
+        )}
+
+        {columnVisibility.createdAt && (
+          <th
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+            onClick={() => handleSort("createdAt")}
+          >
+            <div className="flex items-center space-x-1">
+              <span>Ngày tạo</span>
+              {getSortIcon("createdAt")}
+            </div>
+          </th>
+        )}
+
+        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          Thao tác
+        </th>
+      </tr>
+    </thead>
+  );
+}
