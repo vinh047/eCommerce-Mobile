@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="vi">
       <body>
         <GoogleAuthProvider>
-          <ChatBox/>
+          {/* <ChatBox/> */}
           {children}
         </GoogleAuthProvider>
         <Toaster position="top-center" richColors />

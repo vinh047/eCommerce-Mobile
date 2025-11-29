@@ -1,24 +1,20 @@
-// app/admin/products/page.jsx
 import AdminLayout from "@/components/Layout/AdminLayout";
-import ProductsClient from "./_components/ProductsClient"; // Import file mới tạo
+import ProductsClient from "./_components/ProductsClient";
 import categoryApi from "@/lib/api/categoryApi";
-import productApi from "@/lib/api/productApi"; // Giả sử bạn có file này gọi API /api/products
+import productApi from "@/lib/api/productApi";
 import brandsApi from "@/lib/api/brandsApi";
 
 export const metadata = { title: "Quản lý Sản phẩm | Admin" };
 
 export default async function ProductsPage({ searchParams }) {
-  // 1. Xử lý query string từ URL
-  const resolvedParams = await searchParams;
+  const resolvedParams = JSON.parse(JSON.stringify(await searchParams));
   const paramsArray = Object.entries(resolvedParams)
-    .filter(([_, value]) => value != null)
+    .filter(([key, value]) => value !== undefined && value !== null)
     .map(([key, value]) => [key, String(value)]);
   const queryString = new URLSearchParams(paramsArray).toString();
 
-  // 2. Fetch Data song song
   const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-    // Gọi API lấy danh sách products (bạn tự viết hàm này hoặc fetch trực tiếp URL api)
-    productApi.getProducts({ query: queryString }),
+    productApi.getProducts(queryString),
     categoryApi.getCategories(),
     brandsApi.getBrands(),
   ]);

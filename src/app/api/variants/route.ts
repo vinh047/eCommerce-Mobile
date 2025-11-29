@@ -1,31 +1,66 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
 
-    if (!data.productId || !data.color || !data.price) {
+    const {
+      id: _id, 
+      productId, 
+      MediaVariant,
+      variantSpecValues,
+      ...createData 
+    } = data;
+
+    if (!productId) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Product ID is required" },
         { status: 400 }
       );
     }
 
-    const variant = await prisma.variant.create({
+    const newVariant = await prisma.variant.create({
       data: {
-        productId: data.productId,
-        color: data.color,
-        price: data.price,
-        compareAtPrice: data.compareAtPrice,
-        stock: data.stock || 0,
-        lowStockThreshold: data.lowStockThreshold,
-        isActive: data.isActive ?? true,
+        ...createData,
+        productId: Number(productId), 
+
+        
+        MediaVariant: {
+          create: Array.isArray(MediaVariant)
+            ? MediaVariant.map((mv: any) => ({
+                Media: {
+                  create: {
+                    url: mv.Media.url,
+                    isPrimary: mv.Media.isPrimary ?? false,
+                    sortOrder: mv.Media.sortOrder ?? 0,
+                  },
+                },
+              }))
+            : [],
+        },
+
+        
+        variantSpecValues: {
+          create: Array.isArray(variantSpecValues)
+            ? variantSpecValues.map((v: any) => ({
+                specKey: v.specKey,
+                label: v.label,
+                type: v.type,
+                unit: v.unit,
+                stringValue: v.stringValue ?? "",
+                numericValue: v.numericValue ? Number(v.numericValue) : null,
+                booleanValue: v.booleanValue ?? null,
+              }))
+            : [],
+        },
       },
     });
-    return NextResponse.json(variant, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+
+    return NextResponse.json(newVariant);
+  } catch (error: any) {
+    console.error("Create Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 

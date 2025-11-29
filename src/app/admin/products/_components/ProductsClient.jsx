@@ -40,7 +40,7 @@ export default function ProductsClient({ initialData, categories, brands }) {
 
       <ProductsToolbar categories={categories} brands={brands} />
 
-      <ProductsTable products={products} onDelete={handleDelete} />
+      <ProductsTable products={products} onDelete={handleDelete} totalItems={initialData.pagination.totalItems}/>
     </div>
   );
 }

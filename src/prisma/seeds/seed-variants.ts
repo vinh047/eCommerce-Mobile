@@ -660,7 +660,7 @@ export const variants = [
     isActive: true,
     lowStockThreshold: 3,
   },
-   {
+  {
     id: 67,
     productId: 17,
     color: "Xám",
@@ -1266,22 +1266,6 @@ export const variants = [
     isActive: true,
     lowStockThreshold: 8,
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   {
     id: 122,
