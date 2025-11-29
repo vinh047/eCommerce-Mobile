@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { message: "Không tìm thấy người dùng" },
-        { status: 404 }
+        { status: 401 }
       );
     }
 

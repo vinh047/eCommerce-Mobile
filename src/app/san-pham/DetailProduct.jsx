@@ -12,6 +12,7 @@ import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 import cartsApi from "@/lib/api/cartsApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { globalEvents } from "@/lib/globalEvents";
 
 const DetailProduct = ({ product }) => {
   const [variantCurrent, setVariantCurrent] = useState(product.variants[0]); // lưu variant mặc định sẽ hiển thị đầu tiên
@@ -171,6 +172,8 @@ const DetailProduct = ({ product }) => {
 
       const cart = await cartsApi.addCart(variantCurrent.id, quantity);
       setLoadedBtn(false);
+
+      globalEvents.emitCartUpdated();
 
       toast.success("Thêm vào giỏ hàng thành công");
     } catch (err) {
