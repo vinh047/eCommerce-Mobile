@@ -6,7 +6,8 @@ export async function getProductsByCategory(categoryId, limit) {
 
 export async function getProductsByFilters(categoryId, params) {
   return await apiFetch(`/products/filters/${categoryId}?${params}`, {
-    next: { revalidate: 600 },
+    // next: { revalidate: 600 },
+    cache: "no-store",
   });
 }
 export async function getProductBySlug(slug) {

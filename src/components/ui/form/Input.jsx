@@ -86,7 +86,7 @@ export const Input = forwardRef(
           {rightAddon ? (
             <span
               className={clsx(
-                "absolute inset-y-0 right-6 flex items-center justify-center",
+                "absolute inset-y-0 right-3 flex items-center justify-center",
                 size === "sm" ? "w-10" : "w-12"
               )}
             >

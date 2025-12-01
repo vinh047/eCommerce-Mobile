@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { variant } from "@/prisma/seedData2";
 
 export const cartItemService = {
   async removeCartItemById(id: number) {
