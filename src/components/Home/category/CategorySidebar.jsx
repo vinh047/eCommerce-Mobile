@@ -5,13 +5,13 @@ export default function CategorySidebar({ categories }) {
   if (!categories.length) return null;
 
   return (
-    <section className="w-full  bg-white p-4">
-      {/* Wrapper để vừa căn giữa, vừa hỗ trợ scroll ngang */}
-      <div className="w-full overflow-x-auto scrollbar-hide">
+    <section className="w-full bg-white py-4">
+      {/* Scroll ngang */}
+      <div className="w-full overflow-x-auto scrollbar-hide px-2">
         <div
           className="
             flex justify-center items-center gap-6 
-            min-w-max py-1 px-1
+            min-w-max
           "
         >
           {categories.map(({ id, iconKey: icon, name, slug }) => {
@@ -20,24 +20,24 @@ export default function CategorySidebar({ categories }) {
                 href={`/${slug}`}
                 key={id}
                 className="
-                flex flex-col items-center justify-start 
-                min-w-[90px]
-                group cursor-pointer select-none
-              "
+                  flex flex-col items-center justify-start 
+                  min-w-[100px] max-w-[120px]
+                  group cursor-pointer select-none
+                  transition-transform duration-200 hover:-translate-y-1
+                "
                 prefetch={true}
               >
-                {/* Icon tròn */}
+                {/* Icon card */}
                 <div
                   className="
-                  w-16 h-16 rounded-full 
-                  bg-white border border-gray-200 shadow-sm
-                  flex items-center justify-center
-                  transition-all duration-200 
-                  group-hover:shadow-lg group-hover:border-blue-400
-                  group-hover:bg-blue-50
-                "
+                    w-16 h-16 rounded-xl 
+                    bg-gradient-to-br from-blue-100 to-blue-300
+                    shadow-md flex items-center justify-center
+                    transition-all duration-200 
+                    group-hover:shadow-xl group-hover:from-blue-200 group-hover:to-blue-400
+                  "
                 >
-                  <span className="text-blue-600 group-hover:text-blue-700 text-xl transition-colors">
+                  <span className="text-blue-700 group-hover:text-white text-2xl transition-colors">
                     <CategoryIcon keyName={icon} />
                   </span>
                 </div>
@@ -45,12 +45,12 @@ export default function CategorySidebar({ categories }) {
                 {/* Tên danh mục */}
                 <span
                   className="
-                  mt-2 text-[12px] text-center leading-tight
-                  text-neutral-700 font-medium 
-                  group-hover:text-blue-700
-                  transition-colors duration-200 
-                  line-clamp-2
-                "
+                    mt-3 text-[13px] text-center leading-tight
+                    text-gray-800 font-semibold 
+                    group-hover:text-blue-600
+                    transition-colors duration-200 
+                    line-clamp-2
+                  "
                 >
                   {name}
                 </span>
