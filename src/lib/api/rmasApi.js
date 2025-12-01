@@ -13,6 +13,12 @@ const rmasApi = {
       cache: "no-store",
     }),
 
+  createRma: (data) =>
+    apiFetch(`/rmas`, {
+      method: "POST",
+      body: data,
+    }),
+
   updateRma: (id, data) =>
     apiFetch(`/rmas/${id}`, {
       method: "PUT",

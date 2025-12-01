@@ -5,10 +5,8 @@ import RmasHeader from "./RmasHeader";
 import RmasToolbar from "./RmasToolbar";
 import RmasTable from "./RmasTable";
 
-
 import { useFetchRmas } from "../hooks/useFetchRmas";
 import TableSkeleton from "@/components/common/TableSkeleton";
-import { UserBulkActionsBar } from "../../users/_components";
 
 const RmasModal = lazy(() => import("./RmasModal")); // Modal xử lý
 const RmasCreateModal = lazy(() => import("./RmasCreateModal"));
@@ -57,16 +55,6 @@ export default function RmasClient({ initialData }) {
       <RmasHeader onCreate={handleCreate} />
 
       <RmasToolbar />
-
-      {UserBulkActionsBar && (
-        <UserBulkActionsBar
-          selectedCount={selectedItems.size}
-          onSelectAll={selectAll}
-          onDeselectAll={deselectAll}
-          onBulkAction={handleBulkAction}
-          show={selectedItems.size > 0}
-        />
-      )}
 
       <div className="mt-4">
         {isLoading ? (
