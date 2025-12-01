@@ -28,7 +28,7 @@ async function getAuthUserId(req: NextRequest): Promise<number | null> {
  */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getAuthUserId(req);
@@ -38,8 +38,9 @@ export async function PUT(
         { status: 401 }
       );
     }
+    const { id } = await params;
 
-    const addressId = Number(params.id);
+    const addressId = Number(id);
     if (!addressId || Number.isNaN(addressId)) {
       return NextResponse.json(
         { message: "ID địa chỉ không hợp lệ" },
@@ -82,16 +83,11 @@ export async function PUT(
     const dataToUpdate: any = {};
 
     if (line !== undefined) dataToUpdate.line = String(line);
-    if (ward !== undefined)
-      dataToUpdate.ward = ward ? String(ward) : null;
-    if (district !== undefined)
-      dataToUpdate.district = String(district);
-    if (province !== undefined)
-      dataToUpdate.province = String(province);
-    if (phone !== undefined)
-      dataToUpdate.phone = phone ? String(phone) : null;
-    if (isDefault !== undefined)
-      dataToUpdate.isDefault = Boolean(isDefault);
+    if (ward !== undefined) dataToUpdate.ward = ward ? String(ward) : null;
+    if (district !== undefined) dataToUpdate.district = String(district);
+    if (province !== undefined) dataToUpdate.province = String(province);
+    if (phone !== undefined) dataToUpdate.phone = phone ? String(phone) : null;
+    if (isDefault !== undefined) dataToUpdate.isDefault = Boolean(isDefault);
 
     // Không có field nào để update
     if (Object.keys(dataToUpdate).length === 0) {
@@ -152,7 +148,7 @@ export async function PUT(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getAuthUserId(req);
@@ -163,7 +159,9 @@ export async function DELETE(
       );
     }
 
-    const addressId = Number(params.id);
+    const { id } = await params;
+
+    const addressId = Number(id);
     if (!addressId || Number.isNaN(addressId)) {
       return NextResponse.json(
         { message: "ID địa chỉ không hợp lệ" },
