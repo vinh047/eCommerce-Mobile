@@ -130,3 +130,44 @@ input.chk {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* Trạng thái bình thường: ẩn */
+.subtle-scroll {
+  overflow: auto;
+  -ms-overflow-style: none;   /* IE/Edge cũ */
+  scrollbar-width: none;      /* Firefox: ẩn */
+}
+
+/* WebKit: ẩn mặc định */
+.subtle-scroll::-webkit-scrollbar {
+  width: 0;                   /* ẩn */
+  height: 0;                  /* ẩn */
+}
+
+/* Khi hover: hiện thanh mảnh, nhẹ */
+.subtle-scroll:hover {
+  scrollbar-width: thin;      /* Firefox: hiện thanh mảnh */
+}
+
+/* WebKit: hiện thanh mảnh khi hover */
+.subtle-scroll:hover::-webkit-scrollbar {
+  width: 6px;                 /* thanh mảnh */
+  height: 6px;
+}
+
+/* Rãnh scrollbar (track) rất nhạt, gần như trong suốt */
+.subtle-scroll:hover::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+}
+
+/* Nút kéo (thumb) nhỏ, màu nhạt; đậm hơn chút khi hover */
+.subtle-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 8px;
+}
+
+/* Thumb khi hover vào chính nó */
+.subtle-scroll:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}

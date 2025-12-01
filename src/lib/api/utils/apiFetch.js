@@ -6,10 +6,10 @@ import { HttpError } from "../errors/http-errors";
  * - Ném ra lỗi HttpError tùy chỉnh cho các response không thành công.
  * - Hỗ trợ các tùy chọn cache/revalidation của Next.js.
  *
-    * @param {string} path Đường dẫn API (ví dụ: '/products').
-    * @param {RequestInit & { next?: import('next/server').NextFetchRequestConfig }} [options={}] Các tùy chọn fetch chuẩn + tùy chọn của Next.js.
-    * @returns {Promise<any>} Dữ liệu trả về từ API.
-    */
+ * @param {string} path Đường dẫn API (ví dụ: '/products').
+ * @param {RequestInit & { next?: import('next/server').NextFetchRequestConfig }} [options={}] Các tùy chọn fetch chuẩn + tùy chọn của Next.js.
+ * @returns {Promise<any>} Dữ liệu trả về từ API.
+ */
 export async function apiFetch(path, options = {}) {
   // Lấy base URL từ biến môi trường, hoặc dùng đường dẫn tương đối
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -42,10 +42,14 @@ export async function apiFetch(path, options = {}) {
           "An unexpected error occurred and the error response could not be parsed.",
       }));
 
+      const detailedErrorMessage =
+        errorPayload.error ||
+        errorPayload.message ||
+        `API request to ${path} failed with status ${response.status}`;
       throw new HttpError({
         status: response.status,
         payload: errorPayload,
-        message: `API request to ${path} failed with status ${response.status}`,
+        message: detailedErrorMessage,
       });
     }
 
