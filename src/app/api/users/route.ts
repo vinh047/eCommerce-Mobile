@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// POST - Tạo user mới
 export async function POST(req: Request) {
   try {
     const data = await req.json();
@@ -19,12 +18,10 @@ export async function POST(req: Request) {
   }
 }
 
-// GET - Lấy danh sách user (có phân trang, tìm kiếm, lọc)
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // Lấy params cơ bản
     const sort = searchParams.get("sort") || "";
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
@@ -40,11 +37,8 @@ export async function GET(req: Request) {
       sortOrder = direction === "asc" ? "asc" : "desc";
     }
 
-    // ==========================================================
-    // WHERE điều kiện lọc
-    // ==========================================================
     const where: any = {
-      NOT: { status: "deleted" }, // tránh lấy user bị xoá
+      NOT: { status: "deleted" },
     };
 
     if (search) {
@@ -59,9 +53,6 @@ export async function GET(req: Request) {
       where.status = { in: statuses };
     }
 
-    // ==========================================================
-    // QUERY dữ liệu
-    // ==========================================================
     const totalItems = await prisma.user.count({ where });
 
     const data = await prisma.user.findMany({
@@ -72,9 +63,6 @@ export async function GET(req: Request) {
       include: { addresses: true },
     });
 
-    // ==========================================================
-    // TRẢ VỀ KẾT QUẢ
-    // ==========================================================
     return NextResponse.json({
       data,
       pagination: {
