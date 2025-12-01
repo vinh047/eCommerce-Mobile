@@ -1,6 +1,7 @@
 import ProductEditor from "../_components/ProductEditor";
 import categoryApi from "@/lib/api/categoryApi";
 import brandsApi from "@/lib/api/brandsApi";
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: "Thêm sản phẩm mới | Admin",
