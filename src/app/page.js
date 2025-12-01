@@ -12,6 +12,7 @@ import CategorySidebarSkeleton from "@/components/Home/category/CategorySidebarS
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 import { getBanners } from "@/lib/api/bannerApi";
 import Footer from "@/components/Home/Footer";
+export const dynamic = "force-dynamic";
 
 const LIMIT = 10;
 
