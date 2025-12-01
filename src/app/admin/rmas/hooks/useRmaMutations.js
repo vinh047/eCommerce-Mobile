@@ -26,9 +26,13 @@ export function useRmaMutations(refetchData, selectedItems, deselectAll) {
     async (data, mode, selectedRma) => {
       setIsMutating(true);
       try {
-        // RMA chỉ có update status/response, ko tạo mới từ admin
-        await rmasApi.updateRma(selectedRma.id, data);
-        toast.success("Đã cập nhật trạng thái RMA");
+        if (mode === "create") {
+          await rmasApi.createRma(data);
+          toast.success("Đã tạo RMA");
+        } else {
+          await rmasApi.updateRma(selectedRma.id, data);
+          toast.success("Đã cập nhật trạng thái RMA");
+        }
         refetchData();
       } catch (err) {
         console.error(err);

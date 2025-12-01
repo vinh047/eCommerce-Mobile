@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { RmaStatus, RmaType } from "@prisma/client";
 
 // GET: Lấy danh sách RMA (Giữ nguyên code cũ)
 export async function GET(req: Request) {
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
       orderBy: { [sortBy]: sortOrder },
       include: {
         order: { select: { id: true, code: true, userId: true } },
-        orderItem: { select: { id: true, nameSnapshot: true, price: true } }
+        orderItem: { select: { id: true, nameSnapshot: true, price: true } },
       },
     });
 
@@ -57,56 +58,67 @@ export async function GET(req: Request) {
 }
 
 // [MỚI] POST: Tạo RMA
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { orderId, orderItemId, type, reason, evidenceJson } = body;
 
-    // 1. Validate dữ liệu đầu vào
+    // 1. Validate
     if (!orderId || !orderItemId || !type || !reason) {
-      return NextResponse.json({ error: "Thiếu thông tin bắt buộc (Đơn hàng, Sản phẩm, Loại, Lý do)." }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Thiếu thông tin bắt buộc (Đơn hàng, Sản phẩm, Loại, Lý do).",
+        },
+        { status: 400 }
+      );
     }
 
-    // 2. Validate OrderItem có thuộc Order này không (Bảo mật)
+    // 2. Check OrderItem ownership
     const validItem = await prisma.orderItem.findFirst({
-      where: { id: Number(orderItemId), orderId: Number(orderId) }
+      where: { id: Number(orderItemId), orderId: Number(orderId) },
     });
 
     if (!validItem) {
-      return NextResponse.json({ error: "Sản phẩm không thuộc đơn hàng này." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Sản phẩm không thuộc đơn hàng này." },
+        { status: 400 }
+      );
     }
 
-    // 3. Kiểm tra xem sản phẩm này đã có RMA nào đang xử lý chưa
+    // 3. Check Duplicate (tránh spam rma cho cùng 1 item đang pending)
     const existingRma = await prisma.rma.findFirst({
-      where: { 
-        orderItemId: Number(orderItemId), 
-        status: { in: ['pending', 'approved'] } // Nếu đã rejected/completed thì có thể cho tạo lại tùy policy
-      }
+      where: {
+        orderItemId: Number(orderItemId),
+        status: { in: [RmaStatus.pending, RmaStatus.approved] },
+      },
     });
 
     if (existingRma) {
-       return NextResponse.json({ error: "Sản phẩm này đang có yêu cầu RMA chờ xử lý." }, { status: 409 });
+      return NextResponse.json(
+        { error: "Sản phẩm này đang có yêu cầu RMA chờ xử lý." },
+        { status: 409 }
+      );
     }
 
-    // 4. Tạo RMA
+    // 4. Create
     const newRma = await prisma.rma.create({
       data: {
         orderId: Number(orderId),
         orderItemId: Number(orderItemId),
-        type,
+        type: type as RmaType,
         reason,
-        evidenceJson: evidenceJson || [], 
-        status: 'pending' // Mặc định là chờ duyệt
+        evidenceJson: evidenceJson || [],
+        status: RmaStatus.pending,
       },
       include: {
         order: { select: { code: true } },
-        orderItem: { select: { nameSnapshot: true } }
-      }
+        orderItem: { select: { nameSnapshot: true } },
+      },
     });
 
     return NextResponse.json(newRma, { status: 201 });
   } catch (err: any) {
     console.error("Error creating RMA:", err);
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
