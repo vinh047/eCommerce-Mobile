@@ -49,9 +49,9 @@ const navItems = [
     badgeColor: "bg-orange-100 text-orange-600",
   },
   {
-    name: "Giao dịch thanh toán",
+    name: "Phương thức thanh toán",
     icon: CreditCard,
-    href: "/admin/transactions",
+    href: "/admin/payment_methods",
   },
   { name: "Nhân sự", icon: UserCog, href: "/admin/staff" },
   { name: "Phân Quyền", icon: ShieldCheck, href: "/admin/roles" },
