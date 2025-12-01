@@ -19,11 +19,13 @@ export const categoryService = {
     return await prisma.category.findMany({
       where: { isActive: true, templates: { some: {} } },
       orderBy: { id: "asc" },
-    }); 
+    });
   },
 
   async getCategoryBySlug(slug: string) {
-    return await prisma.category.findUnique({ where: { slug } });
+    return await prisma.category.findUnique({
+      where: { slug, isActive: true },
+    });
   },
 
   async getById(id: number) {

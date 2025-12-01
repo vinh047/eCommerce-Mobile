@@ -5,7 +5,7 @@ import { apiFetch } from "./utils/apiFetch";
  */
 export async function fetchFilterTemplate(categoryId) {
   return await apiFetch(`/filters/category/${categoryId}`, {
-    cache: "no-cache",
+    next: { revalidate: 600 },
   });
 }
 

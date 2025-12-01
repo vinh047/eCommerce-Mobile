@@ -15,6 +15,7 @@ import {
 import { formatPrice, showNotification } from "@/utils/format";
 import { getCart, removeItem, updateItemQuantity } from "@/lib/api/cartsApi";
 import "./CartStyles.css";
+import { toast } from "sonner";
 
 export default function CartPage() {
   const router = useRouter();
@@ -100,7 +101,8 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = async (itemId) => {
+  // 👇 sửa: thêm options.silent để dùng cho trường hợp xoá tự động vì hết hàng
+  const handleRemoveItem = async (itemId, options = { silent: false }) => {
     try {
       // gọi API xóa
       await removeItem(itemId);
@@ -116,7 +118,11 @@ export default function CartPage() {
           return { ...prev, items: updatedItems };
         });
         setSelectedItems((prev) => prev.filter((id) => id !== itemId));
-        showNotification("Đã xóa sản phẩm khỏi giỏ hàng", "success");
+
+        // chỉ show toast khi user tự xoá
+        if (!options.silent) {
+          showNotification("Đã xóa sản phẩm khỏi giỏ hàng", "success");
+        }
       }, 300);
     } catch (error) {
       console.error("Error removing item:", error);
@@ -130,41 +136,112 @@ export default function CartPage() {
 
   const total = formatPrice(Math.max(0, subtotal + cartData.shipping));
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (selectedItems.length === 0) {
-      showNotification(
-        "Vui lòng chọn ít nhất một sản phẩm để thanh toán",
-        "error"
-      );
+      toast.error("Vui lòng chọn ít nhất một sản phẩm để thanh toán");
       return;
     }
 
-    // chuẩn bị dữ liệu checkout: các item đã chọn (giữ nguyên cấu trúc item)
+    // ======= LẤY DANH SÁCH CART ITEM ĐƯỢC CHỌN =======
     const checkoutItems = cartData.items.filter((item) =>
       selectedItems.includes(item.id)
     );
 
+    const cartItemIds = checkoutItems.map((it) => it.id);
+
+    // ======= GỌI API CHECK STOCK =======
     try {
-      // lưu vào sessionStorage để trang /checkout đọc
-      // Lưu thêm trường timestamp để dễ debug/kiểm tra
+      const res = await fetch("/api/cart/check-stock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ cartItemIds }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data?.message || "Không kiểm tra được tồn kho");
+        return;
+      }
+
+      const { outOfStock = [], notEnough = [] } = data;
+
+      // ====== HANDLE HẾT SẠCH HÀNG: XÓA KHỎI CART ======
+      if (outOfStock.length > 0) {
+        for (const item of outOfStock) {
+          try {
+            // xoá nhưng không hiện toast "Đã xóa sản phẩm khỏi giỏ hàng"
+            await handleRemoveItem(item.cartItemId, { silent: true });
+          } catch (e) {
+            console.error("removeItem error:", e);
+          }
+        }
+
+        // thông báo rõ lý do
+        outOfStock.forEach((item) => {
+          toast.error(
+            `"${item.name}" hiện đã hết hàng và đã được xóa khỏi giỏ`
+          );
+        });
+
+        // dừng, không cho đi tiếp
+        return;
+      }
+
+      // ====== HANDLE KHÔNG ĐỦ HÀNG: GIẢM SỐ LƯỢNG VỀ MỨC CÒN LẠI ======
+      if (notEnough.length > 0) {
+        for (const item of notEnough) {
+          try {
+            await updateItemQuantity(item.cartItemId, item.available);
+          } catch (e) {
+            console.error("updateItemQuantity error:", e);
+          }
+        }
+
+        // update state trên FE
+        setCartData((prev) => {
+          const updatedItems = prev.items.map((it) => {
+            const match = notEnough.find((n) => n.cartItemId === it.id);
+            if (!match) return it;
+            return { ...it, quantity: match.available };
+          });
+          return { ...prev, items: updatedItems };
+        });
+
+        notEnough.forEach((item) => {
+          toast.error(
+            `"${item.name}" chỉ còn ${item.available} sản phẩm, đã tự động cập nhật lại từ ${item.requested}`
+          );
+        });
+
+        // dừng, yêu cầu user xem lại rồi bấm thanh toán lại
+        return;
+      }
+    } catch (err) {
+      console.error("check stock error:", err);
+      toast.error("Không thể kiểm tra tồn kho. Vui lòng thử lại");
+      return;
+    }
+
+    // ====== OK → LƯU CHECKOUT & CHUYỂN TRANG ======
+    try {
       const payload = {
         items: checkoutItems.map((item) => ({
           ...item,
           cartItemId: item.id,
         })),
-
         createdAt: new Date().toISOString(),
       };
+
       sessionStorage.setItem("checkoutItems", JSON.stringify(payload));
 
-      showNotification("Chuyển đến trang thanh toán...", "success");
+      toast.success("Chuyển đến trang thanh toán...");
 
-      // điều hướng tới /checkout
-      // dùng replace nếu không muốn lưu lại history, hoặc push (router.push) để có thể quay lại
       router.push("/checkout");
     } catch (err) {
-      console.error("Error preparing checkout:", err);
-      showNotification("Không thể chuyển đến trang thanh toán", "error");
+      console.error("checkout error:", err);
+      toast.error("Không thể chuyển đến trang thanh toán");
     }
   };
 

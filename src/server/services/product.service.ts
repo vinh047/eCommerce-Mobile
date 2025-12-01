@@ -1,8 +1,6 @@
 import compareTwoStrings from "string-similarity-js";
 import { prisma } from "@/lib/prisma";
 import { Prisma, ValueType } from "@prisma/client";
-import { variant } from "@/prisma/seedData2";
-import { includes } from "zod";
 
 export const productService = {
   async getProductsWithMinPriceByCategory(
@@ -13,7 +11,16 @@ export const productService = {
     if (!Number.isFinite(categoryIdNum)) throw new Error("Invalid categoryId");
 
     const products = await prisma.product.findMany({
-      where: { categoryId: categoryIdNum, isActive: true },
+      where: {
+        categoryId: categoryIdNum,
+        isActive: true,
+        variants: {
+          some: {
+            isActive: true,
+            stock: { gt: 0 }, // đổi theo tên field stock của bạn
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: {
@@ -118,6 +125,13 @@ export const productService = {
     const whereClause: Prisma.ProductWhereInput = {
       categoryId: categoryId,
       isActive: true,
+      variants: {
+        some: {
+          isActive: true,
+          stock: { gt: 0 }, // đổi 'stock' nếu field của bạn tên khác
+        },
+      },
+
       AND: [],
     };
 
