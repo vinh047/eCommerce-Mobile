@@ -16,6 +16,7 @@ import {
   SlidersHorizontal, // Icon cho Buckets
 } from "lucide-react";
 
+const VALUE_TYPES = ["discrete", "range"];
 const DATA_TYPES = ["string", "number", "boolean"];
 const CONTROL_TYPES = ["select", "multiselect", "text", "number_input"];
 
@@ -53,7 +54,7 @@ export default function SpecBuilderDrawer({ template, onClose, onSave }) {
       code: "",
       label: activeTab === "product" ? "New Attribute" : "New Variant Option",
       valueType: "string",
-      datatype: "string", // Nếu đổi sang number thì control nên là number_input
+      datatype: "discrete",
       control: "text",
       groupLabel: activeTab === "product" ? "General" : null,
       isRequired: false,
@@ -309,9 +310,28 @@ export default function SpecBuilderDrawer({ template, onClose, onSave }) {
                     />
                   </div>
 
-                  <div className="col-span-2 border-t border-gray-100 my-2"></div>
+                  <div className="col-span-3 border-t border-gray-100 my-2"></div>
 
                   {/* DataType & Control */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-700">
+                      Kiểu giá trị
+                    </label>
+                    <select
+                      value={activeSpec.valueType}
+                      onChange={(e) =>
+                        updateActiveSpec("valueType", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      {VALUE_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-gray-700">
                       Kiểu dữ liệu
@@ -352,7 +372,7 @@ export default function SpecBuilderDrawer({ template, onClose, onSave }) {
                 </div>
 
                 {/* Switches */}
-                <div className="flex flex-wrap gap-6 p-5 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex flex-nowrap gap-6 p-5 bg-gray-50 rounded-xl border border-gray-100">
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -383,8 +403,7 @@ export default function SpecBuilderDrawer({ template, onClose, onSave }) {
                 </div>
 
                 {/* ================= OPTIONS EDITOR ================= */}
-                {(activeSpec.control === "select" ||
-                  activeSpec.control === "multiselect") && (
+                {activeSpec.valueType === "discrete" && (
                   <div className="mt-6 border border-gray-200 rounded-xl overflow-hidden">
                     <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                       <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
@@ -455,9 +474,8 @@ export default function SpecBuilderDrawer({ template, onClose, onSave }) {
                   </div>
                 )}
 
-                {/* ================= BUCKETS EDITOR (Mới thêm) ================= */}
-                {/* Chỉ hiện khi DataType = number VÀ Filterable = true */}
-                {activeSpec.datatype === "number" && activeSpec.filterable && (
+                {/* ================= BUCKETS EDITOR ================= */}
+                {activeSpec.valueType === "range" && (
                   <div className="mt-6 border border-orange-200 rounded-xl overflow-hidden">
                     <div className="bg-orange-50 px-4 py-3 border-b border-orange-200 flex justify-between items-center">
                       <h4 className="text-sm font-bold text-orange-800 flex items-center gap-2">

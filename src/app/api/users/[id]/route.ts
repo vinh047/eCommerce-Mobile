@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
-// GET - Lấy 1 user theo id
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,7 +24,6 @@ export async function GET(
   }
 }
 
-// PUT - Cập nhật toàn bộ thông tin user
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -35,11 +33,10 @@ export async function PUT(
     const data = await req.json();
     const updateData: any = { ...data };
 
-    // Nếu có password → hash và lưu vào passwordHash
     if (data.password) {
       const hashed = await bcrypt.hash(data.password, 10);
       updateData.passwordHash = hashed;
-      delete updateData.password; // bỏ password để tránh ghi nhầm
+      delete updateData.password;
     }
 
     const updatedUser = await prisma.user.update({
@@ -57,7 +54,6 @@ export async function PUT(
   }
 }
 
-// PATCH - Cập nhật một phần thông tin (name, avatar, status)
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -81,8 +77,6 @@ export async function PATCH(
   }
 }
 
-//  DELETE - Xóa mềm user (đề xuất)
-// Nếu muốn xóa hẳn trong DB, bật `forceDelete` trong body.
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -90,7 +84,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     const { searchParams } = new URL(req.url);
-    const force = searchParams.get("force") === "true"; // ?force=true => xóa cứng
+    const force = searchParams.get("force") === "true";
 
     if (force) {
       await prisma.user.delete({ where: { id: Number(id) } });
