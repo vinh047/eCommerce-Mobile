@@ -1,46 +1,74 @@
 import { useFormContext } from "react-hook-form";
 
 export default function SpecsForm({ template, isLoading }) {
-  const { register } = useFormContext();
+  const { register, formState: { errors } } = useFormContext();
 
-  if (isLoading) return <div>Đang tải mẫu thông số...</div>;
-  if (!template) return <div className="text-gray-500 italic">Vui lòng chọn Danh mục ở Tab 1 trước.</div>;
+  if (isLoading) return <div className="p-6 text-center text-gray-500">Đang tải mẫu thông số...</div>;
+  
+  if (!template) {
+    return (
+      <div className="p-8 text-center border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+        <p className="text-gray-500">Vui lòng chọn <strong>Danh mục</strong> ở Tab "Thông tin chung" để tải cấu hình thông số.</p>
+      </div>
+    );
+  }
 
-  // Lấy ProductSpecs (thông số chung)
+  // Lấy danh sách specs từ template (Template định nghĩa những field nào cần điền)
   const specs = template.productSpecs || [];
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 max-w-4xl">
-      <h3 className="text-lg font-semibold mb-4">Thông số kỹ thuật ({template.name})</h3>
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <h3 className="text-lg font-bold text-gray-900 mb-1">Thông số kỹ thuật</h3>
+      <p className="text-sm text-gray-500 mb-6">Cấu hình cho danh mục: <span className="font-medium text-blue-600">{template.name}</span></p>
       
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {specs.map((spec) => (
           <div key={spec.id} className="col-span-1">
-            <label className="label">
-              {spec.label} {spec.unit ? `(${spec.unit})` : ""}
-              {spec.isRequired && <span className="text-red-500">*</span>}
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              {spec.label} {spec.unit ? <span className="text-gray-400 font-normal">({spec.unit})</span> : ""}
+              {spec.isRequired && <span className="text-red-500 ml-1">*</span>}
             </label>
             
             {/* Render Input dựa trên Control Type */}
             {spec.control === "select" ? (
-              <select 
-                {...register(`specs.${spec.code}`)} // Lưu vào object 'specs'
-                className="input-field"
-              >
-                <option value="">-- Chọn --</option>
-                {spec.options?.map(opt => (
-                   <option key={opt.id} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select 
+                  {...register(`specs.${spec.code}`, { 
+                     required: spec.isRequired ? false : false 
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-all"
+                >
+                  <option value="">-- Chọn --</option>
+                  {spec.options?.map(opt => (
+                     <option key={opt.id} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             ) : (
               <input
                 type={spec.datatype === "number" ? "number" : "text"}
-                {...register(`specs.${spec.code}`)}
-                className="input-field"
+                step="any" // Cho phép nhập số thập phân
+                {...register(`specs.${spec.code}`, {
+                    required: spec.isRequired ? false : false,
+                    valueAsNumber: spec.datatype === "number" // Tự động ép kiểu số nếu cần
+                })}
+                placeholder={`Nhập ${spec.label.toLowerCase()}...`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
+            )}
+            
+            {/* Hiển thị lỗi nếu có */}
+            {errors.specs?.[spec.code] && (
+                <p className="text-xs text-red-500 mt-1">{errors.specs[spec.code].message}</p>
             )}
           </div>
         ))}
+
+        {specs.length === 0 && (
+            <div className="col-span-2 text-center py-4 text-gray-400 italic">
+                Danh mục này chưa được cấu hình thông số kỹ thuật.
+            </div>
+        )}
       </div>
     </div>
   );

@@ -624,7 +624,7 @@ model Staff {
   createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
 
   staffRoles  StaffRole[]
-  createdTxns InventoryTransaction[] @relation("TxnCreatedBy")
+  createdTxns InventoryTicket[] @relation("TxnCreatedBy")
 
   @@map("staffs")
 }
@@ -681,20 +681,34 @@ model RolePermission {
  * INVENTORY & DEVICES
  * ==========================
  */
+model InventoryTicket {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique // Mã phiếu (VD: PN001, PX002)
+  type         InventoryTxnType
+  status       String   @default("COMPLETED") // COMPLETED, PENDING, CANCELLED
+  note         String?  @db.Text
+  
+  createdBy    Int?     @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Quan hệ
+  staff        Staff?   @relation("TxnCreatedBy",fields: [createdBy], references: [id])
+  transactions InventoryTransaction[] 
+
+  @@map("inventory_tickets")
+}
+
 model InventoryTransaction {
-  id            Int              @id @default(autoincrement())
-  variantId     Int              @map("variant_id")
-  type          InventoryTxnType
-  quantity      Int
-  reason        String?          @db.Text
-  referenceJson Json?            @map("reference_json")
-  createdBy     Int?             @map("created_by")
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamp(0)
-
-  variant Variant @relation(fields: [variantId], references: [id])
-  staff   Staff?  @relation("TxnCreatedBy", fields: [createdBy], references: [id])
-
-  devices InventoryTransactionDevice[]
+  id        Int      @id @default(autoincrement())
+  ticketId  Int      @map("ticket_id") 
+  variantId Int      @map("variant_id")
+  
+  quantity  Int     
+  
+  // Quan hệ
+  ticket    InventoryTicket @relation(fields: [ticketId], references: [id])
+  variant   Variant         @relation(fields: [variantId], references: [id])
+  devices   InventoryTransactionDevice[] 
 
   @@map("inventory_transactions")
 }

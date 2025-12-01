@@ -3,8 +3,9 @@
 import { useState } from "react";
 import ProductsTableHeader from "./ProductsTableHeader";
 import ProductsTableRow from "./ProductsTableRow";
+import Pagination from "@/components/common/Pagination";
 
-export default function ProductsTable({ products = [], onDelete }) {
+export default function ProductsTable({ products = [], onDelete, totalItems }) {
   const [selectedItems, setSelectedItems] = useState(new Set());
 
   // Xử lý chọn tất cả
@@ -47,22 +48,29 @@ export default function ProductsTable({ products = [], onDelete }) {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                   Không có sản phẩm nào.
+                <td
+                  colSpan="6"
+                  className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                >
+                  Không có sản phẩm nào.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      
+
       {/* Thanh hiển thị số lượng đã chọn (Optional) */}
       {selectedItems.size > 0 && (
         <div className="bg-blue-50 dark:bg-blue-900/20 px-6 py-2 text-xs text-blue-700 dark:text-blue-300 border-t border-blue-100 dark:border-blue-800 flex justify-between">
-          <span>Đang chọn: <b>{selectedItems.size}</b> sản phẩm</span>
+          <span>
+            Đang chọn: <b>{selectedItems.size}</b> sản phẩm
+          </span>
           {/* Có thể thêm nút "Xóa nhiều" ở đây */}
         </div>
       )}
+
+      <Pagination totalItems={totalItems} label="sản phẩm" />
     </div>
   );
 }

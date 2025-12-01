@@ -8,7 +8,6 @@ import {
   ShoppingCart,
   Box,
   Palette,
-  Image,
   Tag,
   BadgePercent,
   Users,
@@ -35,7 +34,6 @@ const navItems = [
   },
   { name: "Sản phẩm", icon: Box, href: "/admin/products" },
   { name: "Variants", icon: Palette, href: "/admin/variants" },
-  { name: "Ảnh/Media", icon: Image, href: "/admin/media" },
   { name: "Danh mục", icon: Tag, href: "/admin/category" },
   { name: "Thương hiệu", icon: Building2, href: "/admin/brands" },
   { name: "Thông số kỹ thuật", icon: ListChecks, href: "/admin/specs" },
@@ -102,7 +100,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
 
         {/* Navigation */}
-        <nav className="overflow-y-auto h-[calc(100vh-80px)] p-4  space-y-2 pb-10 scroll-area">
+        <nav className="overflow-y-auto h-[calc(100vh-80px)] p-4  space-y-2 pb-10 subtle-scroll">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
