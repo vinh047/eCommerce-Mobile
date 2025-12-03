@@ -11,6 +11,8 @@ import {
 import { usePermissionsData } from "./hooks/usePermissionsData";
 import { exportPermissionsCSV } from "./utils/exportPermissionCSV"; 
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../constants/permissions";
 
 export default function PermissionsPage() {
   // 1. Hook quản lý dữ liệu và logic
@@ -58,6 +60,17 @@ export default function PermissionsPage() {
   };
 
   const handleExportCSV = () => exportPermissionsCSV(filters, sortConfig); // Xử lý xuất CSV
+
+  
+    const { hasPermission } = useAuth();
+  
+    if (!hasPermission(PERMISSION_KEYS.VIEW_ROLE)) {
+      return (
+        <div className="p-6 text-red-600">
+          Bạn không có quyền truy cập trang này
+        </div>
+      );
+    }
 
   // 4. Render giao diện
   return (

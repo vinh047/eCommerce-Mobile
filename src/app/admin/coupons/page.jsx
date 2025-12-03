@@ -11,6 +11,8 @@ import {
 import { useCouponsData } from "./hooks/useCouponsData";
 import { exportCouponsCSV } from "./utils/exportCouponCSV";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../constants/permissions";
 
 export default function CouponsPage() {
   const {
@@ -61,6 +63,16 @@ export default function CouponsPage() {
   };
 
   const handleExportCSV = () => exportCouponsCSV(filters, sortConfig); // Xử lý xuất CSV
+
+    const { hasPermission } = useAuth();
+  
+    if (!hasPermission(PERMISSION_KEYS.VIEW_COUPON)) {
+      return (
+        <div className="p-6 text-red-600">
+          Bạn không có quyền truy cập trang này
+        </div>
+      );
+    }
 
   return (
     <div className="overflow-auto px-8 py-6">

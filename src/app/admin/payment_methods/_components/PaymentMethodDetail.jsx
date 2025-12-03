@@ -10,6 +10,8 @@ import {
   PenSquare,
 } from "lucide-react";
 import AccountModal from "./AccountModal";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function PaymentMethodDetail({
   isCreating,
@@ -76,21 +78,25 @@ export default function PaymentMethodDetail({
           {isCreating ? "Tạo phương thức mới" : `Chi tiết: ${method?.name}`}
         </h2>
         <div className="flex space-x-2">
-          {!isCreating && (
+          <PermissionGate permission={PERMISSION_KEYS.DELETE_PAYMENT_METHOD}>
+            {!isCreating && (
+              <button
+                onClick={onDeleteMethod}
+                className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </PermissionGate>
+          <PermissionGate permission={PERMISSION_KEYS.UPDATE_PAYMENT_METHOD}>
             <button
-              onClick={onDeleteMethod}
-              className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={handleSubmitInfo}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
             >
-              <Trash2 className="w-4 h-4" />
+              <Save className="w-4 h-4 mr-2" />
+              {isCreating ? "Tạo mới" : "Lưu thay đổi"}
             </button>
-          )}
-          <button
-            onClick={handleSubmitInfo}
-            className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isCreating ? "Tạo mới" : "Lưu thay đổi"}
-          </button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -229,12 +235,16 @@ export default function PaymentMethodDetail({
               <h3 className="text-sm font-semibold uppercase text-gray-500">
                 Danh sách tài khoản
               </h3>
-              <button
-                onClick={handleOpenCreateAccount}
-                className="text-xs flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-md hover:bg-blue-100 font-medium transition-colors"
+              <PermissionGate
+                permission={PERMISSION_KEYS.CREATE_PAYMENT_ACCOUNT}
               >
-                <Plus className="w-3 h-3 mr-1" /> Thêm tài khoản
-              </button>
+                <button
+                  onClick={handleOpenCreateAccount}
+                  className="text-xs flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-md hover:bg-blue-100 font-medium transition-colors"
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Thêm tài khoản
+                </button>
+              </PermissionGate>
             </div>
 
             {method?.accounts?.length > 0 ? (
@@ -251,9 +261,16 @@ export default function PaymentMethodDetail({
                       <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                         Trạng thái
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                        Thao tác
-                      </th>
+                      <PermissionGate
+                        permission={
+                          (PERMISSION_KEYS.UPDATE_PAYMENT_ACCOUNT,
+                          PERMISSION_KEYS.DELETE_PAYMENT_ACCOUNT)
+                        }
+                      >
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                          Thao tác
+                        </th>
+                      </PermissionGate>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
@@ -287,18 +304,26 @@ export default function PaymentMethodDetail({
                           )}
                         </td>
                         <td className="px-4 py-3 text-right space-x-2">
-                          <button
-                            onClick={() => handleOpenEditAccount(acc)}
-                            className="text-blue-600 hover:text-blue-800 p-1"
+                          <PermissionGate
+                            permission={PERMISSION_KEYS.UPDATE_PAYMENT_ACCOUNT}
                           >
-                            <PenSquare className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => onDeleteAccount(acc.id)}
-                            className="text-red-600 hover:text-red-800 p-1"
+                            <button
+                              onClick={() => handleOpenEditAccount(acc)}
+                              className="text-blue-600 hover:text-blue-800 p-1"
+                            >
+                              <PenSquare className="w-4 h-4" />
+                            </button>
+                          </PermissionGate>
+                          <PermissionGate
+                            permission={PERMISSION_KEYS.DELETE_PAYMENT_ACCOUNT}
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <button
+                              onClick={() => onDeleteAccount(acc.id)}
+                              className="text-red-600 hover:text-red-800 p-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </PermissionGate>
                         </td>
                       </tr>
                     ))}

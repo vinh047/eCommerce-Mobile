@@ -1,6 +1,8 @@
 "use client";
 
 import { Edit, Trash, Settings, Layers } from "lucide-react";
+import { PERMISSION_KEYS } from "../../constants/permissions";
+import PermissionGate from "../../_components/PermissionGate";
 
 export default function SpecsTableRow({
   spec,
@@ -57,33 +59,43 @@ export default function SpecsTableRow({
           {spec.isActive ? "Active" : "Inactive"}
         </span>
       </td>
-      <td className="px-6 py-4 text-center">
-        <button
-          onClick={() => onConfigure(spec)}
-          className="group inline-flex items-center gap-1 text-xs font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 px-2.5 py-1.5 rounded-md hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-all"
-        >
-          <Settings className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-500" />
-          Thiết lập
-        </button>
-      </td>
-      <td className="px-6 py-4 text-center">
-        <div className="flex justify-center items-center space-x-1">
+      <PermissionGate permission={PERMISSION_KEYS.UPDATE_SPEC}>
+        <td className="px-6 py-4 text-center">
           <button
-            onClick={() => onEdit(spec)}
-            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-            title="Sửa"
+            onClick={() => onConfigure(spec)}
+            className="group inline-flex items-center gap-1 text-xs font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 px-2.5 py-1.5 rounded-md hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-all"
           >
-            <Edit className="w-4 h-4" />
+            <Settings className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-500" />
+            Thiết lập
           </button>
-          <button
-            onClick={() => onDelete(spec.id)}
-            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-            title="Xóa"
-          >
-            <Trash className="w-4 h-4" />
-          </button>
-        </div>
-      </td>
+        </td>
+      </PermissionGate>
+      <PermissionGate
+        permission={(PERMISSION_KEYS.UPDATE_SPEC, PERMISSION_KEYS.DELETE_SPEC)}
+      >
+        <td className="px-6 py-4 text-center">
+          <div className="flex justify-center items-center space-x-1">
+            <PermissionGate permission={PERMISSION_KEYS.UPDATE_SPEC}>
+              <button
+                onClick={() => onEdit(spec)}
+                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                title="Sửa"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+            <PermissionGate permission={PERMISSION_KEYS.DELETE_SPEC}>
+              <button
+                onClick={() => onDelete(spec.id)}
+                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                title="Xóa"
+              >
+                <Trash className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+          </div>
+        </td>
+      </PermissionGate>
     </tr>
   );
 }

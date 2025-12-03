@@ -895,6 +895,142 @@ export const permissions = [
     description: "Xoá banner",
     createdAt: new Date(),
   },
+  // CATEGORY
+  {
+    id: 45,
+    key: "VIEW_CATEGORY",
+    name: "Xem danh mục",
+    description: "Xem danh sách/chi tiết danh mục",
+    createdAt: new Date(),
+  },
+  {
+    id: 46,
+    key: "CREATE_CATEGORY",
+    name: "Thêm danh mục",
+    description: "Tạo danh mục mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 47,
+    key: "UPDATE_CATEGORY",
+    name: "Sửa danh mục",
+    description: "Chỉnh sửa danh mục",
+    createdAt: new Date(),
+  },
+  {
+    id: 48,
+    key: "DELETE_CATEGORY",
+    name: "Xoá danh mục",
+    description: "Xoá danh mục",
+    createdAt: new Date(),
+  },
+
+  // BRAND
+  {
+    id: 49,
+    key: "VIEW_BRAND",
+    name: "Xem thương hiệu",
+    description: "Xem danh sách/chi tiết thương hiệu",
+    createdAt: new Date(),
+  },
+  {
+    id: 50,
+    key: "CREATE_BRAND",
+    name: "Thêm thương hiệu",
+    description: "Tạo thương hiệu mới",
+    createdAt: new Date(),
+  },
+  {
+    id: 51,
+    key: "UPDATE_BRAND",
+    name: "Sửa thương hiệu",
+    description: "Chỉnh sửa thương hiệu",
+    createdAt: new Date(),
+  },
+  {
+    id: 52,
+    key: "DELETE_BRAND",
+    name: "Xoá thương hiệu",
+    description: "Xoá thương hiệu",
+    createdAt: new Date(),
+  },
+  {
+    id: 53,
+    key: "CREATE_ORDER",
+    name: "Tạo đơn hàng",
+    description: "Tạo đơn hàng",
+    createdAt: new Date(),
+  },
+  {
+    id: 53,
+    key: "DELETE_ORDER",
+    name: "Xóa đơn hàng",
+    description: "Xóa đơn hàng",
+    createdAt: new Date(),
+  },
+  {
+    id: 54,
+    key: "CREATE_PAYMENT_ACCOUNT",
+    name: "Tạo tài khoản thanh toán",
+    description: "Tạo tài khoản thanh toán",
+    createdAt: new Date(),
+  },
+  {
+    id: 55,
+    key: "UPDATE_PAYMENT_ACCOUNT",
+    name: "Cập nhật tài khoản thanh toán",
+    description: "Cập nhật tài khoản thanh toán",
+    createdAt: new Date(),
+  },
+  {
+    id: 56,
+    key: "DELETE_PAYMENT_ACCOUNT",
+    name: "Xóa tài khoản thanh toán",
+    description: "Xóa tài khoản thanh toán",
+    createdAt: new Date(),
+  },
+  {
+    id: 57,
+    key: "VIEW_REPORT",
+    name: "Xem báo cáo thống kê",
+    description: "Xem báo cáo thống kê",
+    createdAt: new Date(),
+  },
+    {
+    id: 58,
+    key: "UPDATE_REVIEW",
+    name: "Sửa review",
+    description: "Sửa review",
+    createdAt: new Date(),
+  },
+    {
+    id: 59,
+    key: "VIEW_SPEC",
+    name: "Xem thông số kỹ thuật",
+    description: "Xem thông số kỹ thuật",
+    createdAt: new Date(),
+  },
+    {
+    id: 60,
+    key: "UPDATE_SPEC",
+    name: "Sửa thông số kỹ thuật",
+    description: "Sửa thông số kỹ thuật",
+    createdAt: new Date(),
+  },
+    {
+    id: 61,
+    key: "DELETE_SPEC",
+    name: "Xóa thông số kỹ thuật",
+    description: "Xóa thông số kỹ thuật",
+    createdAt: new Date(),
+  },
+    {
+    id: 62,
+    key: "CREATE_SPEC",
+    name: "Thêm thông số kỹ thuật",
+    description: "Thêm thông số kỹ thuật",
+    createdAt: new Date(),
+  },
 ];
 
 export const rolePermissions = [
@@ -918,6 +1054,7 @@ export const staffRoles = [
   { staffId: 1, roleId: 1, assignedAt: new Date() }, // admin
   { staffId: 2, roleId: 2, assignedAt: new Date() }, // nhân viên bán hàng
   { staffId: 3, roleId: 3, assignedAt: new Date() }, // nhân viên kho
+  { staffId: 4, roleId: 3, assignedAt: new Date() }, 
 ];
 // Dữ liệu Review
 export const reviews = [

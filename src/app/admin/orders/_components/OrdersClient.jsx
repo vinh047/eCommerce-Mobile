@@ -7,6 +7,8 @@ import OrdersTable from "./OrdersTable";
 import { useFetchOrders } from "../hooks/useFetchOrders";
 import { UserBulkActionsBar } from "../../users/_components";
 import TableSkeleton from "@/components/common/TableSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 const OrdersModal = lazy(() => import("./OrdersModal"));
 const OrdersQuickViewModal = lazy(() => import("./OrdersQuickViewModal"));
@@ -48,42 +50,58 @@ export default function OrdersClient({ initialData }) {
     setShowQuickView(true);
   };
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_ORDER)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <OrdersHeader onCreate={handleCreate} />
-      
+
       <OrdersToolbar />
 
       {/* Hiển thị BulkActions nếu có import được hoặc component có sẵn */}
       {/* Nếu UserBulkActionsBar bị lỗi import, bạn có thể tạm comment dòng này */}
       {UserBulkActionsBar && (
-          <UserBulkActionsBar
-            selectedCount={selectedItems.size}
-            onSelectAll={selectAll}
-            onDeselectAll={deselectAll}
-            onBulkAction={handleBulkAction}
-            show={selectedItems.size > 0}
-          />
+        <UserBulkActionsBar
+          selectedCount={selectedItems.size}
+          onSelectAll={selectAll}
+          onDeselectAll={deselectAll}
+          onBulkAction={handleBulkAction}
+          show={selectedItems.size > 0}
+        />
       )}
 
       <div className="mt-4">
         {isLoading ? (
-           <TableSkeleton />
+          <TableSkeleton />
         ) : (
-           <OrdersTable
-             orders={orders}
-             selectedItems={selectedItems}
-             totalItems={totalItems}
-             onSelectItem={selectItem}
-             onQuickView={handleQuickView}
-             onEdit={handleEdit}
-             onDelete={deleteOrder}
-           />
+          <OrdersTable
+            orders={orders}
+            selectedItems={selectedItems}
+            totalItems={totalItems}
+            onSelectItem={selectItem}
+            onQuickView={handleQuickView}
+            onEdit={handleEdit}
+            onDelete={deleteOrder}
+          />
         )}
       </div>
 
       {showModal && (
-        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">
+              Loading...
+            </div>
+          }
+        >
           <OrdersModal
             mode={modalMode}
             order={selectedOrder}

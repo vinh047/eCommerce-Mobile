@@ -1,6 +1,8 @@
 "use client";
 
 import { Edit, Eye, Trash, Tag, Box } from "lucide-react";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function BrandsTableRow({
   brand,
@@ -36,7 +38,7 @@ export default function BrandsTableRow({
         <td className="px-6 py-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-               <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="font-medium text-gray-900 dark:text-white">
               {brand.name}
@@ -68,8 +70,8 @@ export default function BrandsTableRow({
       {columnVisibility.productsCount && (
         <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
           <div className="flex items-center space-x-1">
-             <Box className="w-4 h-4 text-gray-400" />
-             <span>{brand._count?.products || 0}</span>
+            <Box className="w-4 h-4 text-gray-400" />
+            <span>{brand._count?.products || 0}</span>
           </div>
         </td>
       )}
@@ -82,15 +84,31 @@ export default function BrandsTableRow({
 
       <td className="px-1 py-4 text-center">
         <div className="flex justify-center space-x-1">
-          <button onClick={onQuickView} className="p-1 text-blue-600 hover:text-blue-800" title="Xem">
+          <button
+            onClick={onQuickView}
+            className="p-1 text-blue-600 hover:text-blue-800"
+            title="Xem"
+          >
             <Eye className="w-4 h-4" />
           </button>
-          <button onClick={onEdit} className="p-1 text-gray-600 hover:text-gray-800" title="Sửa">
-            <Edit className="w-4 h-4" />
-          </button>
-          <button onClick={onDelete} className="p-1 text-red-600 hover:text-red-800" title="Xóa">
-            <Trash className="w-4 h-4" />
-          </button>
+          <PermissionGate permission={PERMISSION_KEYS.UPDATE_BRAND}>
+            <button
+              onClick={onEdit}
+              className="p-1 text-gray-600 hover:text-gray-800"
+              title="Sửa"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          </PermissionGate>
+          <PermissionGate permission={PERMISSION_KEYS.DELETE_BRAND}>
+            <button
+              onClick={onDelete}
+              className="p-1 text-red-600 hover:text-red-800"
+              title="Xóa"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          </PermissionGate>
         </div>
       </td>
     </tr>

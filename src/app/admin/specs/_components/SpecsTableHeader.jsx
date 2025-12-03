@@ -2,6 +2,8 @@
 
 import { useQueryParams } from "@/hooks/useQueryParams"; // Đảm bảo bạn có hook này
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function SpecsTableHeader({
   selectedItems,
@@ -74,8 +76,16 @@ export default function SpecsTableHeader({
             Trạng thái {getSortIcon("isActive")}
           </div>
         </th>
-        <th className="px-6 py-3 text-center">Cấu hình</th>
-        <th className="px-6 py-3 text-center">Thao tác</th>
+        <PermissionGate permission={PERMISSION_KEYS.UPDATE_SPEC}>
+          <th className="px-6 py-3 text-center">Cấu hình</th>
+        </PermissionGate>
+        <PermissionGate
+          permission={
+            (PERMISSION_KEYS.UPDATE_SPEC, PERMISSION_KEYS.DELETE_SPEC)
+          }
+        >
+          <th className="px-6 py-3 text-center">Thao tác</th>
+        </PermissionGate>
       </tr>
     </thead>
   );

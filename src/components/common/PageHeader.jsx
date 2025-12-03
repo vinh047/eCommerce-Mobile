@@ -1,3 +1,4 @@
+import PermissionGate from "@/app/admin/_components/PermissionGate";
 import { Download, Plus } from "lucide-react";
 
 export default function PageHeader({
@@ -6,6 +7,7 @@ export default function PageHeader({
   onCreate,
   exportLabel = "Xuất dữ liệu",
   createLabel = "Tạo mới",
+  permission,
 }) {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -23,14 +25,16 @@ export default function PageHeader({
           </button>
         )}
 
-        {onCreate && (
-          <button
-            onClick={onCreate}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer"
-          >
-            <Plus className="w-4 h-4 mr-2" /> {createLabel}
-          </button>
-        )}
+        <PermissionGate permission={permission}>
+          {onCreate && (
+            <button
+              onClick={onCreate}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer"
+            >
+              <Plus className="w-4 h-4 mr-2" /> {createLabel}
+            </button>
+          )}
+        </PermissionGate>
       </div>
     </div>
   );

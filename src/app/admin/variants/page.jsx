@@ -18,7 +18,6 @@ export default async function VariantsPage({ searchParams }) {
     productsApi.getAll(),
   ]);
 
-  console.log("Fetched variants:", productsRes);
 
   return (
     <VariantsClient

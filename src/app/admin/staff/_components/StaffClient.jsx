@@ -8,6 +8,8 @@ import { useFetchStaff } from "../hooks/useFetchStaff";
 import PageHeader from "@/components/common/PageHeader";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import { UserBulkActionsBar } from "../../users/_components";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 const StaffModal = lazy(() => import("./StaffModal"));
 const StaffQuickViewModal = lazy(() => import("./StaffQuickViewModal"));
@@ -49,10 +51,20 @@ export default function StaffClient({ initialData }) {
     setShowQuickView(true);
   };
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_STAFF)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <StaffHeader onCreate={handleCreate} />
-      
+
       <StaffToolbar />
 
       <UserBulkActionsBar
@@ -65,22 +77,28 @@ export default function StaffClient({ initialData }) {
 
       <div className="mt-4">
         {isLoading ? (
-           <TableSkeleton />
+          <TableSkeleton />
         ) : (
-           <StaffTable
-             staffs={staffs}
-             selectedItems={selectedItems}
-             totalItems={totalItems}
-             onSelectItem={selectItem}
-             onQuickView={handleQuickView}
-             onEdit={handleEdit}
-             onDelete={deleteStaff}
-           />
+          <StaffTable
+            staffs={staffs}
+            selectedItems={selectedItems}
+            totalItems={totalItems}
+            onSelectItem={selectItem}
+            onQuickView={handleQuickView}
+            onEdit={handleEdit}
+            onDelete={deleteStaff}
+          />
         )}
       </div>
 
       {showModal && (
-        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">
+              Loading...
+            </div>
+          }
+        >
           <StaffModal
             mode={modalMode}
             staff={selectedStaff}

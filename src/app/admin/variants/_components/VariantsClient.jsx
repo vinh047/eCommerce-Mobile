@@ -11,6 +11,8 @@ import {
 import PageHeader from "@/components/common/PageHeader";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import { UserBulkActionsBar } from "../../users/_components";
+import { PERMISSION_KEYS } from "../../constants/permissions";
+import { useAuth } from "@/contexts/AuthContext";
 
 const VariantModal = lazy(() => import("./VariantModal"));
 const VariantQuickViewModal = lazy(() => import("./QuickViewModal"));
@@ -61,6 +63,16 @@ export default function VariantsClient({
 
   const { exportVariantsCSV } = useExportVariantsCSV();
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_VARIANT)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <PageHeader
@@ -69,6 +81,7 @@ export default function VariantsClient({
         onCreate={handleCreate}
         exportLabel="Xuất Excel"
         createLabel="Thêm biến thể"
+        permission={PERMISSION_KEYS.CREATE_VARIANT}
       />
 
       <VariantsToolbar />

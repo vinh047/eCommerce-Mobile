@@ -6,6 +6,8 @@ import { useFetchUsers } from "../hooks/useFetchUsers";
 import { exportUsersCSV, useExportUsersCSV } from "../utils/exportUsersCSV";
 import PageHeader from "@/components/common/PageHeader";
 import TableSkeleton from "@/components/common/TableSkeleton";
+import { PERMISSION_KEYS } from "../../constants/permissions";
+import { useAuth } from "@/contexts/AuthContext";
 
 const UsersModal = lazy(() => import("./UsersModal"));
 const UsersQuickViewModal = lazy(() => import("./QuickViewModal"));
@@ -55,6 +57,17 @@ export default function UsersClient({ initialUsers, searchParams }) {
 
   const findUserById = (id) => users.find((u) => u.id === id);
   const { exportUsersCSV } = useExportUsersCSV();
+
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_CUSTOMER)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <PageHeader
@@ -63,6 +76,7 @@ export default function UsersClient({ initialUsers, searchParams }) {
         onCreate={handleCreateUser}
         exportLabel="Xuất Excel"
         createLabel="Tạo người dùng"
+        permission={PERMISSION_KEYS.CREATE_CUSTOMER}
       />
 
       <UsersToolbar />

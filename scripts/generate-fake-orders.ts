@@ -138,6 +138,12 @@ function generateOrderCode(index: number, createdAt: Date): string {
   return `ORD-${y}${m}${d}-${String(index + 1).padStart(4, "0")}`;
 }
 
+// code phiếu xuất kho từ order code
+function generateInventoryTicketCode(orderCode: string): string {
+  // VD: PX-ORD-20250101-0001
+  return `PX-${orderCode}`;
+}
+
 // ---------------- main logic ----------------
 
 async function main() {
@@ -167,7 +173,7 @@ async function main() {
     try {
       await prisma.$transaction(async (tx) => {
         const user = randomChoice(users);
-        const createdAt = randomDateInLastMonths(3); // 8 tháng gần đây
+        const createdAt = randomDateInLastMonths(3); // 3 tháng gần đây
         const {
           orderStatus,
           paymentStatus,
@@ -206,10 +212,7 @@ async function main() {
         // clone list để chọn không trùng variant trong cùng 1 order
         const pool = [...variants];
 
-        while (
-          chosenItems.length < itemCount &&
-          pool.length > 0
-        ) {
+        while (chosenItems.length < itemCount && pool.length > 0) {
           const v = randomChoice(pool);
           const maxQty = Math.min(2, v.stock); // mỗi item tối đa 2 cái
           if (maxQty <= 0) {
@@ -285,6 +288,19 @@ async function main() {
           },
         });
 
+        // ----------- tạo InventoryTicket (phiếu xuất kho) -----------
+
+        const ticket = await tx.inventoryTicket.create({
+          data: {
+            code: generateInventoryTicketCode(order.code),
+            type: InventoryTxnType.out, // xuất kho
+            status: "COMPLETED",
+            note: `Xuất kho cho đơn hàng ${order.code}`,
+            createdBy: null, // không có staff -> để null
+            createdAt,
+          },
+        });
+
         // ----------- tạo OrderItem + OrderDevice + InventoryTransaction -----------
 
         for (const item of chosenItems) {
@@ -294,9 +310,7 @@ async function main() {
           });
 
           if (!variant) {
-            throw new Error(
-              `Variant ${item.variantId} không tồn tại.`
-            );
+            throw new Error(`Variant ${item.variantId} không tồn tại.`);
           }
 
           if (variant.stock < item.quantity) {
@@ -331,6 +345,7 @@ async function main() {
             );
           }
 
+          // -------- map OrderDevice + update trạng thái Device --------
           for (const device of devices) {
             // map OrderDevice
             await tx.orderDevice.create({
@@ -347,7 +362,7 @@ async function main() {
             });
           }
 
-          // trừ stock variant
+          // -------- trừ stock variant --------
           await tx.variant.update({
             where: { id: variant.id },
             data: {
@@ -357,21 +372,23 @@ async function main() {
             },
           });
 
-          // ghi inventory transaction (type: out)
-          await tx.inventoryTransaction.create({
+          // -------- ghi InventoryTransaction + InventoryTransactionDevice --------
+          const invTxn = await tx.inventoryTransaction.create({
             data: {
+              ticketId: ticket.id,
               variantId: variant.id,
-              type: InventoryTxnType.out,
               quantity: item.quantity,
-              reason: `Bán hàng seed order ${order.code}`,
-              referenceJson: {
-                orderId: order.id,
-                orderItemId: orderItem.id,
-              } as any,
-              createdBy: null,
-              createdAt,
             },
           });
+
+          for (const device of devices) {
+            await tx.inventoryTransactionDevice.create({
+              data: {
+                inventoryTxnId: invTxn.id,
+                deviceId: device.id,
+              },
+            });
+          }
         }
 
         // ----------- tạo PaymentTransaction -----------

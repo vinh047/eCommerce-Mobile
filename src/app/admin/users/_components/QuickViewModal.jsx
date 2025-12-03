@@ -11,6 +11,8 @@ import {
   Edit,
   Copy,
 } from "lucide-react";
+import { PERMISSION_KEYS } from "../../constants/permissions";
+import PermissionGate from "../../_components/PermissionGate";
 
 // Các class màu nền giả định cho avatar nếu không có ảnh
 const userAvatarClasses = [
@@ -239,20 +241,15 @@ export default function UserQuickViewModal({
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex items-center justify-end space-x-3">
-            <button
-              onClick={onDuplicate}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Nhân bản
-            </button>
-            <button
-              onClick={onEdit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Chỉnh sửa
-            </button>
+            <PermissionGate permission={PERMISSION_KEYS.UPDATE_CUSTOMER}>
+              <button
+                onClick={onEdit}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Chỉnh sửa
+              </button>
+            </PermissionGate>
           </div>
         </div>
       </div>
