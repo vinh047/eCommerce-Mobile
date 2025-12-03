@@ -962,70 +962,70 @@ export const permissions = [
     createdAt: new Date(),
   },
   {
-    id: 53,
+    id: 54,
     key: "DELETE_ORDER",
     name: "Xóa đơn hàng",
     description: "Xóa đơn hàng",
     createdAt: new Date(),
   },
   {
-    id: 54,
+    id: 55,
     key: "CREATE_PAYMENT_ACCOUNT",
     name: "Tạo tài khoản thanh toán",
     description: "Tạo tài khoản thanh toán",
     createdAt: new Date(),
   },
   {
-    id: 55,
+    id: 56,
     key: "UPDATE_PAYMENT_ACCOUNT",
     name: "Cập nhật tài khoản thanh toán",
     description: "Cập nhật tài khoản thanh toán",
     createdAt: new Date(),
   },
   {
-    id: 56,
+    id: 57,
     key: "DELETE_PAYMENT_ACCOUNT",
     name: "Xóa tài khoản thanh toán",
     description: "Xóa tài khoản thanh toán",
     createdAt: new Date(),
   },
   {
-    id: 57,
+    id: 58,
     key: "VIEW_REPORT",
     name: "Xem báo cáo thống kê",
     description: "Xem báo cáo thống kê",
     createdAt: new Date(),
   },
-    {
-    id: 58,
+  {
+    id: 59,
     key: "UPDATE_REVIEW",
     name: "Sửa review",
     description: "Sửa review",
     createdAt: new Date(),
   },
-    {
-    id: 59,
+  {
+    id: 60,
     key: "VIEW_SPEC",
     name: "Xem thông số kỹ thuật",
     description: "Xem thông số kỹ thuật",
     createdAt: new Date(),
   },
-    {
-    id: 60,
+  {
+    id: 61,
     key: "UPDATE_SPEC",
     name: "Sửa thông số kỹ thuật",
     description: "Sửa thông số kỹ thuật",
     createdAt: new Date(),
   },
-    {
-    id: 61,
+  {
+    id: 62,
     key: "DELETE_SPEC",
     name: "Xóa thông số kỹ thuật",
     description: "Xóa thông số kỹ thuật",
     createdAt: new Date(),
   },
-    {
-    id: 62,
+  {
+    id: 63,
     key: "CREATE_SPEC",
     name: "Thêm thông số kỹ thuật",
     description: "Thêm thông số kỹ thuật",
@@ -1041,20 +1041,51 @@ export const rolePermissions = [
     grantedAt: new Date(),
   })),
 
-  // Staff: chỉ quản lý đơn hàng + xem dashboard
-  { roleId: 2, permissionId: 1, grantedAt: new Date() },
-  { roleId: 2, permissionId: 4, grantedAt: new Date() },
+  // Staff: quản lý khách hàng, sản phẩm, đơn hàng, coupon, thanh toán
+  { roleId: 2, permissionId: 10, grantedAt: new Date() }, // VIEW_CUSTOMER
+  { roleId: 2, permissionId: 11, grantedAt: new Date() }, // CREATE_CUSTOMER
+  { roleId: 2, permissionId: 12, grantedAt: new Date() }, // UPDATE_CUSTOMER
+  { roleId: 2, permissionId: 13, grantedAt: new Date() }, // DELETE_CUSTOMER
 
-  // Inventory: chỉ quản lý kho
-  { roleId: 3, permissionId: 1, grantedAt: new Date() },
-  { roleId: 3, permissionId: 5, grantedAt: new Date() },
+  { roleId: 2, permissionId: 14, grantedAt: new Date() }, // VIEW_PRODUCT
+  { roleId: 2, permissionId: 15, grantedAt: new Date() }, // CREATE_PRODUCT
+  { roleId: 2, permissionId: 16, grantedAt: new Date() }, // UPDATE_PRODUCT
+  { roleId: 2, permissionId: 17, grantedAt: new Date() }, // DELETE_PRODUCT
+
+  { roleId: 2, permissionId: 22, grantedAt: new Date() }, // VIEW_ORDER
+  { roleId: 2, permissionId: 23, grantedAt: new Date() }, // UPDATE_ORDER_STATUS
+  { roleId: 2, permissionId: 53, grantedAt: new Date() }, // CREATE_ORDER
+  { roleId: 2, permissionId: 54, grantedAt: new Date() }, // DELETE_ORDER
+
+  { roleId: 2, permissionId: 30, grantedAt: new Date() }, // VIEW_PAYMENT_TRANSACTION
+  { roleId: 2, permissionId: 31, grantedAt: new Date() }, // VIEW_COUPON
+  { roleId: 2, permissionId: 32, grantedAt: new Date() }, // CREATE_COUPON
+  { roleId: 2, permissionId: 33, grantedAt: new Date() }, // UPDATE_COUPON
+  { roleId: 2, permissionId: 34, grantedAt: new Date() }, // DELETE_COUPON
+
+  // Inventory: quản lý kho, thiết bị, sản phẩm/biến thể, thông số kỹ thuật
+  { roleId: 3, permissionId: 35, grantedAt: new Date() }, // VIEW_INVENTORY
+  { roleId: 3, permissionId: 36, grantedAt: new Date() }, // MANAGE_INVENTORY
+  { roleId: 3, permissionId: 37, grantedAt: new Date() }, // VIEW_DEVICE
+  { roleId: 3, permissionId: 38, grantedAt: new Date() }, // MANAGE_DEVICE
+
+  { roleId: 3, permissionId: 14, grantedAt: new Date() }, // VIEW_PRODUCT
+  { roleId: 3, permissionId: 16, grantedAt: new Date() }, // UPDATE_PRODUCT
+  { roleId: 3, permissionId: 18, grantedAt: new Date() }, // VIEW_VARIANT
+  { roleId: 3, permissionId: 20, grantedAt: new Date() }, // UPDATE_VARIANT
+
+  { roleId: 3, permissionId: 60, grantedAt: new Date() }, // VIEW_SPEC
+  { roleId: 3, permissionId: 61, grantedAt: new Date() }, // UPDATE_SPEC
+  { roleId: 3, permissionId: 62, grantedAt: new Date() }, // DELETE_SPEC
+  { roleId: 3, permissionId: 63, grantedAt: new Date() }, // CREATE_SPEC
 ];
+
 
 export const staffRoles = [
   { staffId: 1, roleId: 1, assignedAt: new Date() }, // admin
   { staffId: 2, roleId: 2, assignedAt: new Date() }, // nhân viên bán hàng
   { staffId: 3, roleId: 3, assignedAt: new Date() }, // nhân viên kho
-  { staffId: 4, roleId: 3, assignedAt: new Date() }, 
+  { staffId: 4, roleId: 1, assignedAt: new Date() },
 ];
 // Dữ liệu Review
 export const reviews = [
