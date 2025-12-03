@@ -391,7 +391,7 @@ export default function VariantEditor({
                     className={inputClass}
                   >
                     <option value="true">Đang bán</option>
-                    <option value="false">Ẩn (Nháp)</option>
+                    <option value="false">Ẩn</option>
                   </select>
                 </div>
               </div>
