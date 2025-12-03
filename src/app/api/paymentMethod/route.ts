@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export async function GET() {
   try {
     const methods = await prisma.paymentMethod.findMany({
-      include: { accounts: true },
+      include: { accounts: { where: { isActive: true } } },
     });
     return NextResponse.json(methods, { status: 200 });
   } catch (error) {

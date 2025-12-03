@@ -1,17 +1,23 @@
 "use client";
 
 import { useState, lazy, Suspense } from "react";
-import { CategoriesToolbar, CategoryBulkActionsBar, CategoriesHeader } from "./index";
-import { useFetchCategories } from "../hooks/useFetchCategories"; 
+import {
+  CategoriesToolbar,
+  CategoryBulkActionsBar,
+  CategoriesHeader,
+} from "./index";
+import { useFetchCategories } from "../hooks/useFetchCategories";
 import PageHeader from "@/components/common/PageHeader";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import { useExportCategoriesCSV } from "../utils/exportCategoriesCSV";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 const CategoriesModal = lazy(() => import("./CategoriesModal"));
 const CategoryQuickViewModal = lazy(() => import("./CategoryQuickViewModal"));
 const CategoriesTable = lazy(() => import("./CategoriesTable"));
 
-export default function CategoriesClient({initialCategories}) {
+export default function CategoriesClient({ initialCategories }) {
   const {
     categories,
     totalItems,
@@ -48,6 +54,16 @@ export default function CategoriesClient({initialCategories}) {
 
   const { exportCategoriesCSV } = useExportCategoriesCSV();
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_CATEGORY)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <PageHeader
@@ -56,6 +72,7 @@ export default function CategoriesClient({initialCategories}) {
         onCreate={handleCreate}
         exportLabel="Xuất Excel"
         createLabel="Thêm danh mục"
+        permission={PERMISSION_KEYS.CREATE_CATEGORY}
       />
 
       <CategoriesToolbar />
@@ -85,7 +102,7 @@ export default function CategoriesClient({initialCategories}) {
           <CategoriesModal
             mode={modalMode}
             category={selectedCategory}
-            allCategories={categories} 
+            allCategories={categories}
             onClose={() => setShowModal(false)}
             onSave={async (data) => {
               await saveCategory(data, modalMode, selectedCategory);

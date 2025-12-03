@@ -2,6 +2,8 @@
 
 import { useQueryParams } from "@/hooks/useQueryParams";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function ProductsTableHeader({
   selectedItems,
@@ -14,7 +16,8 @@ export default function ProductsTableHeader({
 
   // Logic Checkbox "Select All"
   const pageIds = currentPageData.map((p) => p.id);
-  const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedItems.has(id));
+  const allSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedItems.has(id));
   const someSelected = pageIds.some((id) => selectedItems.has(id));
 
   const handleSort = (column) => {
@@ -51,17 +54,31 @@ export default function ProductsTableHeader({
             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 dark:bg-gray-700 border-gray-300 cursor-pointer"
           />
         </th>
-        <th className="px-6 py-3 cursor-pointer select-none" onClick={() => handleSort("name")}>
-          <div className="flex items-center">Sản phẩm {getSortIcon("name")}</div>
+        <th
+          className="px-6 py-3 cursor-pointer select-none"
+          onClick={() => handleSort("name")}
+        >
+          <div className="flex items-center">
+            Sản phẩm {getSortIcon("name")}
+          </div>
         </th>
         <th className="px-6 py-3 text-center">Kho & Giá</th>
         <th className="px-6 py-3">Danh mục</th>
-        <th className="px-6 py-3 text-center cursor-pointer select-none" onClick={() => handleSort("isActive")}>
+        <th
+          className="px-6 py-3 text-center cursor-pointer select-none"
+          onClick={() => handleSort("isActive")}
+        >
           <div className="flex items-center justify-center">
             Trạng thái {getSortIcon("isActive")}
           </div>
         </th>
-        <th className="px-6 py-3 text-right">Thao tác</th>
+        <PermissionGate
+          permission={
+            (PERMISSION_KEYS.UPDATE_PRODUCT, PERMISSION_KEYS.DELETE_PRODUCT)
+          }
+        >
+          <th className="px-6 py-3 text-right">Thao tác</th>
+        </PermissionGate>
       </tr>
     </thead>
   );

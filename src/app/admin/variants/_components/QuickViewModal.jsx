@@ -10,6 +10,8 @@ import {
   Edit,
 } from "lucide-react";
 import Image from "next/image";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function VariantQuickViewModal({ variant, onClose, onEdit }) {
   const formatCurrency = (val) =>
@@ -129,15 +131,14 @@ export default function VariantQuickViewModal({ variant, onClose, onEdit }) {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200 bg-white dark:bg-gray-800 flex justify-end space-x-3">
-          <button className="px-4 py-2 border rounded-lg flex items-center hover:bg-gray-50">
-            <Copy className="w-4 h-4 mr-2" /> Sao chép
-          </button>
-          <button
-            onClick={onEdit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center hover:bg-blue-700"
-          >
-            <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
-          </button>
+          <PermissionGate permission={PERMISSION_KEYS.UPDATE_VARIANT}>
+            <button
+              onClick={onEdit}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center hover:bg-blue-700"
+            >
+              <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
+            </button>
+          </PermissionGate>
         </div>
       </div>
     </div>

@@ -8,6 +8,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Image from "next/image";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function VariantsTableRow({
   variant,
@@ -153,18 +155,23 @@ export default function VariantsTableRow({
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={onEdit}
-            className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 cursor-pointer"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-1 text-red-600 hover:text-red-800 cursor-pointer"
-          >
-            <Trash className="w-4 h-4" />
-          </button>
+          <PermissionGate permission={PERMISSION_KEYS.UPDATE_VARIANT}>
+            <button
+              onClick={onEdit}
+              className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 cursor-pointer"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          </PermissionGate>
+
+          <PermissionGate permission={PERMISSION_KEYS.DELETE_VARIANT}>
+            <button
+              onClick={onDelete}
+              className="p-1 text-red-600 hover:text-red-800 cursor-pointer"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          </PermissionGate>
         </div>
       </td>
     </tr>

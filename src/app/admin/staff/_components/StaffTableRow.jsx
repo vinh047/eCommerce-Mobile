@@ -1,11 +1,17 @@
 "use client";
 
 import { Edit, Eye, Trash, Mail, Shield } from "lucide-react";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 // Màu nền avatar ngẫu nhiên
 const avatarColors = [
-  "bg-blue-500", "bg-green-500", "bg-yellow-500", 
-  "bg-red-500", "bg-purple-500", "bg-pink-500"
+  "bg-blue-500",
+  "bg-green-500",
+  "bg-yellow-500",
+  "bg-red-500",
+  "bg-purple-500",
+  "bg-pink-500",
 ];
 
 export default function StaffTableRow({
@@ -18,18 +24,21 @@ export default function StaffTableRow({
   onDelete,
 }) {
   const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : "S");
-  const getAvatarColor = (id) => avatarColors[id % avatarColors.length] || "bg-gray-500";
+  const getAvatarColor = (id) =>
+    avatarColors[id % avatarColors.length] || "bg-gray-500";
 
   // Render Role Badges
   const renderRoles = () => {
     if (!staff.staffRoles || staff.staffRoles.length === 0) {
-      return <span className="text-gray-400 text-xs italic">Chưa phân quyền</span>;
+      return (
+        <span className="text-gray-400 text-xs italic">Chưa phân quyền</span>
+      );
     }
     return (
       <div className="flex flex-wrap gap-1">
         {staff.staffRoles.map((sr) => (
-          <span 
-            key={sr.roleId} 
+          <span
+            key={sr.roleId}
             className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
           >
             {sr.role?.name || `Role #${sr.roleId}`}
@@ -40,7 +49,11 @@ export default function StaffTableRow({
   };
 
   return (
-    <tr className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? "bg-blue-50 dark:bg-blue-900/10" : ""}`}>
+    <tr
+      className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
+        isSelected ? "bg-blue-50 dark:bg-blue-900/10" : ""
+      }`}
+    >
       <td className="px-6 py-4">
         <input
           type="checkbox"
@@ -60,14 +73,24 @@ export default function StaffTableRow({
         <td className="px-6 py-4">
           <div className="flex items-center space-x-3">
             {staff.avatar ? (
-              <img src={staff.avatar} alt={staff.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+              <img
+                src={staff.avatar}
+                alt={staff.name}
+                className="w-9 h-9 rounded-full object-cover border border-gray-200"
+              />
             ) : (
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm ${getAvatarColor(staff.id)}`}>
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm ${getAvatarColor(
+                  staff.id
+                )}`}
+              >
                 {getInitial(staff.name)}
               </div>
             )}
             <div>
-              <div className="text-sm font-medium text-gray-900 dark:text-white">{staff.name || "N/A"}</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {staff.name || "N/A"}
+              </div>
             </div>
           </div>
         </td>
@@ -82,11 +105,7 @@ export default function StaffTableRow({
         </td>
       )}
 
-      {columnVisibility.roles && (
-        <td className="px-6 py-4">
-           {renderRoles()}
-        </td>
-      )}
+      {columnVisibility.roles && <td className="px-6 py-4">{renderRoles()}</td>}
 
       {columnVisibility.status && (
         <td className="px-6 py-4">
@@ -99,7 +118,11 @@ export default function StaffTableRow({
                 : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
             }`}
           >
-            {staff.status === "active" ? "Hoạt động" : staff.status === "blocked" ? "Đã khóa" : staff.status}
+            {staff.status === "active"
+              ? "Hoạt động"
+              : staff.status === "blocked"
+              ? "Đã khóa"
+              : staff.status}
           </span>
         </td>
       )}
@@ -112,15 +135,31 @@ export default function StaffTableRow({
 
       <td className="px-6 py-4 text-center">
         <div className="flex justify-center space-x-2">
-          <button onClick={onQuickView} className="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400" title="Xem chi tiết">
+          <button
+            onClick={onQuickView}
+            className="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
+            title="Xem chi tiết"
+          >
             <Eye className="w-4 h-4" />
           </button>
-          <button onClick={onEdit} className="text-gray-500 hover:text-green-600 dark:hover:text-green-400" title="Sửa">
-            <Edit className="w-4 h-4" />
-          </button>
-          <button onClick={onDelete} className="text-gray-500 hover:text-red-600 dark:hover:text-red-400" title="Xóa">
-            <Trash className="w-4 h-4" />
-          </button>
+          <PermissionGate permission={PERMISSION_KEYS.UPDATE_STAFF}>
+            <button
+              onClick={onEdit}
+              className="text-gray-500 hover:text-green-600 dark:hover:text-green-400"
+              title="Sửa"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          </PermissionGate>
+          <PermissionGate permission={PERMISSION_KEYS.DELETE_STAFF}>
+            <button
+              onClick={onDelete}
+              className="text-gray-500 hover:text-red-600 dark:hover:text-red-400"
+              title="Xóa"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          </PermissionGate>
         </div>
       </td>
     </tr>

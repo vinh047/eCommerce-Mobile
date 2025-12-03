@@ -9,6 +9,8 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function CategoriesTableRow({
   category,
@@ -19,7 +21,7 @@ export default function CategoriesTableRow({
   onEdit,
   onDelete,
 }) {
-  console.log(columnVisibility)
+  console.log(columnVisibility);
   const renderDynamicIcon = (iconKey) => {
     if (!iconKey) return <ImageIcon className="w-4 h-4 text-gray-400" />;
 
@@ -126,20 +128,24 @@ export default function CategoriesTableRow({
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={onEdit}
-            className="p-1 text-gray-600 hover:text-gray-800"
-            title="Sửa"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-1 text-red-600 hover:text-red-800"
-            title="Xóa"
-          >
-            <Trash className="w-4 h-4" />
-          </button>
+          <PermissionGate permission={PERMISSION_KEYS.CREATE_CATEGORY}>
+            <button
+              onClick={onEdit}
+              className="p-1 text-gray-600 hover:text-gray-800"
+              title="Sửa"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          </PermissionGate>
+          <PermissionGate permission={PERMISSION_KEYS.CREATE_CATEGORY}>
+            <button
+              onClick={onDelete}
+              className="p-1 text-red-600 hover:text-red-800"
+              title="Xóa"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          </PermissionGate>
         </div>
       </td>
     </tr>

@@ -7,6 +7,8 @@ import ReviewsTable from "./ReviewsTable";
 import { useFetchReviews } from "../hooks/useFetchReviews";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import { UserBulkActionsBar } from "../../users/_components";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 const ReviewsModal = lazy(() => import("./ReviewsModal"));
 const ReviewsQuickViewModal = lazy(() => import("./ReviewsQuickViewModal"));
@@ -40,6 +42,16 @@ export default function ReviewsClient({ initialData }) {
     setShowQuickView(true);
   };
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_REVIEW)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <ReviewsHeader />
@@ -72,7 +84,13 @@ export default function ReviewsClient({ initialData }) {
       </div>
 
       {showModal && selectedReview && (
-        <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">
+              Loading...
+            </div>
+          }
+        >
           <ReviewsModal
             review={selectedReview}
             onClose={() => setShowModal(false)}

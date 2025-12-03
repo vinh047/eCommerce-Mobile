@@ -2,12 +2,17 @@
 
 import { Edit, Trash, Eye, Package } from "lucide-react";
 import Link from "next/link";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 // Helper format tiền tệ
 const formatCurrency = (value) => {
   if (!value) return "0 ₫";
-  if (typeof value === 'string' && value.includes('-')) return value; 
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+  if (typeof value === "string" && value.includes("-")) return value;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
 };
 
 export default function ProductsTableRow({
@@ -40,7 +45,9 @@ export default function ProductsTableRow({
             <div className="font-medium text-gray-900 dark:text-white line-clamp-1">
               {product.name}
             </div>
-            <div className="text-xs text-gray-500 font-mono">ID: {product.id}</div>
+            <div className="text-xs text-gray-500 font-mono">
+              ID: {product.id}
+            </div>
           </div>
         </div>
       </td>
@@ -49,7 +56,10 @@ export default function ProductsTableRow({
           {formatCurrency(product.priceRange)}
         </div>
         <div className="text-xs text-gray-500 mt-0.5">
-          Tồn: <span className="font-medium text-gray-700 dark:text-gray-300">{product.totalStock}</span>
+          Tồn:{" "}
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            {product.totalStock}
+          </span>
         </div>
       </td>
       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
@@ -66,29 +76,43 @@ export default function ProductsTableRow({
               : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${product.isActive ? "bg-green-500" : "bg-gray-500"}`}></span>
+          <span
+            className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+              product.isActive ? "bg-green-500" : "bg-gray-500"
+            }`}
+          ></span>
           {product.isActive ? "Active" : "Inactive"}
         </span>
       </td>
-      <td className="px-6 py-4 text-right">
-        <div className="flex justify-end items-center gap-1">
-          {/* Nút Edit dẫn sang trang chi tiết */}
-          <Link
-            href={`/admin/products/${product.id}/edit`}
-            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-            title="Chỉnh sửa"
-          >
-            <Edit className="w-4 h-4" />
-          </Link>
-          <button
-            onClick={() => onDelete(product.id)}
-            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-            title="Xóa"
-          >
-            <Trash className="w-4 h-4" />
-          </button>
-        </div>
-      </td>
+      <PermissionGate
+        permission={
+          (PERMISSION_KEYS.UPDATE_PRODUCT, PERMISSION_KEYS.DELETE_PRODUCT)
+        }
+      >
+        <td className="px-6 py-4 text-right">
+          <div className="flex justify-end items-center gap-1">
+            {/* Nút Edit dẫn sang trang chi tiết */}
+            <PermissionGate permission={PERMISSION_KEYS.UPDATE_PRODUCT}>
+              <Link
+                href={`/admin/products/${product.id}/edit`}
+                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                title="Chỉnh sửa"
+              >
+                <Edit className="w-4 h-4" />
+              </Link>
+            </PermissionGate>
+            <PermissionGate permission={PERMISSION_KEYS.DELETE_PRODUCT}>
+              <button
+                onClick={() => onDelete(product.id)}
+                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                title="Xóa"
+              >
+                <Trash className="w-4 h-4" />
+              </button>
+            </PermissionGate>
+          </div>
+        </td>
+      </PermissionGate>
     </tr>
   );
 }

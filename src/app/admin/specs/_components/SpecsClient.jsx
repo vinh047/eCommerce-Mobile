@@ -7,6 +7,8 @@ import TableSkeleton from "@/components/common/TableSkeleton";
 
 import { useExportSpecsCSV } from "../utils/exportSpecsCSV";
 import { useFetchSpecs } from "../hooks/useFetchSpecs";
+import { PERMISSION_KEYS } from "../../constants/permissions";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SpecsModal = lazy(() => import("./SpecsModal"));
 const SpecBuilderDrawer = lazy(() => import("./SpecBuilderDrawer"));
@@ -40,6 +42,16 @@ export default function SpecsClient({ initialData, categories }) {
 
   const { exportSpecsCSV } = useExportSpecsCSV();
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_SPEC)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <PageHeader
@@ -47,6 +59,7 @@ export default function SpecsClient({ initialData, categories }) {
         onExport={exportSpecsCSV}
         onCreate={handleCreate}
         createLabel="Tạo Mẫu mới"
+        permission={PERMISSION_KEYS.CREATE_SPEC}
       />
 
       <SpecsToolbar categories={categories} />

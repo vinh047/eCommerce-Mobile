@@ -7,12 +7,17 @@ import InventoryHeader from "./InventoryHeader";
 import InventoryToolbar from "./InventoryToolbar";
 import InventoryTable from "./InventoryTable";
 import { useFetchInventory } from "../hooks/useFetchInventory";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 // Lazy load Modals
 const CreateTransactionModal = lazy(() => import("./CreateTransactionModal"));
 const TransactionDetailModal = lazy(() => import("./TransactionDetailModal"));
 
-export default function InventoryClient({ initialTransactions , initialVariants}) {
+export default function InventoryClient({
+  initialTransactions,
+  initialVariants,
+}) {
   // 1. Hooks quản lý dữ liệu
   const { transactions, totalItems, createTransaction } =
     useFetchInventory(initialTransactions);
@@ -37,6 +42,16 @@ export default function InventoryClient({ initialTransactions , initialVariants}
   const handleViewDetail = (txn) => {
     setSelectedTransaction(txn);
   };
+
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_INVENTORY)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-auto px-8 py-6">

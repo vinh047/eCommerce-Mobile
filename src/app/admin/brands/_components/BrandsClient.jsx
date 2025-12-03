@@ -7,6 +7,8 @@ import { useExportBrandsCSV } from "../utils/exportBrandsCSV";
 import PageHeader from "@/components/common/PageHeader";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import { useFetchBrands } from "../hooks/useFetchBrands";
+import { useAuth } from "@/contexts/AuthContext";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 const BrandsModal = lazy(() => import("./BrandsModal"));
 const BrandQuickViewModal = lazy(() => import("./BrandQuickViewModal"));
@@ -49,6 +51,16 @@ export default function BrandsClient({ initialBrands }) {
 
   const { exportBrandsCSV } = useExportBrandsCSV();
 
+  const { hasPermission } = useAuth();
+
+  if (!hasPermission(PERMISSION_KEYS.VIEW_BRAND)) {
+    return (
+      <div className="p-6 text-red-600">
+        Bạn không có quyền truy cập trang này
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto px-8 py-6">
       <PageHeader
@@ -57,6 +69,7 @@ export default function BrandsClient({ initialBrands }) {
         onCreate={handleCreate}
         exportLabel="Xuất Excel"
         createLabel="Thêm thương hiệu"
+        permission={PERMISSION_KEYS.CREATE_BRAND}
       />
 
       <BrandsToolbar />

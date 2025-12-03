@@ -1,6 +1,8 @@
 "use client";
 
 import { Edit, Eye, Trash, User, Mail, Shield, UserCog } from "lucide-react";
+import PermissionGate from "../../_components/PermissionGate";
+import { PERMISSION_KEYS } from "../../constants/permissions";
 
 // Các class màu nền giả định cho avatar nếu không có ảnh
 const userAvatarClasses = [
@@ -139,20 +141,26 @@ export default function UserTableRow({
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={onEdit}
-            className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 cursor-pointer"
-            title="Chỉnh sửa"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-1 text-red-600 hover:text-red-800 cursor-pointer" 
-            title="Xóa"
-          >
-            <Trash className="w-4 h-4" />
-          </button>
+
+          <PermissionGate permission={PERMISSION_KEYS.UPDATE_CUSTOMER}>
+            <button
+              onClick={onEdit}
+              className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 cursor-pointer"
+              title="Chỉnh sửa"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          </PermissionGate>
+
+          <PermissionGate permission={PERMISSION_KEYS.DELETE_CUSTOMER}>
+            <button
+              onClick={onDelete}
+              className="p-1 text-red-600 hover:text-red-800 cursor-pointer"
+              title="Xóa"
+            >
+              <Trash className="w-4 h-4" />
+            </button>
+          </PermissionGate>
         </div>
       </td>
     </tr>
