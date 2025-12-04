@@ -60,7 +60,7 @@ export default function PaymentMethodsClient({ initialData }) {
 
   const { hasPermission } = useAuth();
 
-  if (!hasPermission(PERMISSION_KEYS.VIEW_CATEGORY)) {
+  if (!hasPermission(PERMISSION_KEYS.VIEW_PAYMENT_METHOD)) {
     return (
       <div className="p-6 text-red-600">
         Bạn không có quyền truy cập trang này
