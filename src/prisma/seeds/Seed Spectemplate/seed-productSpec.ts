@@ -79,7 +79,7 @@ export const productSpecs = [
     unit: null,
     filterable: false,
     control: "select",
-    isRequired: true,
+    isRequired: false,
     groupLabel: "Hiệu năng",
     displayOrder: 6,
   },
