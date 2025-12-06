@@ -10,15 +10,17 @@ export async function GET(req: Request) {
     });
 
     const ordersCount = await prisma.order.count();
-    
+
     // Đếm số sản phẩm sắp hết hàng (giả sử < 10 là thấp)
-    // Lưu ý: Bạn cần model Inventory hoặc field stock trong Variant. 
+    // Lưu ý: Bạn cần model Inventory hoặc field stock trong Variant.
     // Ở đây mình giả định đếm tổng Variant.
     const lowStockCount = await prisma.variant.count({
-      // where: { stock: { lte: 10 } } // Uncomment nếu có trường stock
+      where: { isDeleted: false },
     });
 
-    const paidOrders = await prisma.order.count({ where: { paymentStatus: "paid" } });
+    const paidOrders = await prisma.order.count({
+      where: { paymentStatus: "paid" },
+    });
     const paymentRate = ordersCount > 0 ? (paidOrders / ordersCount) * 100 : 0;
 
     // 2. Lấy Đơn hàng gần đây
@@ -32,42 +34,44 @@ export async function GET(req: Request) {
     const recentReviews = await prisma.review.findMany({
       take: 3,
       orderBy: { createdAt: "desc" },
-      include: { 
+      include: {
         user: { select: { name: true, avatar: true } },
-        product: { select: { name: true } }
+        product: { select: { name: true } },
       },
     });
 
     // 4. Tạo dữ liệu biểu đồ (Mockup data dựa trên thực tế hoặc query GroupBy date)
     // Prisma GroupBy date khá phức tạp tùy DB, ở đây mình trả về cấu trúc để Frontend map
     const salesData = [
-       // Thực tế bạn cần query orders trong 7 ngày qua và group lại
-       { date: "T2", revenue: 12000000 },
-       { date: "T3", revenue: 15000000 },
-       { date: "T4", revenue: 8000000 },
-       { date: "T5", revenue: 23000000 },
-       { date: "T6", revenue: 18000000 },
-       { date: "T7", revenue: 25000000 },
-       { date: "CN", revenue: 30000000 },
+      // Thực tế bạn cần query orders trong 7 ngày qua và group lại
+      { date: "T2", revenue: 12000000 },
+      { date: "T3", revenue: 15000000 },
+      { date: "T4", revenue: 8000000 },
+      { date: "T5", revenue: 23000000 },
+      { date: "T6", revenue: 18000000 },
+      { date: "T7", revenue: 25000000 },
+      { date: "CN", revenue: 30000000 },
     ];
 
     // 5. Cảnh báo (Alerts)
     const alerts = [];
     if (lowStockCount > 0) {
-        alerts.push({
-            type: "warning",
-            title: "Cảnh báo kho hàng",
-            description: `Có ${lowStockCount} sản phẩm sắp hết hàng.`
-        });
+      alerts.push({
+        type: "warning",
+        title: "Cảnh báo kho hàng",
+        description: `Có ${lowStockCount} sản phẩm sắp hết hàng.`,
+      });
     }
     // Kiểm tra đơn chờ xử lý
-    const pendingOrders = await prisma.order.count({ where: { status: "pending" }});
+    const pendingOrders = await prisma.order.count({
+      where: { status: "pending" },
+    });
     if (pendingOrders > 0) {
-        alerts.push({
-            type: "info",
-            title: "Đơn hàng mới",
-            description: `Có ${pendingOrders} đơn hàng chờ xử lý.`
-        });
+      alerts.push({
+        type: "info",
+        title: "Đơn hàng mới",
+        description: `Có ${pendingOrders} đơn hàng chờ xử lý.`,
+      });
     }
 
     return NextResponse.json({

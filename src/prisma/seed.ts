@@ -1,6 +1,7 @@
 // Xóa prisma/migrations
 // npx prisma migrate dev --name init
 // npx prisma migrate reset --force
+// npx prisma generate
 
 /*
   Sửa dữ liệu trong schema.prisma
@@ -356,6 +357,37 @@ async function main() {
     data: reviews,
     skipDuplicates: true,
   });
+
+  console.log("🔄 Đang đồng bộ lại sequence (setval MAX(id)+1)...");
+
+  await prisma.$executeRawUnsafe(`
+DO $$
+DECLARE
+  rec record;
+BEGIN
+  FOR rec IN
+    SELECT
+      seq.relname       AS sequence_name,
+      tbl.relname       AS table_name,
+      col.attname       AS column_name
+    FROM pg_class seq
+    JOIN pg_depend d       ON d.objid = seq.oid AND seq.relkind = 'S'
+    JOIN pg_class tbl      ON d.refobjid = tbl.oid AND tbl.relkind = 'r'
+    JOIN pg_attribute col  ON col.attrelid = tbl.oid AND col.attnum = d.refobjsubid
+  LOOP
+    -- Set sequence = MAX(id)+1 cho cột đó
+    EXECUTE format(
+      'SELECT setval(%L, COALESCE(MAX(%I), 0) + 1, false) FROM %I',
+      rec.sequence_name,
+      rec.column_name,
+      rec.table_name
+    );
+  END LOOP;
+END $$;
+`);
+
+  console.log("✅ Đã đồng bộ sequence xong.");
+  console.log("🎉 Quá trình seeding hoàn tất.");
 
   console.log("🎉 Quá trình seeding hoàn tất.");
 }

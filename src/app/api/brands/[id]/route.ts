@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
     const brand = await prisma.brand.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id), isDeleted: false },
       include: {
         _count: { select: { products: true, coupons: true } },
       },
@@ -71,20 +71,25 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const brand = await prisma.brand.findUnique({
-      where: { id: Number(id) },
+    const numericId = Number(id);
+
+    // Chỉ tìm brand chưa bị soft-delete
+    const brand = await prisma.brand.findFirst({
+      where: { id: numericId, isDeleted: false },
       include: { _count: { select: { products: true } } },
     });
 
-    if (brand && brand._count.products > 0) {
+    if (!brand) {
       return NextResponse.json(
-        { error: "Không thể xóa thương hiệu đang chứa sản phẩm." },
-        { status: 400 }
+        { error: "Thương hiệu không tồn tại hoặc đã bị xóa." },
+        { status: 404 }
       );
     }
 
-    await prisma.brand.delete({
-      where: { id: Number(id) },
+    // Soft delete (thay vì delete thật)
+    await prisma.brand.update({
+      where: { id: numericId },
+      data: { isDeleted: true },
     });
 
     return NextResponse.json({ message: "Brand deleted successfully" });
@@ -95,6 +100,7 @@ export async function DELETE(
         { status: 400 }
       );
     }
+
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

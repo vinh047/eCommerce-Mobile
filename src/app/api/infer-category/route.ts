@@ -38,7 +38,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const qRaw = String(body?.q || "").trim();
     if (!qRaw) {
-      return NextResponse.json({ ok: false, reason: "empty_query" } as InferResultFail, { status: 400 });
+      return NextResponse.json(
+        { ok: false, reason: "empty_query" } as InferResultFail,
+        { status: 400 }
+      );
     }
 
     const q = normalize(qRaw);
@@ -47,6 +50,7 @@ export async function POST(req: Request) {
     // 1) Exact product name or slug match (priority)
     const productExact = await prisma.product.findFirst({
       where: {
+        isDeleted: false,
         OR: [
           { name: { contains: qRaw, mode: "insensitive" as Prisma.QueryMode } },
           { slug: { contains: qRaw, mode: "insensitive" as Prisma.QueryMode } },
@@ -64,7 +68,11 @@ export async function POST(req: Request) {
     }
 
     // 2) Token match: tìm products chứa ít nhất 1 token
-    let tokenProducts: Array<{ id: number; name: string; category?: { slug?: string } }> = [];
+    let tokenProducts: Array<{
+      id: number;
+      name: string;
+      category?: { slug?: string };
+    }> = [];
     if (tokens.length > 0) {
       // build OR conditions for tokens across product.name and product.slug
       const tokenOr: Prisma.ProductWhereInput[] = tokens.flatMap((t) => [
@@ -73,7 +81,7 @@ export async function POST(req: Request) {
       ]);
 
       tokenProducts = await prisma.product.findMany({
-        where: { OR: tokenOr },
+        where: { OR: tokenOr, isDeleted: false },
         include: { category: { select: { slug: true } } },
         take: 200, // giới hạn để tránh truy vấn quá nặng
       });
@@ -100,7 +108,7 @@ export async function POST(req: Request) {
     // 3) Fuzzy match on product names: sample products and compute similarity
     const SAMPLE_LIMIT = 500;
     const sampleProducts = await prisma.product.findMany({
-      where: { isActive: true },
+      where: { isActive: true, isDeleted: false },
       select: { id: true, name: true, slug: true },
       take: SAMPLE_LIMIT,
     });
@@ -114,7 +122,11 @@ export async function POST(req: Request) {
     }
 
     const PRODUCT_FUZZY_THRESHOLD = 0.6;
-    if (bestProductMatch && bestProductMatch.score >= PRODUCT_FUZZY_THRESHOLD && bestProductMatch.slug) {
+    if (
+      bestProductMatch &&
+      bestProductMatch.score >= PRODUCT_FUZZY_THRESHOLD &&
+      bestProductMatch.slug
+    ) {
       const prod = await prisma.product.findUnique({
         where: { slug: bestProductMatch.slug },
         include: { category: { select: { slug: true } } },
@@ -131,7 +143,7 @@ export async function POST(req: Request) {
 
     // 4) Fuzzy match với category names (fallback)
     const allCats = await prisma.category.findMany({
-      where: { isActive: true },
+      where: { isActive: true, isDeleted: false },
       select: { name: true, slug: true },
     });
 
@@ -154,7 +166,7 @@ export async function POST(req: Request) {
     // 5) Nếu không tìm được category phù hợp theo các phương pháp trên,
     //    fallback: trả về category đầu tiên (theo thứ tự id asc hoặc theo điều kiện isActive)
     const firstCategory = await prisma.category.findFirst({
-      where: { isActive: true },
+      where: { isActive: true, isDeleted: false },
       orderBy: { id: "asc" },
       select: { slug: true },
     });
@@ -168,11 +180,18 @@ export async function POST(req: Request) {
     }
 
     // Nếu không có category nào trong DB (rất hiếm), trả no_match
-    return NextResponse.json({ ok: false, reason: "no_category_in_db" } as InferResultFail, { status: 200 });
+    return NextResponse.json(
+      { ok: false, reason: "no_category_in_db" } as InferResultFail,
+      { status: 200 }
+    );
   } catch (err: any) {
     console.error("POST /api/infer-category error:", err);
     return NextResponse.json(
-      { ok: false, reason: "server_error", error: String(err?.message || err) } as InferResultFail,
+      {
+        ok: false,
+        reason: "server_error",
+        error: String(err?.message || err),
+      } as InferResultFail,
       { status: 500 }
     );
   }

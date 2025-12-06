@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     const categoryId = searchParams.get("categoryId");
     const isActive = searchParams.get("isActive");
 
-    const where: any = {};
+    const where: any = { isDeleted: false };
 
     // ----- SEARCH -----
     if (search) {

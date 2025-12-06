@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     const search = searchParams.get("search") || "";
     const isActiveParam = searchParams.get("isActive");
 
-    const where: any = {};
+    const where: any = { isDeleted: false };
 
     if (search) {
       where.OR = [

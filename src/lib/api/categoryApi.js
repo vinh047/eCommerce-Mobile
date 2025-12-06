@@ -20,6 +20,7 @@ const categoryApi = {
 
   bulkAction: (ids, action) =>
     apiFetch(`/category/bulk`, { method: "POST", body: { ids, action } }),
+
 };
 
 export default categoryApi;

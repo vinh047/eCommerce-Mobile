@@ -51,7 +51,7 @@ export async function GET(req: Request) {
       }
     }
 
-    const where: any = {};
+    const where: any = { isDeleted: false };
 
     if (search) {
       where.OR = [

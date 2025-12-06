@@ -10,6 +10,7 @@ export async function GET(req: Request) {
     const isActive = searchParams.get("isActive");
 
     const where: any = {
+      isDeleted: false,
       AND: [
         search
           ? {
@@ -66,8 +67,9 @@ export async function POST(req: Request) {
 
     switch (action) {
       case "delete":
-        await prisma.product.deleteMany({
+        await prisma.product.updateMany({
           where: { id: { in: numericIds } },
+          data: { isDeleted: true },
         });
         break;
 

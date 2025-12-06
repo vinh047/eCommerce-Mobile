@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { id } = await params;
     const category = await prisma.category.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id), isDeleted: false },
       include: {
         parent: { select: { id: true, name: true } },
         _count: { select: { products: true, children: true } },
@@ -72,21 +72,33 @@ export async function DELETE(
     const { id } = await params;
     const numericId = Number(id);
 
-    const category = await prisma.category.findUnique({
-      where: { id: numericId },
-      include: { _count: { select: { products: true } } },
+    if (Number.isNaN(numericId)) {
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    }
+
+    // Tìm category (chỉ category chưa bị xóa mềm)
+    const category = await prisma.category.findFirst({
+      where: { id: numericId, isDeleted: false },
     });
 
-    if (category && category._count.products > 0) {
+    if (!category) {
       return NextResponse.json(
-        { error: "Không thể xóa danh mục đang chứa sản phẩm." },
-        { status: 400 }
+        { error: "Không tìm thấy danh mục." },
+        { status: 404 }
       );
     }
 
-    await prisma.category.delete({ where: { id: numericId } });
+    // Soft delete: đánh dấu isDeleted = true
+    await prisma.category.update({
+      where: { id: numericId },
+      data: { isDeleted: true },
+    });
+
     return NextResponse.json({ message: "Deleted successfully" });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err?.message ?? "Unknown error" },
+      { status: 500 }
+    );
   }
 }
