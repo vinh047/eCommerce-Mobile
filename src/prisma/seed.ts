@@ -1,6 +1,7 @@
 // Xóa prisma/migrations
 // npx prisma migrate dev --name init
 // npx prisma migrate reset --force
+// npx prisma generate
 
 /*
   Sửa dữ liệu trong schema.prisma
