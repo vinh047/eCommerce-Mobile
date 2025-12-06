@@ -41,6 +41,7 @@ CREATE TABLE "banners" (
     "alt_text" VARCHAR(255),
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "display_order" INTEGER NOT NULL DEFAULT 0,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
     "product_id" INTEGER NOT NULL,
 
     CONSTRAINT "banners_pkey" PRIMARY KEY ("id")
@@ -80,6 +81,7 @@ CREATE TABLE "brands" (
     "slug" VARCHAR(191) NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "brands_pkey" PRIMARY KEY ("id")
 );
@@ -93,6 +95,7 @@ CREATE TABLE "categories" (
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "icon_key" VARCHAR(64),
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
 );
@@ -205,6 +208,7 @@ CREATE TABLE "products" (
     "rating_count" INTEGER NOT NULL DEFAULT 0,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
     "warrantyMonths" INTEGER,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("id")
@@ -221,6 +225,7 @@ CREATE TABLE "variants" (
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "low_stock_threshold" INTEGER,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "variants_pkey" PRIMARY KEY ("id")
 );
@@ -261,6 +266,7 @@ CREATE TABLE "media" (
     "url" VARCHAR(255) NOT NULL,
     "is_primary" BOOLEAN NOT NULL DEFAULT false,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "media_pkey" PRIMARY KEY ("id")
 );
@@ -439,15 +445,24 @@ CREATE TABLE "role_permissions" (
 );
 
 -- CreateTable
+CREATE TABLE "inventory_tickets" (
+    "id" SERIAL NOT NULL,
+    "code" TEXT NOT NULL,
+    "type" "InventoryTxnType" NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'COMPLETED',
+    "note" TEXT,
+    "created_by" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "inventory_tickets_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "inventory_transactions" (
     "id" SERIAL NOT NULL,
+    "ticket_id" INTEGER NOT NULL,
     "variant_id" INTEGER NOT NULL,
-    "type" "InventoryTxnType" NOT NULL,
     "quantity" INTEGER NOT NULL,
-    "reason" TEXT,
-    "reference_json" JSONB,
-    "created_by" INTEGER,
-    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "inventory_transactions_pkey" PRIMARY KEY ("id")
 );
@@ -699,6 +714,9 @@ CREATE UNIQUE INDEX "roles_name_key" ON "roles"("name");
 CREATE UNIQUE INDEX "permissions_key_key" ON "permissions"("key");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "inventory_tickets_code_key" ON "inventory_tickets"("code");
+
+-- CreateIndex
 CREATE INDEX "inventory_transaction_devices_device_id_idx" ON "inventory_transaction_devices"("device_id");
 
 -- CreateIndex
@@ -831,10 +849,13 @@ ALTER TABLE "role_permissions" ADD CONSTRAINT "role_permissions_role_id_fkey" FO
 ALTER TABLE "role_permissions" ADD CONSTRAINT "role_permissions_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "permissions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inventory_transactions" ADD CONSTRAINT "inventory_transactions_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "inventory_tickets" ADD CONSTRAINT "inventory_tickets_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "staffs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inventory_transactions" ADD CONSTRAINT "inventory_transactions_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "staffs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "inventory_transactions" ADD CONSTRAINT "inventory_transactions_ticket_id_fkey" FOREIGN KEY ("ticket_id") REFERENCES "inventory_tickets"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inventory_transactions" ADD CONSTRAINT "inventory_transactions_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "variants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "inventory_transaction_devices" ADD CONSTRAINT "inventory_transaction_devices_inventory_txn_id_fkey" FOREIGN KEY ("inventory_txn_id") REFERENCES "inventory_transactions"("id") ON DELETE CASCADE ON UPDATE CASCADE;

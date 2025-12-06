@@ -7,14 +7,14 @@ export async function GET(req: Request) {
     const search = searchParams.get("search") || "";
     const isActiveQuery = searchParams.get("isActive") || "";
 
-    const where: any = {};
+    const where: any = { isDeleted: false };
     if (search) {
-       const searchNum = parseInt(search);
-       where.OR = [
+      const searchNum = parseInt(search);
+      where.OR = [
         { color: { contains: search, mode: "insensitive" } },
         { product: { name: { contains: search, mode: "insensitive" } } },
       ];
-       if (!isNaN(searchNum)) where.OR.push({ id: searchNum });
+      if (!isNaN(searchNum)) where.OR.push({ id: searchNum });
     }
     if (isActiveQuery) {
       where.isActive = isActiveQuery === "true";

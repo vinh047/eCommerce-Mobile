@@ -8,7 +8,7 @@ export async function GET(
   const { id } = await params;
   try {
     const product = await prisma.product.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id), isDeleted: false },
       include: {
         brand: true,
         category: true,
@@ -87,13 +87,12 @@ export async function PUT(
       }
 
       // 3. Xử lý Variants
+      // 3. Xử lý Variants
       if (variants) {
-        // --- LOGIC XÓA (FIX LỖI) ---
         const incomingIds = variants
           .filter((v: any) => v.id && !String(v.id).startsWith("temp-"))
           .map((v: any) => Number(v.id));
 
-        // Tìm các ID variant thừa trong database
         const variantsToDelete = await tx.variant.findMany({
           where: {
             productId,
@@ -105,24 +104,30 @@ export async function PUT(
         const deleteIds = variantsToDelete.map((v) => v.id);
 
         if (deleteIds.length > 0) {
-          // Xóa bảng con MediaVariant trước
+          // 👉 1. Xoá devices tham chiếu tới các variant này
+          await tx.device.deleteMany({
+            where: {
+              variantId: { in: deleteIds },
+            },
+          });
+
+          // 👉 2. Xoá các bảng con khác
           await tx.mediaVariant.deleteMany({
             where: { variantId: { in: deleteIds } },
           });
 
-          // Xóa bảng con VariantSpecValue trước
           await tx.variantSpecValue.deleteMany({
             where: { variantId: { in: deleteIds } },
           });
 
-          // Xóa Variant cha
-          await tx.variant.deleteMany({
+          // 👉 3. Cuối cùng xoá variant
+          await tx.variant.updateMany({
             where: { id: { in: deleteIds } },
+            data: { status: "deleted", isActive: false },
           });
         }
-        // --- HẾT LOGIC XÓA ---
 
-        // Loop Update/Create
+        // --- phần loop update/create variant giữ nguyên ---
         for (const v of variants) {
           const mediaRelation = {
             deleteMany: {},
@@ -199,8 +204,9 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
-    await prisma.product.delete({
+    await prisma.product.update({
       where: { id: Number(id) },
+      data: { isDeleted: true },
     });
     return NextResponse.json({ success: true });
   } catch (error) {

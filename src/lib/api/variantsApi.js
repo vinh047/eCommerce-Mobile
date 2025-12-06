@@ -47,6 +47,12 @@ const variantsApi = {
       method: "POST",
       body: { ids, action },
     }),
+
+  getCategoryById: (variantId) =>
+    apiFetch(`/variants/category?variantId=${variantId}`, {
+      method: "GET",
+      cache: "no-store",
+    }),
 };
 
 export default variantsApi;

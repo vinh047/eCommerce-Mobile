@@ -116,7 +116,7 @@ export const productSpecs = [
     specTemplateId: 1,
     code: "rear_camera_mp",
     label: "Camera sau",
-    valueType: "discrete",
+    valueType: "range",
     datatype: "number",
     unit: "MP",
     filterable: false,

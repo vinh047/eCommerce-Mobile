@@ -10,8 +10,10 @@ export async function POST(req: Request) {
 
   try {
     if (action === "delete") {
-      await prisma.brand.deleteMany({
-        where: { id: { in: ids } },
+      // Soft delete thay vì deleteMany
+      await prisma.brand.updateMany({
+        where: { id: { in: ids }, isDeleted: false },
+        data: { isDeleted: true },
       });
     } else if (action === "active") {
       await prisma.brand.updateMany({
@@ -37,6 +39,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
     return NextResponse.json(
       { message: "Bulk update failed", error: error.message },
       { status: 500 }

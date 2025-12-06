@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 export async function GET() {
   try {
     const banners = await prisma.banner.findMany({
+      where: { isDeleted: false },
       include: { product: { select: { slug: true } } },
     });
 

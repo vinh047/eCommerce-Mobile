@@ -6,8 +6,9 @@ export async function POST(req: Request) {
 
   try {
     if (action === "delete") {
-      await prisma.variant.deleteMany({
+      await prisma.variant.updateMany({
         where: { id: { in: ids } },
+        data: { isDeleted: true },
       });
     } else if (action === "inactive") {
       await prisma.variant.updateMany({
@@ -24,6 +25,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Bulk update error:", error);
-    return NextResponse.json({ message: "Bulk update failed" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Bulk update failed" },
+      { status: 500 }
+    );
   }
 }

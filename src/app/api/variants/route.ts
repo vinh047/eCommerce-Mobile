@@ -84,7 +84,7 @@ export async function GET(req: Request) {
       sortOrder = direction === "asc" ? "asc" : "desc";
     }
 
-    const where: any = {};
+    const where: any = { isDeleted: false };
 
     if (search) {
       const searchNum = parseInt(search);

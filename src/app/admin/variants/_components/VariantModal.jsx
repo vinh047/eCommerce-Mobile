@@ -3,14 +3,18 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import variantsApi from "@/lib/api/variantsApi";
 import VariantEditor from "./VariantEditor";
+import variantsApi from "@/lib/api/variantsApi";
+import { useTemplateFetcher } from "../../products/hooks/useTemplateFetcher";
 
 export default function VariantModal({
-  mode,
+  mode,                // "create" | "edit"
   variant,
   allProducts = [],
-
+  // ✅ nếu trang cha có sẵn template (Product page) thì truyền vào đây
+  variantSpecs: variantSpecsFromParent,
+  // optional: nếu cha biết luôn categoryId
+  categoryId: categoryIdFromParent,
   onClose,
   onSave,
 }) {
@@ -26,18 +30,50 @@ export default function VariantModal({
     variantSpecValues: variant?.variantSpecValues || [],
   });
 
-  // Ưu tiên dùng initialSpecs nếu có, nếu không thì mới khởi tạo mảng rỗng
-  const [allSpecs, setAllSpecs] = useState([]);
+  // 🔹 1) Nếu cha truyền sẵn variantSpecs => dùng luôn, KHÔNG fetch
+  const useExternalSpecs = !!variantSpecsFromParent;
 
-  // Chỉ fetch nếu KHÔNG có initialSpecs VÀ có productId (trường hợp Standalone cũ)
+  // 🔹 2) categoryId dùng cho useTemplateFetcher khi KHÔNG có variantSpecsFromParent
+  const [categoryId, setCategoryId] = useState(
+    categoryIdFromParent ?? null
+  );
+
+  // EDIT: nếu không có template sẵn & không có categoryIdFromParent → lấy category theo variantId
   useEffect(() => {
-    if (formData.productId === 0) {
+    if (useExternalSpecs || categoryIdFromParent) return;
+    if (mode === "edit" && variant?.id && !categoryId) {
       variantsApi
-        .getVariantByTemplateId(formData.productId)
-        .then((res) => setAllSpecs(res || []))
-        .catch((err) => console.error(err));
+        .getCategoryById(variant.id)
+        .then((res) => {
+          if (res?.categoryId) setCategoryId(res.categoryId);
+        })
+        .catch((err) =>
+          console.error("Failed to fetch category by variantId:", err)
+        );
     }
-  }, [formData.productId]);
+  }, [useExternalSpecs, mode, variant?.id, categoryId, categoryIdFromParent]);
+
+  // CREATE: nếu không có template sẵn & user chọn Product cha → lấy category từ allProducts
+  useEffect(() => {
+    if (useExternalSpecs || categoryIdFromParent) return;
+    if (mode === "create" && formData.productId && !categoryId) {
+      const selectedProduct = allProducts.find(
+        (p) => p.id === formData.productId
+      );
+      if (selectedProduct?.categoryId) {
+        setCategoryId(selectedProduct.categoryId);
+      }
+    }
+  }, [useExternalSpecs, mode, formData.productId, allProducts, categoryId, categoryIdFromParent]);
+
+  // 🔹 3) Chỉ gọi hook lấy template nếu KHÔNG có variantSpecs từ parent
+  const { template, isLoadingTemplate } = useTemplateFetcher(
+    useExternalSpecs ? null : categoryId
+  );
+
+  const variantSpecs = useExternalSpecs
+    ? variantSpecsFromParent
+    : template?.variantSpecs || [];
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -45,8 +81,7 @@ export default function VariantModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-    onSave(formData); // Trả data về cho cha xử lý
+    onSave(formData);
   };
 
   return (
@@ -67,16 +102,15 @@ export default function VariantModal({
 
         {/* Body */}
         <div className="flex-1 overflow-hidden relative bg-gray-100 dark:bg-gray-900/50">
-          {/* Wrap một lớp div padding để Editor nằm gọn */}
           <div className="h-full p-4 overflow-y-auto custom-scrollbar">
             <VariantEditor
               data={formData}
               onChange={handleChange}
-              allSpecs={allSpecs} // Truyền specs đã có
+              allSpecs={variantSpecs}           // ⬅ template variantSpecs luôn ở đây
               products={allProducts}
               mode={mode}
-              // Nếu có initialSpecs tức là đang ở trong ProductEditor -> tắt chọn Product
-              isStandalone={allProducts.length != 0}
+              isStandalone={allProducts.length !== 0}
+              isLoadingSpecs={isLoadingTemplate && !useExternalSpecs}
             />
           </div>
         </div>

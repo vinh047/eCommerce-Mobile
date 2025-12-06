@@ -12,10 +12,11 @@ import {
   Star,
   ChevronRight,
   Info,
-  GripHorizontal,
+  UploadCloud,
 } from "lucide-react";
 import Image from "next/image";
 import ProductSelector from "./ProductSelector";
+import { uploadImage } from "@/lib/api/uploadImageApi";
 
 // --- DND Kit Imports ---
 import {
@@ -82,14 +83,13 @@ function SortableImageItem({ item, index, onRemove, onSetPrimary }) {
         {...listeners}
         className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-200 flex flex-col justify-between p-2 cursor-grab active:cursor-grabbing
          ${isDragging ? "opacity-0" : "opacity-0 group-hover:opacity-100"}
-         
       `}
       >
-        {/* Top: Move icon & Delete */}
+        {/* Top: Delete */}
         <div className="flex justify-end items-end">
           <button
             type="button"
-            onPointerDown={(e) => e.stopPropagation()} // Ngăn drag khi bấm xóa
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onRemove(index)}
             className="p-1.5 bg-white/20 hover:bg-red-500 text-white rounded-full transition-colors backdrop-blur-sm"
             title="Xóa ảnh"
@@ -101,7 +101,7 @@ function SortableImageItem({ item, index, onRemove, onSetPrimary }) {
         {/* Bottom: Set Primary */}
         <button
           type="button"
-          onPointerDown={(e) => e.stopPropagation()} // Ngăn drag khi bấm nút
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onSetPrimary(index)}
           className={`w-full py-1.5 text-xs font-bold rounded backdrop-blur-sm transition-colors flex items-center justify-center gap-1 ${
             isPrimary
@@ -127,57 +127,67 @@ function SortableImageItem({ item, index, onRemove, onSetPrimary }) {
 export default function VariantEditor({
   data, // Dữ liệu form hiện tại
   onChange, // Hàm update data: (key, value) => void
-  allSpecs = [], // Danh sách specs lấy từ API hoặc Template
-  products = [], // List sản phẩm (chỉ dùng cho mode standalone)
+  allSpecs = [], // template variantSpecs truyền từ trên xuống
+  products = [],
   mode = "create",
-  isStandalone = true, // True: hiện chọn Product, False: ẩn
+  isStandalone = true,
 }) {
   const [activeTab, setActiveTab] = useState("basic");
   const [showProductSelector, setShowProductSelector] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
-  // Cấu hình Sensors cho DndKit (Chuột + Phím)
+  // Sensors cho DndKit
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), // Kéo 5px mới bắt đầu drag (tránh click nhầm)
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // --- Helper Handlers ---
+  // Helper: cập nhật field trên formData
   const handleInputChange = (field, value) => {
     onChange(field, value);
   };
 
-  // 1. Xử lý ảnh
-  const handleAddImage = () => {
-    if (!tempImageUrl.trim()) return;
+  // === 1. XỬ LÝ ẢNH ===
+
+  const addImageByUrl = (url) => {
+    if (!url) return;
     const currentImages = data.MediaVariant || [];
     const isFirstImage = currentImages.length === 0;
 
-    // Tạo ID giả tạm thời để DndKit dùng làm key (quan trọng!)
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}-${Math.random()}`;
 
     const newImage = {
-      id: tempId, // Key cho DndKit
+      id: tempId,
       Media: {
-        url: tempImageUrl.trim(),
+        url, // lưu path tương đối, ví dụ: /assets/products/xxx.png
         isPrimary: isFirstImage,
         sortOrder: currentImages.length,
       },
     };
 
     onChange("MediaVariant", [...currentImages, newImage]);
+  };
+
+  const handleAddImage = () => {
+    const url = tempImageUrl.trim();
+    if (!url) return;
+    addImageByUrl(url);
     setTempImageUrl("");
   };
 
   const handleRemoveImage = (index) => {
-    let newImages = data.MediaVariant.filter((_, i) => i !== index);
+    let newImages = (data.MediaVariant || []).filter((_, i) => i !== index);
 
     const deletedItem = data.MediaVariant[index];
-    if (deletedItem.Media?.isPrimary && newImages.length > 0) {
-      newImages[0].Media.isPrimary = true;
+    if (deletedItem?.Media?.isPrimary && newImages.length > 0) {
+      newImages[0].Media = {
+        ...newImages[0].Media,
+        isPrimary: true,
+      };
     }
 
-    // Re-index sortOrder
     newImages = newImages.map((item, idx) => ({
       ...item,
       Media: { ...item.Media, sortOrder: idx },
@@ -187,7 +197,7 @@ export default function VariantEditor({
   };
 
   const handleSetPrimary = (indexToSet) => {
-    const newImages = data.MediaVariant.map((item, index) => ({
+    const newImages = (data.MediaVariant || []).map((item, index) => ({
       ...item,
       Media: {
         ...item.Media,
@@ -197,9 +207,9 @@ export default function VariantEditor({
     onChange("MediaVariant", newImages);
   };
 
-  // --- Logic Kéo Thả (DndKit) ---
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    if (!over) return;
 
     if (active.id !== over.id) {
       const oldIndex = (data.MediaVariant || []).findIndex(
@@ -212,72 +222,94 @@ export default function VariantEditor({
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newImages = arrayMove(data.MediaVariant, oldIndex, newIndex);
-
-        // Cập nhật lại sortOrder
         const updatedImages = newImages.map((item, idx) => ({
           ...item,
           Media: { ...item.Media, sortOrder: idx },
         }));
-
         onChange("MediaVariant", updatedImages);
       }
     }
   };
 
-  // Chuẩn bị list item cho DndKit (Cần đảm bảo mỗi item có ID duy nhất)
-  // Nếu data từ DB chưa có ID ở level ngoài, ta map tạm để dùng
+  // DnD items
   const dndItems = (data.MediaVariant || [])
-    .sort((a, b) => (a.Media?.sortOrder || 0) - (b.Media?.sortOrder || 0)) // Luôn sort trước khi render
+    .sort((a, b) => (a.Media?.sortOrder || 0) - (b.Media?.sortOrder || 0))
     .map((item, index) => ({
       ...item,
-      // Nếu item đã có id (từ DB) thì dùng, nếu chưa (mới thêm) thì dùng url làm key tạm
       id: item.id || `temp-${item.Media?.url || index}`,
     }));
 
-  // 2. Xử lý Specs
-  const handleAddSpec = () => {
-    const newSpec = {
-      specKey: "",
-      label: "",
-      type: "STRING",
-      unit: "",
-      stringValue: "",
-      numericValue: null,
-      booleanValue: null,
-    };
-    onChange("variantSpecValues", [...(data.variantSpecValues || []), newSpec]);
+  // Upload từ file (click hoặc drag-drop)
+  const handleFilesUpload = async (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    setIsUploading(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await uploadImage(formData);
+        // route.ts trả: { filename, url }
+
+        // ❗ DÙNG filename, KHÔNG dùng url
+        const fileName = res?.filename; // vd: 'h1-1700000000-123456.png'
+        if (fileName) {
+          addImageByUrl(fileName); // Media.url = "h1-...png"
+        }
+      }
+    } catch (err) {
+      console.error("Upload image failed:", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleRemoveSpec = (index) => {
-    const newSpecs = data.variantSpecValues.filter((_, i) => i !== index);
-    onChange("variantSpecValues", newSpecs);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFilesUpload(e.dataTransfer.files);
+      e.dataTransfer.clearData();
+    }
   };
 
-  const handleSpecChange = (index, field, value) => {
-    const newSpecs = [...(data.variantSpecValues || [])];
-    newSpecs[index] = { ...newSpecs[index], [field]: value };
-    onChange("variantSpecValues", newSpecs);
+  // === 2. Xử lý variantSpecs (template allSpecs + value trong data.variantSpecValues) ===
+  const handleVariantSpecValueChange = (spec, payload) => {
+    const current = data.variantSpecValues || [];
+    const idx = current.findIndex((v) => v.specKey === spec.code);
+
+    let next;
+    if (idx === -1) {
+      // Tạo mới record cho spec này
+      next = [
+        ...current,
+        {
+          specKey: spec.code,
+          label: spec.label,
+          type: spec.datatype,
+          unit: spec.unit,
+          stringValue: "",
+          numericValue: null,
+          booleanValue: null,
+          ...payload,
+        },
+      ];
+    } else {
+      next = current.map((v, i) =>
+        i === idx
+          ? {
+              ...v,
+              ...payload,
+            }
+          : v
+      );
+    }
+
+    onChange("variantSpecValues", next);
   };
 
-  const handleSelectSpecTemplate = (index, specCode) => {
-    const selectedSpec = allSpecs.find((s) => s.code === specCode);
-    if (!selectedSpec) return;
-
-    const newSpecs = [...(data.variantSpecValues || [])];
-    newSpecs[index] = {
-      ...newSpecs[index],
-      specKey: selectedSpec.code,
-      label: selectedSpec.label,
-      type: selectedSpec.datatype,
-      unit: selectedSpec.unit,
-      stringValue: "",
-      numericValue: null,
-      booleanValue: null,
-    };
-    onChange("variantSpecValues", newSpecs);
-  };
-
-  // --- Render Tabs ---
   const tabs = [
     { id: "basic", name: "Thông tin cơ bản", icon: Box },
     { id: "pricing", name: "Giá & Tồn kho", icon: DollarSign },
@@ -287,7 +319,6 @@ export default function VariantEditor({
 
   const selectedProduct = products.find((p) => p.id === data.productId);
 
-  // Styles
   const inputClass =
     "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200";
   const labelClass =
@@ -358,42 +389,30 @@ export default function VariantEditor({
 
               <div>
                 <label className={labelClass}>
-                  Màu sắc / Tên biến thể <span className="text-red-500">*</span>
+                  Màu sắc <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={data.color || ""}
                   onChange={(e) => handleInputChange("color", e.target.value)}
                   className={inputClass}
-                  placeholder="Ví dụ: Đỏ, 128GB, XL..."
+                  placeholder="Ví dụ: Đỏ"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClass}>SKU (Mã kho)</label>
-                  <input
-                    type="text"
-                    value={data.sku || ""}
-                    onChange={(e) => handleInputChange("sku", e.target.value)}
-                    className={`${inputClass} uppercase font-mono`}
-                    placeholder="SP-001-RED"
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Trạng thái</label>
-                  <select
-                    value={data.isActive ? "true" : "false"}
-                    onChange={(e) =>
-                      handleInputChange("isActive", e.target.value === "true")
-                    }
-                    className={inputClass}
-                  >
-                    <option value="true">Đang bán</option>
-                    <option value="false">Ẩn</option>
-                  </select>
-                </div>
+              <div>
+                <label className={labelClass}>Trạng thái</label>
+                <select
+                  value={data.isActive ? "true" : "false"}
+                  onChange={(e) =>
+                    handleInputChange("isActive", e.target.value === "true")
+                  }
+                  className={inputClass}
+                >
+                  <option value="true">Đang bán</option>
+                  <option value="false">Ẩn</option>
+                </select>
               </div>
             </div>
           )}
@@ -424,6 +443,7 @@ export default function VariantEditor({
                     </span>
                   </div>
                 </div>
+
                 <div>
                   <label className={labelClass}>Giá gốc (So sánh)</label>
                   <div className="relative">
@@ -448,162 +468,251 @@ export default function VariantEditor({
 
               <div className="h-px bg-gray-100 dark:bg-gray-700 my-2"></div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClass}>Số lượng tồn kho</label>
+              <div>
+                <label className={labelClass}>Ngưỡng báo hết</label>
+                <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    value={data.stock}
+                    value={data.lowStockThreshold}
                     onChange={(e) =>
-                      handleInputChange("stock", parseInt(e.target.value) || 0)
+                      handleInputChange(
+                        "lowStockThreshold",
+                        parseInt(e.target.value) || 0
+                      )
                     }
                     className={inputClass}
                   />
-                </div>
-                <div>
-                  <label className={labelClass}>Ngưỡng báo hết</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={data.lowStockThreshold}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "lowStockThreshold",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className={inputClass}
-                    />
-                    <div className="group relative inline-block">
-                      <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                      <span
-                        className="absolute right-full mr-2 top-1/2 -translate-y-1/2
-                   w-48 bg-gray-800 text-white text-xs p-2 rounded
-                   opacity-0 group-hover:opacity-100 transition-transform duration-200
-                   transform scale-95 group-hover:scale-100
-                   pointer-events-none z-10"
-                      >
-                        Hệ thống sẽ cảnh báo khi tồn kho xuống dưới mức này.
-                      </span>
-                    </div>
+                  <div className="group relative inline-block">
+                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                    <span
+                      className="absolute right-full mr-2 top-1/2 -translate-y-1/2
+                        w-48 bg-gray-800 text-white text-xs p-2 rounded
+                        opacity-0 group-hover:opacity-100 transition-transform duration-200
+                        transform scale-95 group-hover:scale-100
+                        pointer-events-none z-10"
+                    >
+                      Hệ thống sẽ cảnh báo khi tồn kho xuống dưới mức này.
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 3: SPECS */}
+          {/* TAB 3: SPECS – dùng template variantSpecs */}
           {activeTab === "specs" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
                 <div className="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
                   <Settings className="w-4 h-4" />
-                  <span className="font-medium">Thông số kỹ thuật riêng</span>
+                  <span className="font-medium">
+                    Thuộc tính phân biệt biến thể
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAddSpec}
-                  className="text-xs flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 shadow-sm transition-all active:scale-95"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Thêm mới
-                </button>
               </div>
 
-              {(data.variantSpecValues || []).length === 0 ? (
-                <div className="text-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:bg-gray-100 dark:hover:bg-gray-800">
+              {allSpecs.length === 0 ? (
+                <div className="text-center py-10 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
                   <Settings className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                   <p className="text-gray-500 text-sm">
-                    Chưa có thông số nào được cấu hình.
+                    Danh mục này chưa được cấu hình biến thể (variantSpecs).
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {data.variantSpecValues.map((spec, index) => (
-                    <div
-                      key={index}
-                      className="group flex gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 items-start transition-all hover:border-blue-300 hover:shadow-sm"
-                    >
-                      <div className="flex-1 min-w-[140px]">
-                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">
-                          Tên thông số
-                        </label>
-                        <select
-                          value={spec.specKey}
-                          onChange={(e) =>
-                            handleSelectSpecTemplate(index, e.target.value)
-                          }
-                          className={`${inputClass} bg-white`}
-                        >
-                          <option value="">-- Chọn --</option>
-                          {allSpecs.map((s) => (
-                            <option key={s.id} value={s.code}>
-                              {s.label}
-                            </option>
-                          ))}
-                          {spec.specKey &&
-                            !allSpecs.find((s) => s.code === spec.specKey) && (
-                              <option value={spec.specKey}>
-                                {spec.label || spec.specKey}
-                              </option>
-                            )}
-                        </select>
+                <div className="space-y-4">
+                  {allSpecs.map((spec) => {
+                    const existing =
+                      (data.variantSpecValues || []).find(
+                        (v) => v.specKey === spec.code
+                      ) || {};
+
+                    const valueType = spec.valueType; // "discrete" | "range"
+                    const datatype = spec.datatype; // "string" | "number" | "boolean"
+
+                    // Giá trị đang hiển thị
+                    let displayValue = "";
+                    if (datatype === "number") {
+                      displayValue =
+                        valueType === "discrete"
+                          ? existing.numericValue ?? ""
+                          : existing.numericValue ?? "";
+                    } else if (datatype === "boolean") {
+                      displayValue =
+                        typeof existing.booleanValue === "boolean"
+                          ? String(existing.booleanValue)
+                          : "";
+                    } else {
+                      displayValue = existing.stringValue || "";
+                    }
+
+                    return (
+                      <div
+                        key={spec.id}
+                        className="flex flex-col md:flex-row gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="md:w-1/3">
+                          <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                            {spec.label}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            Mã: <span className="font-mono">{spec.code}</span>
+                          </div>
+                          {spec.unit && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              Đơn vị: {spec.unit}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="md:flex-1">
+                          <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">
+                            Giá trị{" "}
+                            {spec.unit ? <span>({spec.unit})</span> : null}
+                          </label>
+
+                          {/* DISCRETE → SELECT */}
+                          {valueType === "discrete" ? (
+                            <select
+                              value={
+                                datatype === "boolean"
+                                  ? displayValue
+                                  : displayValue || ""
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value || "";
+                                if (datatype === "number") {
+                                  handleVariantSpecValueChange(spec, {
+                                    numericValue:
+                                      val === "" ? null : parseFloat(val),
+                                    stringValue: "",
+                                    booleanValue: null,
+                                  });
+                                } else if (datatype === "boolean") {
+                                  handleVariantSpecValueChange(spec, {
+                                    booleanValue:
+                                      val === ""
+                                        ? null
+                                        : val === "true"
+                                        ? true
+                                        : false,
+                                    stringValue: "",
+                                    numericValue: null,
+                                  });
+                                } else {
+                                  handleVariantSpecValueChange(spec, {
+                                    stringValue: val,
+                                    numericValue: null,
+                                    booleanValue: null,
+                                  });
+                                }
+                              }}
+                              className={inputClass}
+                            >
+                              <option value="">-- Chọn --</option>
+                              {spec.options?.map((opt) => (
+                                <option key={opt.id} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            // RANGE → INPUT
+                            <input
+                              type={datatype === "number" ? "number" : "text"}
+                              value={displayValue}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (datatype === "number") {
+                                  handleVariantSpecValueChange(spec, {
+                                    numericValue:
+                                      val === "" ? null : parseFloat(val),
+                                    stringValue: "",
+                                    booleanValue: null,
+                                  });
+                                } else {
+                                  handleVariantSpecValueChange(spec, {
+                                    stringValue: val,
+                                    numericValue: null,
+                                    booleanValue: null,
+                                  });
+                                }
+                              }}
+                              className={inputClass}
+                              placeholder={
+                                datatype === "number"
+                                  ? "Nhập giá trị số..."
+                                  : "Nhập giá trị..."
+                              }
+                            />
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-[2]">
-                        <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">
-                          Giá trị {spec.unit ? `(${spec.unit})` : ""}
-                        </label>
-                        {(!spec.type ||
-                          spec.type === "string" ||
-                          spec.type === "STRING") && (
-                          <input
-                            type="text"
-                            value={spec.stringValue || ""}
-                            onChange={(e) =>
-                              handleSpecChange(
-                                index,
-                                "stringValue",
-                                e.target.value
-                              )
-                            }
-                            className={inputClass}
-                            placeholder="Nhập giá trị..."
-                          />
-                        )}
-                        {spec.type === "number" && (
-                          <input
-                            type="number"
-                            value={spec.numericValue ?? ""}
-                            onChange={(e) =>
-                              handleSpecChange(
-                                index,
-                                "numericValue",
-                                parseFloat(e.target.value)
-                              )
-                            }
-                            className={inputClass}
-                            placeholder="0"
-                          />
-                        )}
-                      </div>
-                      <div className="pt-6">
-                        <button
-                          onClick={() => handleRemoveSpec(index)}
-                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                          title="Xóa"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 4: MEDIA (Đã tích hợp DndKit) */}
+          {/* TAB 4: MEDIA */}
           {activeTab === "media" && (
             <div className="space-y-6">
+              {/* Upload từ máy + Drag & Drop */}
+              <div>
+                <label className={labelClass}>Tải ảnh từ máy</label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                    dragActive
+                      ? "border-blue-400 bg-blue-50/60"
+                      : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+                  }`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragActive(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragActive(false);
+                  }}
+                  onDrop={handleDrop}
+                  onClick={() =>
+                    document.getElementById("variant-image-input")?.click()
+                  }
+                >
+                  <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-600">
+                    Kéo & thả ảnh vào đây hoặc{" "}
+                    <span className="text-blue-600 font-medium">
+                      bấm để chọn file
+                    </span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Hỗ trợ nhiều ảnh, định dạng JPG, PNG, WEBP...
+                  </p>
+                  {isUploading && (
+                    <p className="text-xs text-blue-500 mt-2">
+                      Đang tải ảnh lên...
+                    </p>
+                  )}
+                </div>
+                <input
+                  id="variant-image-input"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files?.length) {
+                      handleFilesUpload(e.target.files);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Thêm bằng URL */}
               <div>
                 <label className={labelClass}>Thêm URL hình ảnh</label>
                 <div className="flex gap-2">
@@ -626,6 +735,7 @@ export default function VariantEditor({
                 </div>
               </div>
 
+              {/* Gallery + DnD */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div className="flex justify-between items-center mb-3">
                   <label className={labelClass}>

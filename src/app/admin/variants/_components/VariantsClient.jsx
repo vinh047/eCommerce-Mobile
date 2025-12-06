@@ -1,13 +1,9 @@
 "use client";
 
 import { useState, lazy, Suspense } from "react";
-import { VariantsHeader, VariantsToolbar } from "./index";
-// Giả định bạn sẽ tạo hook này tương tự useFetchUsers
+import { VariantsToolbar } from "./index";
 import { useFetchVariants } from "../hooks/useFetchVariants";
-import {
-  exportVariantsCSV,
-  useExportVariantsCSV,
-} from "../utils/exportVariantsCSV";
+import { useExportVariantsCSV } from "../utils/exportVariantsCSV";
 import PageHeader from "@/components/common/PageHeader";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import { UserBulkActionsBar } from "../../users/_components";
@@ -21,29 +17,27 @@ const VariantsTable = lazy(() => import("./VariantsTable"));
 export default function VariantsClient({
   initialVariants,
   initialProducts,
-  initialVariantSpecs,
 }) {
   const {
     variants,
     totalItems,
-    // Selection Handlers & States
     selectedItems,
     selectItem,
     selectAll,
     deselectAll,
-    // CRUD Handlers
     deleteVariant,
     saveVariant,
     handleBulkAction,
-  } = useFetchVariants(initialVariants); // Hook giả định
+  } = useFetchVariants(initialVariants);
 
-  // UI State
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("create");
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [showQuickView, setShowQuickView] = useState(false);
 
-  // Handlers
+  const { exportVariantsCSV } = useExportVariantsCSV();
+  const { hasPermission } = useAuth();
+
   const handleCreate = () => {
     setModalMode("create");
     setSelectedVariant(null);
@@ -60,10 +54,6 @@ export default function VariantsClient({
     setSelectedVariant(variant);
     setShowQuickView(true);
   };
-
-  const { exportVariantsCSV } = useExportVariantsCSV();
-
-  const { hasPermission } = useAuth();
 
   if (!hasPermission(PERMISSION_KEYS.VIEW_VARIANT)) {
     return (
@@ -106,7 +96,6 @@ export default function VariantsClient({
         />
       </Suspense>
 
-      {/* Modal Form */}
       {showModal && (
         <Suspense
           fallback={<div className="p-6 text-center">Loading modal...</div>}
@@ -115,7 +104,6 @@ export default function VariantsClient({
             mode={modalMode}
             variant={selectedVariant}
             allProducts={initialProducts}
-            allSpecs={initialVariantSpecs}
             onClose={() => setShowModal(false)}
             onSave={async (data) => {
               await saveVariant(data, modalMode, selectedVariant);
@@ -125,7 +113,6 @@ export default function VariantsClient({
         </Suspense>
       )}
 
-      {/* Quick View */}
       {showQuickView && selectedVariant && (
         <Suspense
           fallback={

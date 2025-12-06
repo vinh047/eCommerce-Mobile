@@ -10,9 +10,13 @@ export async function POST(req: Request) {
 
   try {
     if (action === "delete") {
-      // Rủi ro cao nếu xóa nhiều, chỉ xóa cái nào ko có sản phẩm.
-      // Prisma deleteMany sẽ fail nếu dính Foreign Key.
-      await prisma.category.deleteMany({ where: { id: { in: ids } } });
+      // Thay deleteMany bằng updateMany để soft-delete
+      // Giữ lại miền where: { id: { in: ids } } như cũ, 
+      // thêm isDeleted: false để không lặp soft-delete lên những đã bị xóa trước đó
+      await prisma.category.updateMany({
+        where: { id: { in: ids }, isDeleted: false },
+        data: { isDeleted: true },
+      });
     } else if (action === "active") {
       await prisma.category.updateMany({
         where: { id: { in: ids } },

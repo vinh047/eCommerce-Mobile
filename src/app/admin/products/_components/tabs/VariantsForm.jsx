@@ -147,7 +147,7 @@ export default function VariantsForm({ template }) {
                       </span>
                     </td>
                     <td className="px-6 py-3 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-2 group-hover:opacity-100 transition-opacity">
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(index)}
@@ -179,7 +179,7 @@ export default function VariantsForm({ template }) {
         <VariantModal
           mode={editingIndex !== null ? "edit" : "create"}
           variant={editingIndex !== null ? fields[editingIndex] : {}}
-          // Truyền specs vào để Modal không phải tự fetch
+          variantSpecs={template?.variantSpecs || []}   
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveVariant}
         />

@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { VariantSpecValue } from "@prisma/client";
@@ -10,7 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
     const variant = await prisma.variant.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id), isDeleted: false },
       include: {
         product: true,
         MediaVariant: { include: { Media: true } },
@@ -106,7 +105,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.variant.delete({ where: { id: Number(id) } });
+    await prisma.variant.update({
+      where: { id: Number(id) },
+      data: { isDeleted: true },
+    });
     return NextResponse.json({ message: "Variant deleted" });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });

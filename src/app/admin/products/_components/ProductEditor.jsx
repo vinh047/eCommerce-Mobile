@@ -65,6 +65,8 @@ export default function ProductEditor({
     useTemplateFetcher(selectedCategoryId);
   const { isMutating, createProduct, updateProduct } = useProductMutations();
 
+  console.log("template: ", template)
+
   // 4. Fixed Submit Handler
   const onSubmit = async (data) => {
     try {

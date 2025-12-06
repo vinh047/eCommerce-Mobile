@@ -24,6 +24,7 @@ export async function GET(req: Request) {
 
     // Xây dựng điều kiện lọc (Where clause)
     const where: any = {
+      isDeleted: false,
       AND: [
         // Lọc theo tên
         search ? { name: { contains: search } } : {}, // Prisma mặc định case-insensitive với SQLite/Postgres mode cụ thể, check lại DB của bạn
