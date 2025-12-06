@@ -123,7 +123,7 @@ export async function PUT(
           // 👉 3. Cuối cùng xoá variant
           await tx.variant.updateMany({
             where: { id: { in: deleteIds } },
-            data: { status: "deleted", isActive: false },
+            data: { isActive: false },
           });
         }
 
