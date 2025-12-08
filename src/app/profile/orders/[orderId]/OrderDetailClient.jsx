@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import usersApi from "@/lib/api/usersApi";
+import ReviewModal from "./ReviewModal"; // ✅ Đúng
 
 // Format money
 const formatCurrency = (value) =>
@@ -16,12 +17,12 @@ const formatCurrency = (value) =>
 const formatDateTime = (iso) =>
   iso
     ? new Intl.DateTimeFormat("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(iso))
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(iso))
     : "";
 
 // Order Status
@@ -110,6 +111,20 @@ export default function OrderDetailClient({ orderId }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // ⭐ STATE CHO MODAL REVIEW
+  const [openReview, setOpenReview] = useState(false);
+  const [reviewData, setReviewData] = useState(null);
+
+  // ⭐ Hàm mở modal
+  const openModal = (item) => {
+    setReviewData({
+      productId: item.productId,
+      orderItemId: item.id,
+      productName: item.nameSnapshot,
+    });
+    setOpenReview(true);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -218,51 +233,6 @@ export default function OrderDetailClient({ orderId }) {
         </div>
       </div>
 
-      {/* Address & payment */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Shipping */}
-        <div className="rounded-xl border bg-white px-5 py-4 text-sm">
-          <h2 className="font-semibold text-gray-900 mb-3">Thông tin nhận hàng</h2>
-          <div className="space-y-1">
-            <div className="font-medium">{customer.name}</div>
-            <div>{customer.phone || address.phone}</div>
-            <div>
-              {address.line}
-              {address.ward && `, ${address.ward}`}
-              {address.district && `, ${address.district}`}
-              {address.province && `, ${address.province}`}
-            </div>
-          </div>
-        </div>
-
-        {/* Payment */}
-        <div className="rounded-xl border bg-white px-5 py-4 text-sm">
-          <h2 className="font-semibold text-gray-900 mb-3">Thanh toán & vận chuyển</h2>
-
-          <div className="space-y-2">
-            <div>
-              <span className="text-xs text-gray-500">Hình thức thanh toán</span>
-              <div>{paymentMethodLabel}</div>
-
-              {transaction && (
-                <div className="text-xs text-gray-500 mt-1">
-                  Mã giao dịch #{transaction.id} – Số tiền:{" "}
-                  {formatCurrency(transaction.amount)} –{" "}
-                  {transaction.status === "pending"
-                    ? "Chờ thanh toán"
-                    : transaction.status}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <span className="text-xs text-gray-500">Ghi chú</span>
-              <div>{order.note || "Không có ghi chú"}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Items */}
       <section className="rounded-xl border bg-white overflow-hidden text-sm">
         <div className="border-b bg-gray-50 px-5 py-3 font-semibold">Sản phẩm</div>
@@ -271,26 +241,57 @@ export default function OrderDetailClient({ orderId }) {
           {order.items.map((item) => {
             const unitPrice = Number(item.price);
             const lineTotal = unitPrice * item.quantity;
+            const review = item.review || null;
 
             return (
-              <div key={item.id} className="px-5 py-3 flex justify-between">
-                <div>
-                  <div className="font-medium">{item.nameSnapshot}</div>
-                  {item.variantColor && (
-                    <div className="text-xs text-gray-500">Màu: {item.variantColor}</div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-1">
-                    Số lượng: {item.quantity}
+              <div key={item.id} className="px-5 py-3">
+                <div className="flex justify-between">
+                  <div>
+                    <div className="font-medium">{item.nameSnapshot}</div>
+
+                    {item.variantColor && (
+                      <div className="text-xs text-gray-500">Màu: {item.variantColor}</div>
+                    )}
+
+                    <div className="text-xs text-gray-500 mt-1">
+                      Số lượng: {item.quantity}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="font-semibold text-gray-900">
+                      {formatCurrency(lineTotal)}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {item.quantity} × {formatCurrency(unitPrice)}
+                    </div>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">
-                    {formatCurrency(lineTotal)}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {item.quantity} × {formatCurrency(unitPrice)}
-                  </div>
+                {/* --- REVIEW BLOCK --- */}
+                <div className="mt-3 ml-2 border-l pl-3">
+                  {review ? (
+                    <div className="text-sm">
+                      <div className="font-semibold text-emerald-600">
+                        Bạn đã đánh giá {review.stars} ★
+                      </div>
+                      <div className="text-gray-700">{review.content}</div>
+                      <div className="text-xs opacity-50 mt-1">
+                        {formatDateTime(review.createdAt)}
+                      </div>
+                    </div>
+                  ) : order.status !== "completed" ? (
+                    <div className="text-xs text-gray-400 italic">
+                      Đánh giá chỉ mở khi đơn hàng hoàn thành.
+                    </div>
+                  ) : (
+                    <button
+                      className="mt-2 bg-blue-600 text-white px-4 py-1 rounded"
+                      onClick={() => openModal(item)}
+                    >
+                      Đánh giá
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -298,34 +299,15 @@ export default function OrderDetailClient({ orderId }) {
         </div>
       </section>
 
-      {/* Total */}
-      <section className="rounded-xl border bg-white px-5 py-4 text-sm">
-        <h2 className="font-semibold text-gray-900 mb-3">Tổng tiền</h2>
-
-        <div className="space-y-1">
-          <div className="flex justify-between">
-            <span>Tạm tính</span>
-            <span>{formatCurrency(order.subtotal)}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span>Phí vận chuyển</span>
-            <span>{formatCurrency(order.shippingFee)}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span>Giảm giá</span>
-            <span>-{formatCurrency(order.discount)}</span>
-          </div>
-
-          <div className="border-t border-dashed my-2" />
-
-          <div className="flex justify-between text-base font-semibold">
-            <span>Tổng cộng</span>
-            <span className="text-emerald-600">{formatCurrency(order.total)}</span>
-          </div>
-        </div>
-      </section>
+      {/* Review Modal */}
+      <ReviewModal
+        open={openReview}
+        onClose={() => setOpenReview(false)}
+        productId={reviewData?.productId}
+        orderItemId={reviewData?.orderItemId}
+        productName={reviewData?.productName}
+        onSubmitted={() => window.location.reload()}
+      />
     </div>
   );
 }

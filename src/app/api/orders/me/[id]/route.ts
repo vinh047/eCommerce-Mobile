@@ -6,46 +6,40 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const resolvedParams = await params;
-    const orderId = Number(resolvedParams.id);
+    const { id } = await params;
+    const orderId = Number(id);
     const { searchParams } = new URL(req.url);
     const userId = Number(searchParams.get("userId"));
 
     if (!userId || isNaN(userId)) {
-      return NextResponse.json(
-        { message: "Missing or invalid userId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Missing or invalid userId" }, { status: 400 });
     }
 
     if (!orderId || isNaN(orderId)) {
-      return NextResponse.json(
-        { message: "Invalid orderId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Invalid orderId" }, { status: 400 });
     }
 
-    // Lấy order + Item + Variant + PaymentAccount + PaymentMethod
     const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-        userId: userId, // đảm bảo user chỉ xem đơn của mình
-      },
+      where: { id: orderId, userId },
       include: {
         items: {
           include: {
-            variant: true,
+            variant: {
+              select: {
+                id: true,
+                productId: true,
+                color: true,
+                price: true,
+              },
+            },
+            review: true, // ⭐ Quan hệ đúng (1 item → 1 review)
           },
         },
         paymentAccount: {
-          include: {
-            paymentMethod: true,
-          },
+          include: { paymentMethod: true },
         },
         transactions: {
-          include: {
-            paymentMethod: true,
-          },
+          include: { paymentMethod: true },
         },
       },
     });
@@ -58,9 +52,8 @@ export async function GET(
     }
 
     // ---------------------------
-    // Chuẩn hóa dữ liệu trả về cho UI
+    // Chuẩn hóa dữ liệu trả về
     // ---------------------------
-
     const response = {
       id: order.id,
       code: order.code,
@@ -73,31 +66,44 @@ export async function GET(
       total: order.total,
       note: order.note,
 
-      // ⭐ địa chỉ snapshot
       addressSnapshot: order.addressSnapshot || {},
 
-      // ⭐ danh sách sản phẩm
-      items: order.items.map((item) => ({
+      items: order.items.map((item: any) => ({
         id: item.id,
         nameSnapshot: item.nameSnapshot,
-        price: item.price,
         quantity: item.quantity,
-        variantColor: item.variant?.color || null,
+        price: item.price,
+
+
+        variant: {
+          id: item.variant?.id ?? null,
+          productId: item.variant?.productId ?? null,
+          color: item.variant?.color ?? null,
+          price: item.variant?.price ?? null,
+        },
+        productId: item.variant?.productId ?? null,
+        // ⭐ Thông tin review đã có
+        review: item.review
+          ? {
+            id: item.review.id,
+            stars: item.review.stars,
+            content: item.review.content,
+            createdAt: item.review.createdAt,
+          }
+          : null,
       })),
 
-      // ⭐ thanh toán (PaymentAccount)
       paymentInfo: order.paymentAccount
         ? {
-            methodName: order.paymentAccount.paymentMethod?.name || null,
-            methodCode: order.paymentAccount.paymentMethod?.code || null,
-            bankName: order.paymentAccount.bankName || null,
-            accountNumber: order.paymentAccount.accountNumber || null,
-            accountName: order.paymentAccount.accountName || null,
-          }
+          methodName: order.paymentAccount.paymentMethod?.name || null,
+          methodCode: order.paymentAccount.paymentMethod?.code || null,
+          bankName: order.paymentAccount.bankName,
+          accountNumber: order.paymentAccount.accountNumber,
+          accountName: order.paymentAccount.accountName,
+        }
         : null,
 
-      // ⭐ giao dịch thanh toán (PaymentTransaction)
-      transactions: order.transactions.map((txn) => ({
+      transactions: order.transactions.map((txn: any) => ({
         id: txn.id,
         amount: txn.amount,
         status: txn.status,

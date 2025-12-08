@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 // GET: Lấy danh sách đơn hàng
 export async function GET(req: Request) {
@@ -81,11 +82,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { 
-      userId, 
-      items, 
-      note, 
-      discount = 0, 
+    const {
+      userId,
+      items,
+      note,
+      discount = 0,
       shippingFee = 0,
       paymentStatus = 'pending',
       shippingStatus = 'pending',
@@ -104,8 +105,7 @@ export async function POST(req: Request) {
     // Tạo mã đơn hàng ngẫu nhiên (VD: ORD-171569...)
     const code = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
 
-    // Transaction: Tạo Order -> Tạo OrderItems
-    const newOrder = await prisma.$transaction(async (tx) => {
+    const newOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const order = await tx.order.create({
         data: {
           userId: Number(userId),
@@ -118,24 +118,25 @@ export async function POST(req: Request) {
           discount,
           shippingFee,
           total,
-          // Tạo các items
           items: {
             create: items.map((item: any) => ({
-              variantId: Number(item.variantId) || 1, // Fallback ID nếu test
+              variantId: Number(item.variantId) || 1,
               nameSnapshot: item.nameSnapshot,
               price: item.price,
               quantity: item.quantity,
-            }))
-          }
+            })),
+          },
         },
         include: {
           items: true,
-          user: true
-        }
+          user: true,
+          review: true,
+        },
       });
 
       return order;
     });
+
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (err: any) {

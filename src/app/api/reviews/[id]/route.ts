@@ -1,75 +1,50 @@
-import { NextResponse, NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
-// GET: Lấy chi tiết 1 review
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+// =========================
+//  PUT /api/reviews/:id
+// =========================
+export async function PUT(req: Request, { params }: any) {
   try {
-    const { id } = await params;
-    const review = await prisma.review.findUnique({
-      where: { id: Number(id) },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        product: {
-          select: { id: true, name: true, slug: true },
-        },
-      },
-    });
-
-    if (!review) {
-      return NextResponse.json({ error: "Review not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(review);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-
-// PUT: Cập nhật review (Duyệt/Ẩn hoặc Sửa nội dung)
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const numericId = Number(id);
+    const id = Number(params.id);
     const body = await req.json();
-    const { content, isActived } = body;
 
-    const updatedReview = await prisma.review.update({
-      where: { id: numericId },
+    const { stars, content } = body;
+
+    const updated = await prisma.review.update({
+      where: { id },
       data: {
-        content,
-        isActived,
+        stars: stars ? Number(stars) : undefined,
+        content: content ?? undefined,
       },
     });
 
-    return NextResponse.json(updatedReview);
-  } catch (error: any) {
-    console.error("Error updating review:", error);
+    return NextResponse.json({ success: true, updated });
+  } catch (err: any) {
     return NextResponse.json(
-      { message: "Failed to update review", error: error.message },
+      { error: "Lỗi khi cập nhật review: " + err.message },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Xóa vĩnh viễn review
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+// =========================
+//  DELETE /api/reviews/:id
+// =========================
+export async function DELETE(req: Request, { params }: any) {
   try {
-    const { id } = await params;
-    const numericId = Number(id);
-    await prisma.review.delete({ where: { id: numericId } });
-    return NextResponse.json({ message: "Review deleted successfully" });
+    const id = Number(params.id);
+
+    // Xóa review
+    await prisma.review.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return NextResponse.json(
+      { error: "Lỗi khi xóa review: " + err.message },
+      { status: 500 }
+    );
   }
 }
