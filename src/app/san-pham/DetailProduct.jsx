@@ -178,7 +178,8 @@ const DetailProduct = ({ product }) => {
       toast.success("Thêm vào giỏ hàng thành công");
     } catch (err) {
       toast.error(err.payload.message);
-      if ((err.status = 401)) {
+      setLoadedBtn(false)
+      if ((err.status === 401)) {
         router.push("/signin");
       }
     }
@@ -192,6 +193,10 @@ const DetailProduct = ({ product }) => {
       router.push("/cart");
     } catch (error) {
       toast.error(error.payload.message);
+      setLoadedBtn(false)
+         if ((error.status === 401)) {
+        router.push("/signin");
+      }
     }
   };
   return (
@@ -482,7 +487,7 @@ const DetailProduct = ({ product }) => {
               </div>
               {/* Info  */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                <div className="inline-flex items-center gap-2">
+                    {product.warrantyMonths ? <div className="inline-flex items-center gap-2">
                   <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 grid place-items-center">
                     <svg
                       width="16"
@@ -493,8 +498,12 @@ const DetailProduct = ({ product }) => {
                       <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"></path>
                     </svg>
                   </span>
-                  Bảo hành chính hãng 12T
-                </div>
+                  
+                  Bảo hành chính hãng {product.warrantyMonths}T
+                </div> : ""}
+              
+
+                
                 <div className="inline-flex items-center gap-2">
                   <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 grid place-items-center">
                     <svg
