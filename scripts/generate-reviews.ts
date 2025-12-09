@@ -1,9 +1,5 @@
 // npx tsx scripts/generate-reviews.ts
-import {
-  PrismaClient,
-  OrderStatus,
-  PaymentStatus,
-} from "@prisma/client";
+import { PrismaClient, OrderStatus, PaymentStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -33,10 +29,7 @@ function randomRating(): number {
   return 5; // còn lại 57.5%: 5 sao
 }
 
-function randomReviewContent(
-  stars: number,
-  productName: string
-): string {
+function randomReviewContent(stars: number, productName: string): string {
   const good = [
     `Sản phẩm ${productName} dùng rất ổn, hiệu năng mượt mà, pin tốt.`,
     `Rất hài lòng với ${productName}, giao hàng nhanh, đóng gói cẩn thận.`,
@@ -65,17 +58,15 @@ function randomReviewContent(
 
 // random time giữa 2 mốc
 function randomDateBetween(from: Date, to: Date): Date {
-  const t =
-    from.getTime() + Math.random() * (to.getTime() - from.getTime());
+  const t = from.getTime() + Math.random() * (to.getTime() - from.getTime());
   return new Date(t);
 }
 
 // ------------- MAIN -------------
 
 async function main() {
-  console.log("👉 Bắt đầu generate fake reviews...");
+  console.log("👉 Bắt đầu generate fake reviews..."); // Lấy các orderItem thuộc đơn đã giao / hoàn tất & đã thanh toán
 
-  // Lấy các orderItem thuộc đơn đã giao / hoàn tất & đã thanh toán
   const orderItems = await prisma.orderItem.findMany({
     where: {
       order: {
@@ -84,6 +75,8 @@ async function main() {
         },
         paymentStatus: PaymentStatus.paid,
       },
+      // ⭐ Chỉ lấy những OrderItem chưa có Review được gán
+      reviewId: null,
     },
     include: {
       order: true,
@@ -97,14 +90,13 @@ async function main() {
 
   if (orderItems.length === 0) {
     console.log(
-      "⚠️ Không có orderItem nào thuộc đơn đã giao & đã thanh toán."
+      "⚠️ Không có orderItem nào đủ điều kiện hoặc chưa được review."
     );
     return;
   }
 
-  console.log(`✅ Tìm thấy ${orderItems.length} orderItem đủ điều kiện.`);
+  console.log(`✅ Tìm thấy ${orderItems.length} orderItem đủ điều kiện.`); // Shuffle cho random
 
-  // Shuffle cho random
   const shuffled = [...orderItems].sort(() => Math.random() - 0.5);
 
   let createdCount = 0;
@@ -112,29 +104,28 @@ async function main() {
 
   for (const item of shuffled) {
     if (createdCount >= MAX_NEW_REVIEWS) {
-      console.log(
-        `⏹ Đã đạt MAX_NEW_REVIEWS = ${MAX_NEW_REVIEWS}, dừng.`
-      );
+      console.log(`⏹ Đã đạt MAX_NEW_REVIEWS = ${MAX_NEW_REVIEWS}, dừng.`);
       break;
-    }
+    } // Random xem có tạo review cho orderItem này không
 
-    // Random xem có tạo review cho orderItem này không
     if (Math.random() > REVIEW_PROBABILITY) continue;
 
     const userId = item.order.userId;
     const productId = item.variant.productId;
-    const productName = item.variant.product.name;
+    const productName = item.variant.product.name; // Kiểm tra xem user này đã review sản phẩm này chưa (qua orderItem khác)
 
-    // Không tạo trùng review cho cùng user + product
     const existingReview = await prisma.review.findFirst({
       where: {
         userId,
         productId,
+        orderItem: {
+          isNot: null, // Đảm bảo review đó đã được gán cho một OrderItem nào đó
+        },
       },
     });
 
     if (existingReview) {
-      // user này đã review product này rồi -> bỏ qua (cho realistic)
+      // user này đã review product này rồi -> bỏ qua
       continue;
     }
 
@@ -142,25 +133,17 @@ async function main() {
     const content = randomReviewContent(stars, productName);
 
     const now = new Date();
-    const reviewCreatedAt = randomDateBetween(
-      item.order.createdAt,
-      now
-    );
+    const reviewCreatedAt = randomDateBetween(item.order.createdAt, now); // 20% có ảnh (ảnh fake)
 
-    // 20% có ảnh (ảnh fake)
     const hasPhotos = Math.random() < 0.2;
     const photosJson = hasPhotos
       ? [
-          `https://picsum.photos/seed/review-${
-            item.id
-          }-1/400/400`,
-          `https://picsum.photos/seed/review-${
-            item.id
-          }-2/400/400`,
+          `https://picsum.photos/seed/review-${item.id}-1/400/400`,
+          `https://picsum.photos/seed/review-${item.id}-2/400/400`,
         ]
-      : null;
+      : null; // ⭐ 1. Tạo Review
 
-    await prisma.review.create({
+    const newReview = await prisma.review.create({
       data: {
         userId,
         productId,
@@ -172,20 +155,26 @@ async function main() {
       },
     });
 
+    // ⭐ 2. Cập nhật OrderItem để thiết lập quan hệ 1-1
+    await prisma.orderItem.update({
+      where: { id: item.id },
+      data: {
+        reviewId: newReview.id, // Gán ID của Review vừa tạo vào OrderItem
+      },
+    });
+
     productIdsTouched.add(productId);
     createdCount++;
 
     console.log(
-      `⭐ Tạo review ${stars}★ cho product #${productId} (${productName}) từ user #${userId}.`
+      `⭐ Tạo review ${stars}★ (ID: ${newReview.id}) cho product #${productId}, gán cho orderItem #${item.id}.`
     );
   }
 
-  console.log(`✅ Đã tạo thêm ${createdCount} review.`);
+  console.log(`✅ Đã tạo thêm ${createdCount} review.`); // Recalculate ratingAvg & ratingCount cho các product có review mới
 
-  // Recalculate ratingAvg & ratingCount cho các product có review mới
-  console.log("🔄 Đang cập nhật ratingAvg & ratingCount cho Product...");
+  console.log("🔄 Đang cập nhật ratingAvg & ratingCount cho Product..."); // Lấy agg cho tất cả product có review (hoặc chỉ productIdsTouched cũng được)
 
-  // Lấy agg cho tất cả product có review (hoặc chỉ productIdsTouched cũng được)
   const grouped = await prisma.review.groupBy({
     by: ["productId"],
     _avg: { stars: true },

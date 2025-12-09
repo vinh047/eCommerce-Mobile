@@ -178,8 +178,8 @@ const DetailProduct = ({ product }) => {
       toast.success("Thêm vào giỏ hàng thành công");
     } catch (err) {
       toast.error(err.payload.message);
-      setLoadedBtn(false)
-      if ((err.status === 401)) {
+      setLoadedBtn(false);
+      if (err.status === 401) {
         router.push("/signin");
       }
     }
@@ -193,8 +193,8 @@ const DetailProduct = ({ product }) => {
       router.push("/cart");
     } catch (error) {
       toast.error(error.payload.message);
-      setLoadedBtn(false)
-         if ((error.status === 401)) {
+      setLoadedBtn(false);
+      if (error.status === 401) {
         router.push("/signin");
       }
     }
@@ -487,23 +487,24 @@ const DetailProduct = ({ product }) => {
               </div>
               {/* Info  */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                    {product.warrantyMonths ? <div className="inline-flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 grid place-items-center">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"></path>
-                    </svg>
-                  </span>
-                  
-                  Bảo hành chính hãng {product.warrantyMonths}T
-                </div> : ""}
-              
+                {product.warrantyMonths ? (
+                  <div className="inline-flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 grid place-items-center">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z"></path>
+                      </svg>
+                    </span>
+                    Bảo hành chính hãng {product.warrantyMonths}T
+                  </div>
+                ) : (
+                  ""
+                )}
 
-                
                 <div className="inline-flex items-center gap-2">
                   <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 grid place-items-center">
                     <svg
@@ -607,13 +608,25 @@ const DetailProduct = ({ product }) => {
                                 >
                                   <div className="flex items-center mb-2">
                                     <div className="h-6 w-6 border-transparent rounded-full border-2 mr-1.5">
-                                      <Image
-                                        src={review.user.avatar}
-                                        alt={review.user.name}
-                                        width={24}
-                                        height={24}
-                                        className="rounded-full object-cover"
-                                      />
+                                      {review.user.avatar ? (
+                                        <Image
+                                          src={review.user.avatar}
+                                          alt={review.user.name}
+                                          width={24}
+                                          height={24}
+                                          className="rounded-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 ring-1 ring-white">
+                                          <span className="text-xs font-bold text-gray-600">
+                                            {review.user.name
+                                              ? review.user.name
+                                                  .charAt(0)
+                                                  .toUpperCase()
+                                              : "U"}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
                                     <div className="font-medium text-gray-800 mr-4">
                                       {review.user.name}
