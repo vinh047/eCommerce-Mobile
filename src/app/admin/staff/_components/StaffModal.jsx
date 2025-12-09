@@ -1,13 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, User, Shield, Key, Mail, Lock, Check } from "lucide-react";
-import rolesApi from "@/lib/api/rolesApi"; // Import API role để lấy list
+import { useState, useEffect, useRef } from "react";
+import {
+  X,
+  User,
+  Shield,
+  Key,
+  Mail,
+  Lock,
+  Check,
+  UploadCloud,
+  Trash2,
+  Loader2,
+  Image as ImageIcon,
+} from "lucide-react";
+import Image from "next/image"; // Import Image component
+import rolesApi from "@/lib/api/rolesApi";
+import { uploadImage } from "@/lib/api/uploadImageApi"; // Import API upload
 
 export default function StaffModal({ mode, staff, onClose, onSave }) {
   const [activeTab, setActiveTab] = useState("info");
   const [loadingRoles, setLoadingRoles] = useState(false);
   const [availableRoles, setAvailableRoles] = useState([]);
+
+  // State cho upload ảnh
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: staff?.name || "",
@@ -15,8 +33,7 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
     password: "",
     confirmPassword: "",
     status: staff?.status || "active",
-    avatar: staff?.avatar || "",
-    // Map staffRoles -> array of roleId
+    avatar: staff?.avatar || "", // Lưu filename hoặc path
     roleIds: staff?.staffRoles?.map((sr) => sr.roleId) || [],
   });
 
@@ -25,7 +42,7 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
     const fetchRoles = async () => {
       setLoadingRoles(true);
       try {
-        const res = await rolesApi.getRoles({ pageSize: 100 }); // Lấy tất cả role
+        const res = await rolesApi.getRoles({ pageSize: 100 });
         setAvailableRoles(res.data || []);
       } catch (error) {
         console.error("Failed to load roles", error);
@@ -39,6 +56,42 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  // --- XỬ LÝ UPLOAD ẢNH (MỚI) ---
+  const handleAvatarUpload = async (event) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    setIsUploading(true);
+
+    try {
+      const formPayload = new FormData();
+      formPayload.append("file", file);
+
+      // Gọi API upload (giống bên VariantEditor)
+      const res = await uploadImage(formPayload);
+
+      // Giả sử API trả về { filename: "..." }
+      if (res?.filename) {
+        handleInputChange("avatar", res.filename);
+      }
+    } catch (error) {
+      console.error("Upload avatar failed:", error);
+      alert("Tải ảnh thất bại, vui lòng thử lại!");
+    } finally {
+      setIsUploading(false);
+      // Reset input file để có thể chọn lại cùng 1 file nếu muốn
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    handleInputChange("avatar", "");
+  };
+  // ------------------------------
 
   const toggleRole = (roleId) => {
     setFormData((prev) => {
@@ -62,13 +115,12 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
       return;
     }
 
-    // Chuẩn bị payload
     const payload = {
       name: formData.name,
       email: formData.email,
       status: formData.status,
       avatar: formData.avatar,
-      roleIds: formData.roleIds, // Quan trọng: Gửi mảng roleId lên
+      roleIds: formData.roleIds,
     };
 
     if (formData.password) {
@@ -82,6 +134,11 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
     { id: "info", name: "Thông tin cơ bản", icon: User },
     { id: "security", name: "Bảo mật & Quyền hạn", icon: Shield },
   ];
+
+  // Helper để hiển thị ảnh
+  const avatarUrl = formData.avatar
+    ? `${process.env.NEXT_PUBLIC_URL_IMAGE || ""}${formData.avatar}`
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -104,6 +161,7 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
             </button>
           </div>
 
+          {/* Tabs */}
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -131,61 +189,143 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
             {/* TAB INFO */}
             {activeTab === "info" && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Họ và tên *
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Cột trái: Avatar Upload */}
+                  <div className="col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Ảnh đại diện
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      placeholder="Nguyễn Văn A"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Email đăng nhập *
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-4 w-4 text-gray-400" />
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative group w-40 h-40 rounded-full border-4 border-gray-100 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center justify-center shadow-sm">
+                        {isUploading ? (
+                          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                          </div>
+                        ) : null}
+
+                        {avatarUrl ? (
+                          <>
+                            <Image
+                              src={avatarUrl}
+                              alt="Avatar"
+                              fill
+                              className="object-cover"
+                            />
+                            {/* Overlay xóa ảnh */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={handleRemoveAvatar}
+                                className="p-2 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors"
+                                title="Xóa ảnh"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center text-gray-400">
+                            <User className="w-16 h-16 mb-2" strokeWidth={1} />
+                            <span className="text-xs">Chưa có ảnh</span>
+                          </div>
+                        )}
                       </div>
+
+                      <div className="flex flex-col items-center w-full">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={fileInputRef}
+                          onChange={handleAvatarUpload}
+                          className="hidden"
+                          id="avatar-upload"
+                        />
+                        <label
+                          htmlFor="avatar-upload"
+                          className={`flex items-center justify-center gap-2 px-4 py-2 w-full text-sm font-medium rounded-lg border transition-colors cursor-pointer
+                            ${
+                              isUploading
+                                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
+                            }
+                          `}
+                        >
+                          {isUploading ? (
+                            "Đang tải..."
+                          ) : (
+                            <>
+                              <UploadCloud className="w-4 h-4" />
+                              {avatarUrl ? "Thay đổi ảnh" : "Tải ảnh lên"}
+                            </>
+                          )}
+                        </label>
+                        <p className="text-[10px] text-gray-400 mt-2 text-center">
+                          Dung lượng tối đa 5MB. Định dạng: .JPG, .PNG
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cột phải: Form inputs */}
+                  <div className="col-span-1 md:col-span-2 space-y-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Họ và tên *
+                      </label>
                       <input
-                        type="email"
+                        type="text"
                         required
-                        disabled={mode === "edit"}
-                        value={formData.email}
+                        value={formData.name}
                         onChange={(e) =>
-                          handleInputChange("email", e.target.value)
+                          handleInputChange("name", e.target.value)
                         }
-                        className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
-                        placeholder="staff@example.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        placeholder="Nguyễn Văn A"
                       />
                     </div>
-                    {mode === "edit" && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Email không thể thay đổi.
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Link Avatar
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.avatar}
-                      onChange={(e) =>
-                        handleInputChange("avatar", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      placeholder="https://..."
-                    />
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Email đăng nhập *
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Mail className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <input
+                          type="email"
+                          required
+                          disabled={mode === "edit"}
+                          value={formData.email}
+                          onChange={(e) =>
+                            handleInputChange("email", e.target.value)
+                          }
+                          className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                          placeholder="staff@example.com"
+                        />
+                      </div>
+                      {mode === "edit" && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Email không thể thay đổi.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Fallback input URL nếu muốn nhập tay */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 justify-between">
+                        <span>Link Avatar (Tùy chọn)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.avatar}
+                        onChange={(e) =>
+                          handleInputChange("avatar", e.target.value)
+                        }
+                        placeholder="Hoặc nhập đường dẫn ảnh..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -304,15 +444,12 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-gray-500">
-                      Nhân viên có thể đảm nhận nhiều vai trò cùng lúc.
-                    </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Modal Footer inside Form to align with scroll if needed, or keep sticky */}
+            {/* Footer */}
             <div className="mt-8 flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 type="button"
@@ -323,9 +460,14 @@ export default function StaffModal({ mode, staff, onClose, onSave }) {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm font-medium"
+                disabled={isUploading}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {mode === "create" ? "Tạo nhân viên" : "Lưu thay đổi"}
+                {isUploading
+                  ? "Đang xử lý..."
+                  : mode === "create"
+                  ? "Tạo nhân viên"
+                  : "Lưu thay đổi"}
               </button>
             </div>
           </form>
