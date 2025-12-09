@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { ChatBox } from "@/components/chatbox/ChatBox";
+import ChatBot from "@/components/ChatBot";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "vietnamese"],
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
           {children}
         </GoogleAuthProvider>
         <Toaster position="top-center" richColors />
+        <ChatBot />
       </body>
     </html>
   );
