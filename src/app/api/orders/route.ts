@@ -58,8 +58,8 @@ export async function GET(req: Request) {
           select: { id: true, name: true, email: true }, // Chỉ lấy thông tin cần thiết của user
         },
         _count: {
-          select: { items: true } // Đếm số lượng sản phẩm trong đơn
-        }
+          select: { items: true }, // Đếm số lượng sản phẩm trong đơn
+        },
       },
     });
 
@@ -88,55 +88,68 @@ export async function POST(req: Request) {
       note,
       discount = 0,
       shippingFee = 0,
-      paymentStatus = 'pending',
-      shippingStatus = 'pending',
-      status = 'pending'
+      paymentStatus = "pending",
+      shippingStatus = "pending",
+      status = "pending",
     } = body;
 
     if (!userId || !items || items.length === 0) {
-      return NextResponse.json({ error: "Thiếu thông tin User hoặc Sản phẩm." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Thiếu thông tin User hoặc Sản phẩm." },
+        { status: 400 }
+      );
     }
 
     // Tính toán lại tổng tiền để đảm bảo an toàn (Backend calculation)
     // Lưu ý: items phải chứa { variantId, price, quantity, nameSnapshot }
-    const subtotal = items.reduce((sum: number, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0);
+    const subtotal = items.reduce(
+      (sum: number, item: any) =>
+        sum + Number(item.price) * Number(item.quantity),
+      0
+    );
     const total = subtotal + Number(shippingFee) - Number(discount);
 
     // Tạo mã đơn hàng ngẫu nhiên (VD: ORD-171569...)
-    const code = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
+    const code = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(
+      Math.random() * 1000
+    )}`;
 
-    const newOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const order = await tx.order.create({
-        data: {
-          userId: Number(userId),
-          code,
-          status,
-          paymentStatus,
-          shippingStatus,
-          note,
-          subtotal,
-          discount,
-          shippingFee,
-          total,
-          items: {
-            create: items.map((item: any) => ({
-              variantId: Number(item.variantId) || 1,
-              nameSnapshot: item.nameSnapshot,
-              price: item.price,
-              quantity: item.quantity,
-            })),
+    const newOrder = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const order = await tx.order.create({
+          data: {
+            userId: Number(userId),
+            code,
+            status,
+            paymentStatus,
+            shippingStatus,
+            note,
+            subtotal,
+            discount,
+            shippingFee,
+            total,
+            items: {
+              create: items.map((item: any) => ({
+                variantId: Number(item.variantId) || 1,
+                nameSnapshot: item.nameSnapshot,
+                price: item.price,
+                quantity: item.quantity,
+              })),
+            },
           },
-        },
-        include: {
-          items: true,
-          user: true,
-          review: true,
-        },
-      });
+          include: {
+            user: true,
+            items: {
+              include: {
+                review: true,
+              },
+            },
+          },
+        });
 
-      return order;
-    });
-
+        return order;
+      }
+    );
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (err: any) {

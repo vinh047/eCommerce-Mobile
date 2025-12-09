@@ -16,7 +16,7 @@ async function getProductContext() {
         isDeleted: false,
         variants: { some: { stock: { gt: 0 } } }
       },
-      take: 20,
+      take: 50,
       select: {
         name: true,
         ratingAvg: true,
