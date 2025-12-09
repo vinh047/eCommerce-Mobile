@@ -34,7 +34,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
           {/* Banner ở trên cùng */}
           <section>
-            <BannerSlider banners={banners} />
+            <BannerSlider banners={banners.data} />
           </section>
 
           {/* Danh mục sản phẩm NẰM DƯỚI banner, 1 khối ngang */}

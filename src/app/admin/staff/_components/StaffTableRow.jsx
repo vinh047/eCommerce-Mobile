@@ -3,6 +3,7 @@
 import { Edit, Eye, Trash, Mail, Shield } from "lucide-react";
 import PermissionGate from "../../_components/PermissionGate";
 import { PERMISSION_KEYS } from "../../constants/permissions";
+import Image from "next/image";
 
 // Màu nền avatar ngẫu nhiên
 const avatarColors = [
@@ -73,10 +74,14 @@ export default function StaffTableRow({
         <td className="px-6 py-4">
           <div className="flex items-center space-x-3">
             {staff.avatar ? (
-              <img
-                src={staff.avatar}
-                alt={staff.name}
-                className="w-9 h-9 rounded-full object-cover border border-gray-200"
+              <Image
+                src={`${process.env.NEXT_PUBLIC_URL_IMAGE || ""}${
+                  staff.avatar
+                }`}
+                alt={staff.name || "Staff Avatar"}
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-full object-cover"
               />
             ) : (
               <div
