@@ -348,6 +348,7 @@ CREATE TABLE "order_items" (
     "price" DECIMAL(12,2) NOT NULL,
     "quantity" INTEGER NOT NULL,
     "name_snapshot" VARCHAR(255) NOT NULL,
+    "reviewId" INTEGER,
 
     CONSTRAINT "order_items_pkey" PRIMARY KEY ("id")
 );
@@ -687,6 +688,9 @@ CREATE INDEX "idx_orders_created_at" ON "orders"("created_at");
 CREATE INDEX "orders_payment_account_id_idx" ON "orders"("payment_account_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "order_items_reviewId_key" ON "order_items"("reviewId");
+
+-- CreateIndex
 CREATE INDEX "order_items_order_id_idx" ON "order_items"("order_id");
 
 -- CreateIndex
@@ -811,6 +815,9 @@ ALTER TABLE "orders" ADD CONSTRAINT "orders_payment_account_id_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "order_items" ADD CONSTRAINT "order_items_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "reviews"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;

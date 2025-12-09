@@ -43,6 +43,11 @@ const ordersApi = {
       credentials: "include", // QUAN TRỌNG để gửi cookie token
     }),
 
+  requestWarranty: (data) =>
+    apiFetch("/rmas", {
+      method: "POST",
+      body: data,
+    }),
 };
 
 export default ordersApi;
