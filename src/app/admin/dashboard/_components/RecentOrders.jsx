@@ -11,7 +11,7 @@ export default function RecentOrders({ orders = [] }) {
     <div className="xl:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Đơn hàng gần đây</h3>
-        <a href="/orders" className="text-blue-600 hover:text-blue-700 text-sm font-medium">Xem tất cả</a>
+        <a href="/admin/orders" className="text-blue-600 hover:text-blue-700 text-sm font-medium">Xem tất cả</a>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
