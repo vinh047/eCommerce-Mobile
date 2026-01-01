@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ShoppingCart } from "lucide-react";
 
 export function LoadingState() {
   return (
@@ -39,20 +40,36 @@ export function EmptyState() {
   return (
     <div className="text-center py-12 empty-state">
       <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
-        </svg>
+        {/* Dùng icon từ thư viện */}
+        <ShoppingCart className="w-10 h-10 text-gray-400" />
       </div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Giỏ hàng trống</h2>
-      <p className="text-gray-600 mb-6">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-      <Link href="/" className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-2xl hover:bg-blue-700 focus-ring font-medium transition-colors">
+      <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        Giỏ hàng trống
+      </h2>
+      <p className="text-gray-600 mb-6">
+        Bạn chưa có sản phẩm nào trong giỏ hàng
+      </p>
+      <Link
+        href="/"
+        className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-2xl hover:bg-blue-700 focus-ring font-medium transition-colors"
+      >
         Tiếp tục mua sắm
-        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+        <svg
+          className="w-4 h-4 ml-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 5l7 7-7 7"
+          ></path>
         </svg>
       </Link>
     </div>
-  )
+  );
 }
 
 export function ErrorState({ onRetry }) {

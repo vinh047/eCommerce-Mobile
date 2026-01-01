@@ -1,18 +1,23 @@
-export default function CartMobileCheckout({ total, onCheckout }) {
+// components/Cart/CartMobileCheckout.jsx
+import { Button } from "../ui/form/Button" 
+
+export default function CartMobileCheckout({ total, onCheckout, itemCount, disabled }) {
   return (
-    <div className="sticky-checkout lg:hidden">
-      <div className="px-4 py-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Tổng cộng:</span>
-          <span className="font-bold text-lg text-blue-600">{total}</span>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:hidden z-40 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-500">Tổng cộng ({itemCount} món)</span>
+          <span className="font-bold text-xl text-blue-600">{total}</span>
         </div>
-        <button 
-          onClick={onCheckout}
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-2xl hover:bg-blue-700 focus-ring font-semibold transition-colors"
-          aria-label="Tiến hành thanh toán"
+        <Button 
+            primary 
+            size="lg" 
+            className="flex-1 shadow-md shadow-blue-200"
+            onClick={onCheckout}
+            disabled={disabled}
         >
-          Đến thanh toán
-        </button>
+          Đặt hàng ngay
+        </Button>
       </div>
     </div>
   )
