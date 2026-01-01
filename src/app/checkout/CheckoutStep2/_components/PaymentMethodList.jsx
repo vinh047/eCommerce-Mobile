@@ -1,54 +1,70 @@
+import { CreditCard, Banknote, Wallet } from "lucide-react";
+
 export default function PaymentMethodList({
   paymentMethods,
   selectedPaymentMethodId,
   onSelect,
 }) {
+  // Hàm helper chọn icon dựa trên code (nếu backend có trả về code)
+  const getIcon = (code) => {
+    switch (code) {
+      case "cod": return <Banknote className="w-6 h-6" />;
+      case "bank_transfer": return <CreditCard className="w-6 h-6" />;
+      default: return <Wallet className="w-6 h-6" />;
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
-        Phương thức thanh toán
-      </h2>
-      <div className="space-y-3">
-        {paymentMethods.map((m) => (
-          <label
-            key={m.id}
-            className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition ${
-              selectedPaymentMethodId === m.id
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white"
-            }`}
-          >
-            <input
-              type="radio"
-              name="paymentMethod"
-              checked={selectedPaymentMethodId === m.id}
-              onChange={() => onSelect(m.id)}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{m.name}</div>
-              <div className="text-sm text-gray-600">{m.description}</div>
-              {m.accounts?.length > 0 && (
-                <div className="mt-3">
-                  <div className="text-sm font-medium text-gray-700 mb-2">
-                    Tài khoản nhận tiền:
-                  </div>
-                  <ul className="space-y-2">
-                    {m.accounts.map((acc) => (
-                      <li key={acc.id} className="text-sm text-gray-700">
-                        <span className="font-medium">{acc.accountName}</span> •{" "}
-                        {acc.bankName
-                          ? `${acc.bankName} - ${acc.bankBranch || ""}`
-                          : "Ví/khác"}{" "}
-                        • <span className="font-mono">{acc.accountNumber}</span>
-                      </li>
-                    ))}
-                  </ul>
+    <div className="space-y-4">
+      <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+        1. Chọn phương thức thanh toán
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {paymentMethods.map((m) => {
+          const isSelected = selectedPaymentMethodId === m.id;
+          return (
+            <div
+              key={m.id}
+              onClick={() => onSelect(m.id)}
+              className={`relative cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 flex items-start gap-4 hover:shadow-md
+                ${
+                  isSelected
+                    ? "border-blue-600 bg-blue-50/50 shadow-sm"
+                    : "border-gray-100 bg-white hover:border-gray-300"
+                }
+              `}
+            >
+              {/* Icon Box */}
+              <div
+                className={`p-3 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                  ${
+                    isSelected
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+              >
+                {getIcon(m.code)}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className={`font-semibold ${isSelected ? "text-blue-900" : "text-gray-900"}`}>
+                    {m.name}
+                  </h4>
+                  {isSelected && (
+                    <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                    </div>
+                  )}
                 </div>
-              )}
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {m.description || "Thanh toán an toàn & tiện lợi"}
+                </p>
+              </div>
             </div>
-          </label>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

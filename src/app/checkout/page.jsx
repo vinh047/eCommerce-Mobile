@@ -5,7 +5,7 @@ import HeaderLayout from "@/components/Layout/HeaderLayout";
 async function CheckoutPageSection() {
   return (
     <HeaderLayout>
-      <CheckoutPage />;
+      <CheckoutPage />
     </HeaderLayout>
   );
 }

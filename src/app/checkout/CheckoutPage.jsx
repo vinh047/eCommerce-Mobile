@@ -9,6 +9,8 @@ import { getPaymentMethod } from "@/lib/api/paymentMethodApi";
 import CheckoutStep2 from "./CheckoutStep2/CheckoutStep2";
 import CheckoutStep1 from "./CheckoutStep1/CheckoutStep1";
 import { removeItem as removeCartItem } from "@/lib/api/cartsApi";
+import CheckoutStepper from "./CheckoutStep1/_components/CheckoutStepper";
+import OrderSummary from "./CheckoutStep1/_components/OrderSummary";
 
 const HCMC_PROVINCE = "Hồ Chí Minh";
 
@@ -767,106 +769,66 @@ export default function CheckoutPage() {
 
   // ================== RENDER ==================
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-8 h-8 rounded-full ${
-                step === 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-300 text-gray-700"
-              } flex items-center justify-center font-semibold`}
-            >
-              1
-            </div>
-            <span
-              className={`font-medium ${
-                step === 1 ? "text-gray-900" : "text-gray-500"
-              }`}
-            >
-              Thông tin
-            </span>
-          </div>
-          <div className="w-12 h-0.5 bg-gray-300" />
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-8 h-8 rounded-full ${
-                step === 2
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-300 text-gray-700"
-              } flex items-center justify-center font-semibold`}
-            >
-              2
-            </div>
-            <span
-              className={`font-medium ${
-                step === 2 ? "text-gray-900" : "text-gray-500"
-              }`}
-            >
-              Thanh toán
-            </span>
-          </div>
+    <div className="bg-gray-50 min-h-screen pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* --- PHẦN CHUNG: STEPPER --- */}
+        <CheckoutStepper currentStep={step} />
+
+        {/* --- PHẦN RIÊNG: SWITCH LAYOUT --- */}
+        <div className="mt-8">
+          {step === 1 ? (
+            <CheckoutStep1
+              // Truyền tất cả props cần thiết cho Step 1
+              items={items}
+              customer={customer}
+              onChangeCustomer={setCustomer}
+              addresses={addresses}
+              selectedAddressId={selectedAddressId}
+              onSelectAddressId={setSelectedAddressId}
+              addressForm={addressForm}
+              onChangeAddressForm={setAddressForm}
+              onSaveAddress={saveAddress}
+              savingAddress={savingAddress}
+              subtotal={subtotal}
+              total={total}
+              shippingFee={shippingFee}
+              estimatingShipping={estimatingShipping}
+              deliveryMethod={deliveryMethod}
+              onChangeDeliveryMethod={setDeliveryMethod}
+              onContinue={handleContinueToPayment}
+            />
+          ) : (
+            <CheckoutStep2
+              items={items}
+              subtotal={subtotal}
+              shippingFee={shippingFee}
+              total={total}
+              estimatingShipping={estimatingShipping}
+              paymentMethods={paymentMethods}
+              selectedPaymentMethodId={selectedPaymentMethodId}
+              onSelectPaymentMethodId={setSelectedPaymentMethodId}
+              note={note}
+              onChangeNote={setNote}
+              // ✅ truyền props coupon mới
+              appliedCoupon={appliedCoupon}
+              allCoupons={allCoupons}
+              onSelectCoupon={handleSelectCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
+              requiresPaymentConfirmation={requiresPaymentConfirmation}
+              qrUrl={qrUrl}
+              orderCode={orderCode}
+              isPaid={isPaid}
+              generatingQr={generatingQr}
+              setIsPaid={setIsPaid}
+              placeOrderDisabled={placeOrderDisabled}
+              submitting={submitting}
+              onPlaceOrder={handlePlaceOrder}
+              onBackToInfo={() => setStep(1)}
+              customer={customer}
+              chosenAddress={chosenAddress}
+            />
+          )}
         </div>
-
-        {/* STEP 1 */}
-        {step === 1 && (
-          <CheckoutStep1
-            items={items}
-            customer={customer}
-            onChangeCustomer={setCustomer}
-            addresses={addresses}
-            selectedAddressId={selectedAddressId}
-            onSelectAddressId={setSelectedAddressId}
-            addressForm={addressForm}
-            onChangeAddressForm={setAddressForm}
-            onSaveAddress={saveAddress}
-            savingAddress={savingAddress}
-            subtotal={subtotal}
-            total={total}
-            shippingFee={shippingFee}
-            estimatingShipping={estimatingShipping}
-            showReviewItems={showReviewItems}
-            onToggleReviewItems={() => setShowReviewItems((prev) => !prev)}
-            onContinue={handleContinueToPayment}
-            deliveryMethod={deliveryMethod}
-            onChangeDeliveryMethod={setDeliveryMethod}
-          />
-        )}
-
-        {/* STEP 2 */}
-        {step === 2 && (
-          <CheckoutStep2
-            items={items}
-            subtotal={subtotal}
-            shippingFee={shippingFee}
-            total={total}
-            estimatingShipping={estimatingShipping}
-            paymentMethods={paymentMethods}
-            selectedPaymentMethodId={selectedPaymentMethodId}
-            onSelectPaymentMethodId={setSelectedPaymentMethodId}
-            note={note}
-            onChangeNote={setNote}
-            // ✅ truyền props coupon mới
-            appliedCoupon={appliedCoupon}
-            allCoupons={allCoupons}
-            onSelectCoupon={handleSelectCoupon}
-            onRemoveCoupon={handleRemoveCoupon}
-            requiresPaymentConfirmation={requiresPaymentConfirmation}
-            qrUrl={qrUrl}
-            orderCode={orderCode}
-            isPaid={isPaid}
-            generatingQr={generatingQr}
-            setIsPaid={setIsPaid}
-            placeOrderDisabled={placeOrderDisabled}
-            submitting={submitting}
-            onPlaceOrder={handlePlaceOrder}
-            onBackToInfo={() => setStep(1)}
-            customer={customer}
-            chosenAddress={chosenAddress}
-          />
-        )}
       </div>
     </div>
   );

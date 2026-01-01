@@ -1,12 +1,11 @@
+// components/Checkout/CheckoutStep1.jsx
 "use client";
 
 import React from "react";
-import Step1SummaryCard from "./_components/Step1SummaryCard";
 import CustomerInfoForm from "./_components/CustomerInfoForm";
 import AddressSection from "./_components/AddressSection";
-import CheckoutProductSummary from "./_components/CheckoutProductSummary";
-
-const HCMC_PROVINCE = "Hồ Chí Minh";
+import { User } from "lucide-react";
+import OrderSummary from "./_components/OrderSummary";
 
 export default function CheckoutStep1({
   items,
@@ -19,62 +18,61 @@ export default function CheckoutStep1({
   onChangeAddressForm,
   onSaveAddress,
   savingAddress,
+  onResetNewAddress,
+  deliveryMethod,
+  onChangeDeliveryMethod,
+  // Props cho Summary
   subtotal,
   total,
   shippingFee,
   estimatingShipping,
-  showReviewItems,
-  onToggleReviewItems,
   onContinue,
-  onResetNewAddress, // optional: reset form khi không có địa chỉ
-  onResetAddressToDefault, // optional: reset về địa chỉ mặc định khi đang nhập địa chỉ mới
-  deliveryMethod,
-  onChangeDeliveryMethod,
 }) {
-  const firstItem = items[0] || null;
-  const otherItems = items.slice(1);
-
   return (
-    <div className="space-y-6">
-      {/* Sản phẩm */}
-      <CheckoutProductSummary
-        items={items}
-        firstItem={firstItem}
-        otherItems={otherItems}
-        showOthers={showReviewItems}
-        onToggleOthers={onToggleReviewItems}
-      />
+    // Grid 2 cột: Form (8) - Summary (4)
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      {/* --- CỘT TRÁI (FORM NHẬP LIỆU) --- */}
+      <div className="lg:col-span-8 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
+          
+          {/* Form Thông tin */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" /> Thông tin người nhận
+            </h3>
+            <CustomerInfoForm customer={customer} onChange={onChangeCustomer} />
+          </div>
 
-      {/* Thông tin khách hàng */}
-      <CustomerInfoForm customer={customer} onChange={onChangeCustomer} />
+          <hr className="border-gray-100 mb-8" />
 
-      {/* Địa chỉ nhận hàng */}
-      <AddressSection
-        addresses={addresses}
-        selectedAddressId={selectedAddressId}
-        onSelectAddressId={onSelectAddressId}
-        addressForm={addressForm}
-        onChangeAddressForm={onChangeAddressForm}
-        onSaveAddress={onSaveAddress}
-        savingAddress={savingAddress}
-        onResetNewAddress={onResetNewAddress}
-        onResetAddressToDefault={onResetAddressToDefault}
-        deliveryMethod={deliveryMethod}
-        onChangeDeliveryMethod={onChangeDeliveryMethod}
-      />
+          {/* Form Địa chỉ & Vận chuyển */}
+          <AddressSection
+            addresses={addresses}
+            selectedAddressId={selectedAddressId}
+            onSelectAddressId={onSelectAddressId}
+            addressForm={addressForm}
+            onChangeAddressForm={onChangeAddressForm}
+            onSaveAddress={onSaveAddress}
+            savingAddress={savingAddress}
+            onResetNewAddress={onResetNewAddress}
+            deliveryMethod={deliveryMethod}
+            onChangeDeliveryMethod={onChangeDeliveryMethod}
+          />
+        </div>
+      </div>
 
-      {/* Tóm tắt + hành động */}
-      <Step1SummaryCard
-        items={items}
-        total={total}
-        shippingFee={shippingFee}
-        estimatingShipping={estimatingShipping}
-        showReviewItems={showReviewItems}
-        onToggleReviewItems={onToggleReviewItems}
-        onContinue={onContinue}
-      />
+      <div className="lg:col-span-4 sticky top-20">
+        <OrderSummary
+          items={items}
+          subtotal={subtotal}
+          shippingFee={shippingFee}
+          total={total}
+          estimatingShipping={estimatingShipping}
+          onContinue={onContinue}
+          step={1}
+        />
+      </div>
     </div>
   );
 }
-
-/* ---------- Sub components cho Step 1 ---------- */

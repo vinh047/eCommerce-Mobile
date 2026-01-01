@@ -61,8 +61,7 @@ export default function Step1SummaryCard({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900 truncate">
-                    {it.name}{" "}
-                    {it.variantName ? `— ${it.variantName}` : ""}
+                    {it.name} {it.variantName ? `— ${it.variantName}` : ""}
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
                     {[...(it.specs || [])].join(" • ")}
@@ -70,8 +69,7 @@ export default function Step1SummaryCard({
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-gray-700">
-                    Số lượng:{" "}
-                    <span className="font-medium">{it.quantity}</span>
+                    Số lượng: <span className="font-medium">{it.quantity}</span>
                   </div>
                   <div className="text-sm text-gray-900 font-bold mt-1">
                     {formatCurrency(it.price)}
