@@ -312,7 +312,7 @@ export default function OrderDetailClient({ orderId }) {
                     ) : order.status === "completed" ? (
                       <button
                         className="text-xs font-medium text-blue-600 hover:underline hover:text-blue-800 flex items-center gap-1"
-                        onClick={() => openReviewModal(item)}
+                        onClick={() => openModal(item)}
                       >
                         <svg
                           className="w-4 h-4"
