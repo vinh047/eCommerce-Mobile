@@ -7,9 +7,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return (
-    <HeaderLayout>
-      <Signin />;
-    </HeaderLayout>
-  );
+  return <Signin />;
 }

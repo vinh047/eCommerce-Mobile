@@ -6,32 +6,33 @@ import CategoryProductsSkeleton from "./CategoryProductsSkeleton";
 
 async function CategorySection({ category, products }) {
   return (
-    <section className="px-2 sm:px-4 md:px-0 py-4">
-      <div className="flex items-center justify-between mb-2 pe-4">
-        <h2 className="text-xl font-semibold text-neutral-800">
-          {category.name}
-        </h2>
-        <Link
-          href={`/${category.slug}`}
-          className="group relative flex items-center gap-1 text-neutral-800 hover:text-blue-600 transition-colors duration-200 text-sm font-medium"
-        >
-          <span className="relative after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-blue-600 after:transition-all after:duration-300 group-hover:after:w-full">
+    <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-50">
+          <h2 className="text-lg md:text-xl font-bold text-gray-800 uppercase flex items-center gap-2">
+            <span className="w-1 h-6 bg-blue-600 rounded-full inline-block"></span>
+            {category.name}
+          </h2>
+          <Link
+            href={`/${category.slug}`}
+            className="group flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+          >
             Xem tất cả
-          </span>
-          <ArrowRight className="w-4 h-4 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
-        </Link>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <Suspense
+          fallback={<CategoryProductsSkeleton categoryName={category.name} />}
+        >
+          <CategoryProductsDelay
+            title={category.name}
+            products={products}
+            delay={100}
+          />
+        </Suspense>
       </div>
-      <Suspense
-        fallback={<CategoryProductsSkeleton categoryName={category.name} />}
-      >
-        <CategoryProductsDelay
-          title={category.name}
-          products={products}
-          delay={100}
-        />
-      </Suspense>
     </section>
   );
 }
-
 export default CategorySection;

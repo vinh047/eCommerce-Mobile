@@ -1,28 +1,25 @@
 "use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { GoogleLogin } from "@react-oauth/google";
+import { Mail, Lock, User, UserPlus, ArrowLeft } from "lucide-react";
 
-import {
-  WrapperContainerLeft,
-  WrapperContainerRight,
-  WrapperText,
-} from "../signin/style";
-import InputForm from "../signin/InputForm";
-import "../signin/style.css";
+import { Button } from "@/components/ui/form/Button";
+import { Input } from "@/components/ui/form/Input";
 
 const Signup = () => {
   const router = useRouter();
-  
+
   // State
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +27,7 @@ const Signup = () => {
   const validate = () => {
     let err = {};
     if (!name.trim()) err.name = "Tên không được để trống";
-    
+
     if (!email) {
       err.email = "Email không được để trống";
     } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
@@ -59,9 +56,13 @@ const Signup = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/register", { name, email, password });
+      const res = await axios.post("/api/auth/register", {
+        name,
+        email,
+        password,
+      });
       toast.success(res.data.message || "Đăng ký thành công!");
-      router.push("/signin")
+      router.push("/signin");
     } catch (error) {
       const msg = error.response?.data?.error || "Đăng ký thất bại";
       toast.error(msg);
@@ -89,117 +90,165 @@ const Signup = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "white",
-      }}
-    >
-      <div
-        style={{
-          width: "800px",
-          height: "520px", // Tăng chiều cao chút để chứa đủ input
-          display: "flex",
-          background: "#fff",
-          borderRadius: "16px",
-          // Thêm box-shadow nhẹ nếu muốn giống signin (tùy chọn)
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        }}
-      >
-        <WrapperContainerLeft className="px-10 py-4">
-          <h1 style={{ fontSize: "2.5rem", fontWeight: 800 }}>Xin chào</h1>
-          <p>Đăng ký tài khoản của bạn</p>
-          
-          {/* Bọc form để xử lý submit */}
-          <form onSubmit={handleRegister} style={{ width: '100%' }}>
-            
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative">
+      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
+        <Button
+          as={Link}
+          href="/"
+          ghost
+          size="sm"
+          className="text-gray-500 hover:text-blue-600 hover:bg-white/80 backdrop-blur-sm shadow-sm border border-transparent hover:border-gray-200 transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Về trang chủ
+        </Button>
+      </div>
+
+      <div className="max-w-5xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+        <div className="w-full md:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Tạo tài khoản
+            </h1>
+            <p className="text-gray-500">
+              Đăng ký để trở thành thành viên và hưởng nhiều ưu đãi.
+            </p>
+          </div>
+
+          <form onSubmit={handleRegister} className="space-y-4">
             {/* Input Tên */}
-            <InputForm
-              style={{ margin: "16px 0px 8px" }}
+            <Input
               placeholder="Họ và tên"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors({ ...errors, name: "" });
+              }}
+              fullWidth
+              size="md"
+              leftIcon={<User className="h-5 w-5" />}
+              error={errors.name}
             />
-            {errors.name && <div style={{ color: "red", fontSize: "12px", marginBottom: "8px" }}>{errors.name}</div>}
 
             {/* Input Email */}
-            <InputForm
-              style={{ marginBottom: "8px" }}
-              placeholder="abc@gmail.com"
+            <Input
+              placeholder="Email của bạn"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors({ ...errors, email: "" });
+              }}
+              fullWidth
+              size="md"
+              leftIcon={<Mail className="h-5 w-5" />}
+              error={errors.email}
             />
-            {errors.email && <div style={{ color: "red", fontSize: "12px", marginBottom: "8px" }}>{errors.email}</div>}
 
             {/* Input Mật khẩu */}
-            <InputForm
-              style={{ marginBottom: "8px" }}
+            <Input
               placeholder="Mật khẩu"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {errors.password && <div style={{ color: "red", fontSize: "12px", marginBottom: "8px" }}>{errors.password}</div>}
-
-            {/* Input Xác nhận Mật khẩu */}
-            <InputForm 
-              style={{ marginBottom: "8px" }}
-              placeholder="Xác nhận mật khẩu" 
-              type="password" 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            {errors.confirmPassword && <div style={{ color: "red", fontSize: "12px", marginBottom: "8px" }}>{errors.confirmPassword}</div>}
-
-            {/* Nút Đăng ký */}
-            <button 
-              id="SignupButton" 
-              type="submit" 
-              className="signup-btn"
-              disabled={loading}
-              style={{ 
-                marginTop: "8px",
-                marginBottom: "16px",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors({ ...errors, password: "" });
               }}
-            >
-              {loading ? "Đang xử lý..." : "Đăng ký"}
-            </button>
-
-            {/* Nút Google */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-                <GoogleLogin
-                  onSuccess={handleGoogleRegister}
-                  onError={() => toast.error("Google sign up thất bại")}
-                  text="signup_with"
-                  width="320"
-                />
-            </div>
-
-            <p >
-              Đã có tài khoản?{" "}
-              <Link href="/signin" passHref style={{ textDecoration: 'none' }}>
-                <WrapperText>Đăng nhập</WrapperText>
-              </Link>
-            </p>
-          </form>
-        </WrapperContainerLeft>
-
-        <WrapperContainerRight>
-          <div className="signup-image-container">
-            <img
-              src="/assets/b4d225f471fe06887284e1341751b36e.png"
-              alt="sign-in"
-              className="signup-image"
-              // Căn chỉnh ảnh cho đẹp
-              style={{ objectFit: "cover", height: "100%", width: "100%", borderRadius: "0 16px 16px 0" }}
+              fullWidth
+              size="md"
+              leftIcon={<Lock className="h-5 w-5" />}
+              error={errors.password}
+              showPasswordToggle={true}
             />
+
+            {/* Input Xác nhận mật khẩu */}
+            <Input
+              placeholder="Nhập lại mật khẩu"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (errors.confirmPassword)
+                  setErrors({ ...errors, confirmPassword: "" });
+              }}
+              fullWidth
+              size="md"
+              leftIcon={<Lock className="h-5 w-5" />}
+              error={errors.confirmPassword}
+              showPasswordToggle={true}
+            />
+
+            {/* Submit Button */}
+            <Button
+              primary
+              size="lg"
+              fullWidth
+              type="submit"
+              loading={loading}
+              className="shadow-lg shadow-blue-200 mt-4"
+            >
+              <UserPlus className="w-5 h-5 mr-2" />
+              Đăng ký
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500 font-medium">
+                Hoặc đăng ký với
+              </span>
+            </div>
           </div>
-        </WrapperContainerRight>
+
+          {/* Google Button */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-[280px]">
+              <GoogleLogin
+                onSuccess={handleGoogleRegister}
+                onError={() => toast.error("Google sign up thất bại")}
+                width="100%"
+                theme="outline"
+                shape="pill"
+                size="large"
+                text="signup_with"
+              />
+            </div>
+          </div>
+
+          {/* Sign In Link */}
+          <p className="text-center mt-8 text-sm text-gray-600">
+            Đã có tài khoản?{" "}
+            <Link
+              href="/signin"
+              className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-all"
+            >
+              Đăng nhập ngay
+            </Link>
+          </p>
+        </div>
+
+        <div className="hidden md:block md:w-1/2 relative bg-blue-50">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 z-10" />
+          <img
+            src="/assets/b4d225f471fe06887284e1341751b36e.png"
+            alt="Sign Up Illustration"
+            className="w-full h-full object-cover"
+          />
+
+          {/* Text Overlay */}
+          <div className="absolute bottom-12 left-12 right-12 z-20 backdrop-blur-md bg-white/30 p-6 rounded-2xl border border-white/50 shadow-lg">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Bắt đầu hành trình mua sắm
+            </h3>
+            <p className="text-sm text-gray-800">
+              Tạo tài khoản ngay hôm nay để theo dõi đơn hàng, lưu sản phẩm yêu
+              thích và nhận thông báo khuyến mãi sớm nhất.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -4,21 +4,31 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  Search,
+  ShoppingBag,
+  LogOut,
+  Package,
+  UserCircle,
+  Store,
+  User as UserIcon,
+  ShoppingCart,
+} from "lucide-react";
 import usersApi from "@/lib/api/usersApi";
-import { globalEvents } from "@/lib/globalEvents"; // 👈 THÊM DÒNG NÀY
+import { globalEvents } from "@/lib/globalEvents";
 
 import { Button } from "./ui/form/Button";
 import { Input } from "./ui/form/Input";
-import { Search } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
 
   const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [loadingUser, setLoadingUser] = useState(true); // Mặc định true để hiện Skeleton ngay lập tức
   const [cartCount, setCartCount] = useState(0);
   const [search, setSearch] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const profileRef = useRef(null);
 
   // ===== HÀM LOAD USER =====
@@ -57,11 +67,8 @@ export default function Header() {
           return;
         }
       }
-    } catch (e) {
-      // ignore
-    }
-
-    // fallback từ sessionStorage checkoutItems
+    } catch (e) {}
+    // Fallback logic
     try {
       const raw =
         typeof window !== "undefined"
@@ -78,17 +85,12 @@ export default function Header() {
           return;
         }
       }
-    } catch {
-      // ignore
-    }
-
+    } catch {}
     setCartCount(0);
   };
 
   useEffect(() => {
     let mounted = true;
-
-    // load lần đầu
     fetchUser();
     fetchCartCount();
 
@@ -99,7 +101,11 @@ export default function Header() {
     }
     document.addEventListener("click", onDoc);
 
-    // lắng nghe event global
+    function onScroll() {
+      setIsScrolled(window.scrollY > 10);
+    }
+    window.addEventListener("scroll", onScroll);
+
     const offCart = globalEvents.onCartUpdated(() => {
       if (mounted) fetchCartCount();
     });
@@ -110,6 +116,7 @@ export default function Header() {
     return () => {
       mounted = false;
       document.removeEventListener("click", onDoc);
+      window.removeEventListener("scroll", onScroll);
       offCart && offCart();
       offUser && offUser();
     };
@@ -117,22 +124,20 @@ export default function Header() {
 
   async function handleLogout() {
     try {
-      if (usersApi && usersApi.logout) {
-        await usersApi.logout();
-      } else {
+      if (usersApi && usersApi.logout) await usersApi.logout();
+      else
         await fetch("/api/auth/logout", {
           method: "POST",
           credentials: "include",
         });
-      }
     } catch (err) {
       console.error("Logout error", err);
     } finally {
       setUser(null);
       setProfileOpen(false);
       router.replace("/");
-      globalEvents.emitUserUpdated(); // optional: cho chắc
-      globalEvents.emitCartUpdated(); // nếu bạn clear cart khi logout
+      globalEvents.emitUserUpdated();
+      globalEvents.emitCartUpdated();
     }
   }
 
@@ -140,225 +145,196 @@ export default function Header() {
     if (e) e.preventDefault();
     const qRaw = (search || "").trim();
     if (!qRaw) return;
-
     try {
-      const res = await fetch("/api/infer-category", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q: qRaw }),
-      });
-      const data = await res.json();
-      if (data?.ok && data.category) {
-        router.push(`/${data.category}?q=${encodeURIComponent(qRaw)}`);
-      } else {
-        router.push(`/search?q=${encodeURIComponent(qRaw)}`);
-      }
+      router.push(`/search?q=${encodeURIComponent(qRaw)}`);
     } catch (err) {
-      console.error("infer category error", err);
       router.push(`/search?q=${encodeURIComponent(qRaw)}`);
     }
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200"
+          : "bg-white border-b border-gray-100"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Left: Logo */}
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-extrabold shadow-md transform-gpu hover:scale-105 transition">
-                <span className="text-lg">VN</span>
+        <div className="flex items-center justify-between h-20 gap-4 md:gap-8">
+          {/* 1. LOGO */}
+          <div className="flex-shrink-0 min-w-[140px]">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:scale-105 transition-transform duration-200">
+                <Store className="w-6 h-6" />
               </div>
-              <div className="hidden sm:flex flex-col leading-tight">
-                <span className="font-semibold text-lg text-gray-900">
-                  VN Shop
+              <div className="flex flex-col justify-center">
+                <span className="font-bold text-xl text-blue-900 leading-none tracking-tight group-hover:text-blue-600 transition-colors">
+                  VNShop
                 </span>
-                <span className="text-xs text-gray-500">Mua sắm tiện lợi</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-0.5">
+                  STORE
+                </span>
               </div>
             </Link>
           </div>
 
-          {/* Center: Search */}
-          <div className="flex-1 px-4">
-            <form onSubmit={onSearchSubmit} className="max-w-2xl mx-auto">
+          {/* 2. SEARCH BAR */}
+          <div className="flex-1 max-w-3xl px-4 lg:px-12">
+            <form onSubmit={onSearchSubmit} className="relative w-full group">
               <div className="relative">
-                <Input
+                <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm kiếm sản phẩm..."
-                  fullWidth
-                  size="md"
-                  leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-                  rightAddon={
-                    <Button type="submit" primary size="sm" aria-label="Tìm">
-                      Tìm
-                    </Button>
-                  }
+                  placeholder="Bạn muốn tìm gì hôm nay?"
+                  className="w-full h-12 pl-12 pr-[90px] bg-gray-50 border border-gray-200 
+                             focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 
+                             rounded-full transition-all duration-200 outline-none text-gray-700 placeholder:text-gray-400"
                 />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <div className="absolute right-1 top-1 bottom-1">
+                  <button
+                    type="submit"
+                    className="h-full px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-full shadow-sm transition-colors cursor-pointer"
+                  >
+                    Tìm
+                  </button>
+                </div>
               </div>
             </form>
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-3">
-            {!loadingUser && !user && (
-              <div className="hidden sm:flex items-center gap-2">
-                <Button
-                  outline
-                  size="sm"
-                  onClick={() => router.push("/signin")}
-                >
-                  Đăng nhập
-                </Button>
-                <Button
-                  primary
-                  size="sm"
-                  onClick={() => {
-                    const redirectPath =
-                      typeof window !== "undefined"
-                        ? window.location.pathname
-                        : "/";
-                    router.push(
-                      `/signup?redirect=${encodeURIComponent(redirectPath)}`
-                    );
-                  }}
-                >
-                  Đăng ký
-                </Button>
+          {/* 3. ACTIONS (Cart & User) */}
+          <div className="flex items-center gap-6 flex-shrink-0">
+            {/* --- CART ICON --- */}
+            <Link
+              href="/cart"
+              className="relative group p-2.5 hover:bg-gray-100 rounded-full transition-all duration-200"
+              aria-label="Giỏ hàng"
+            >
+              <ShoppingCart className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white animate-in zoom-in">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
+
+            {/* --- USER PROFILE SECTION --- */}
+
+            {loadingUser ? (
+              <div className="flex items-center gap-3 pl-4 pr-1 py-1 rounded-full border border-gray-100 bg-gray-50/50">
+                <div className="hidden sm:block w-24 h-4 bg-gray-200 rounded animate-pulse" />
+                <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse border-2 border-white" />
               </div>
-            )}
+            ) : (
+              <>
+                {/* TRẠNG THÁI CHƯA ĐĂNG NHẬP */}
+                {!user && (
+                  <div className="flex items-center gap-3 animate-in fade-in duration-300">
+                    <Link
+                      href="/signin"
+                      className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
+                    >
+                      Đăng nhập
+                    </Link>
+                    <div className="h-4 w-px bg-gray-300"></div>
+                    <Link
+                      href="/signup"
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
+                )}
 
-            {!loadingUser && user && (
-              <div className="relative" ref={profileRef}>
-                <Button
-                  onClick={() => setProfileOpen((s) => !s)}
-                  ghost
-                  size="sm"
-                  className="flex items-center gap-3 px-3 py-1.5 rounded-full hover:bg-gray-50 transition"
-                >
-                  <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-800 font-semibold shadow-sm">
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name || user.email || "Avatar"}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-sm font-semibold text-gray-800">
-                        {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="hidden md:flex flex-col text-left">
-                    <span className="text-sm font-medium text-gray-800 leading-tight">
-                      {user.name || user.email}
-                    </span>
-                    <span className="text-xs text-gray-500">{user.email}</span>
-                  </div>
-                  <svg
-                    className={`h-4 w-4 text-gray-500 transition-transform ${
-                      profileOpen ? "rotate-180" : ""
-                    }`}
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                {/* TRẠNG THÁI ĐÃ ĐĂNG NHẬP */}
+                {user && (
+                  <div
+                    className="relative animate-in fade-in duration-300"
+                    ref={profileRef}
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </Button>
+                    <button
+                      onClick={() => setProfileOpen(!profileOpen)}
+                      className={`
+                        flex items-center gap-3 pl-4 pr-1 py-1 rounded-full border transition-all duration-200 bg-white cursor-pointer
+                        ${
+                          profileOpen
+                            ? "border-blue-500 ring-2 ring-blue-100 shadow-sm"
+                            : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                        }
+                      `}
+                    >
+                      {/* Tên hiển thị bên trái */}
+                      <span className="text-sm font-semibold text-gray-700 max-w-[120px] truncate hidden sm:block">
+                        {user.name || "Khách hàng"}
+                      </span>
 
-                {profileOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-50 animate-fade-in">
-                    <div className="px-4 py-3 bg-gradient-to-r from-white to-gray-50">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {user.name || user.email}
+                      {/* Avatar hiển thị bên phải */}
+                      <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm border-2 border-white">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt="Avatar"
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <span>
+                            {user.name?.charAt(0).toUpperCase() || "U"}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-500">{user.email}</div>
-                    </div>
-                    <div className="divide-y divide-gray-100">
-                      <ul className="py-2">
-                        <li>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {profileOpen && (
+                      <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 origin-top-right">
+                        <div className="p-4 bg-gray-50/80 border-b border-gray-100">
+                          <p className="font-semibold text-gray-900 truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+
+                        <div className="p-2 space-y-1">
                           <Link
                             href="/profile"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors"
                           >
-                            Thông tin tài khoản
+                            <UserCircle className="w-4 h-4" />
+                            Hồ sơ cá nhân
                           </Link>
-                        </li>
-                        <li>
                           <Link
                             href="/profile/orders"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors"
                           >
-                            Đơn hàng của tôi
+                            <Package className="w-4 h-4" />
+                            Đơn mua
                           </Link>
-                        </li>
-                      </ul>
-                      <div className="py-2">
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          Đăng xuất
-                        </button>
+                        </div>
+
+                        <div className="p-2 border-t border-gray-100">
+                          <button
+                            onClick={handleLogout}
+                            className="flex w-full items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Đăng xuất
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </>
             )}
-
-            <div className="relative">
-              <Link
-                href="/cart"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-100 shadow-sm hover:shadow-md transition"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-700"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 7h12l-2-7M10 21a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z"
-                  />
-                </svg>
-                <span className="hidden sm:inline text-sm font-medium text-gray-700">
-                  Giỏ hàng
-                </span>
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5 shadow">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
-            </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .animate-fade-in {
-          animation: fadeIn 160ms ease-out;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </header>
   );
 }

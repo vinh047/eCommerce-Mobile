@@ -6,6 +6,8 @@ import { getProductsByFilters } from "@/lib/api/productApi";
 import ProductCard from "@/components/ui/product/ProductCard";
 import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 import Pagination from "@/components/common/Pagination";
+import ListProductsSkeleton from "./ListProductSkeleton";
+import FlipReveal from "@/components/Animations/FlipReveal";
 
 const LIMIT = 8;
 
@@ -72,13 +74,7 @@ export default function ListProducts({ categoryId }) {
   }, [sp, categoryId]);
 
   if (loading) {
-    return (
-      <>
-        {Array.from({ length: LIMIT }).map((_, index) => (
-          <ProductCardSkeleton key={index} />
-        ))}
-      </>
-    );
+    return <ListProductsSkeleton />;
   }
 
   if (err) return <div>Lỗi: {String(err.message || err)}</div>;
@@ -86,12 +82,20 @@ export default function ListProducts({ categoryId }) {
   if (!products.length) return <div>Không có sản phẩm phù hợp</div>;
 
   return (
-    <div className="grid grid-cols-4 gap-2">
-      {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
-      ))}
+    <div className="w-full">
+      {/* Grid sản phẩm */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4">
+        {products.map((p, index) => (
+          // Bọc ProductCard trong FlipReveal
+          // Truyền index vào để nó tự tính toán độ trễ, tạo hiệu ứng lật lần lượt
+          <FlipReveal key={p.id} index={index} className="h-full">
+            <ProductCard product={p} />
+          </FlipReveal>
+        ))}
+      </div>
 
-      <div className="col-span-full mt-4">
+      {/* Pagination */}
+      <div className="mt-8 flex justify-center">
         <Pagination totalItems={meta.totalItems} showPageSizeOptions={false} />
       </div>
     </div>

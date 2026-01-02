@@ -61,7 +61,7 @@ export default function FilterSidebar({ category, open = false }) {
       className={["w-72 hidden lg:block", open ? "open block" : ""].join(" ")}
       id="filterSidebar"
     >
-      <div className="filter-card rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden h-[calc(100vh-100px)] pe-0.5">
+      <div className="filter-card rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden h-[calc(82vh-100px)] pe-0.5">
         <div className="scroll-area h-full px-4 pt-4">
           {fieldKeys.map((fieldKey, idx) => (
             <FilterField

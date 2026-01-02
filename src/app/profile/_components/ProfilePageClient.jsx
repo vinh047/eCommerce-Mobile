@@ -1,9 +1,22 @@
-// components/profile/ProfilePageClient.jsx
 "use client";
 
 import usersApi from "@/lib/api/usersApi";
 import React, { useEffect, useState } from "react";
+import {
+  User,
+  Mail,
+  Calendar,
+  ShoppingBag,
+  CreditCard,
+  Star,
+  Camera,
+  Edit3,
+  Lock,
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
 
+// Helper Format
 const formatCurrency = (value) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -20,48 +33,51 @@ const formatDate = (iso) =>
       }).format(new Date(iso))
     : "";
 
+// --- Component Badge ---
 function StatusBadge({ status }) {
   const map = {
-    active: {
-      label: "Đang hoạt động",
-      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    },
-    blocked: {
-      label: "Đã bị khoá",
-      className: "bg-red-50 text-red-700 border-red-200",
-    },
-    deleted: {
-      label: "Đã xoá",
-      className: "bg-gray-50 text-gray-500 border-gray-200",
-    },
+    active: { label: "Hoạt động", color: "bg-emerald-100 text-emerald-700" },
+    blocked: { label: "Đã khoá", color: "bg-red-100 text-red-700" },
+    deleted: { label: "Đã xoá", color: "bg-gray-100 text-gray-600" },
   };
-
   const cfg = map[status] || map.active;
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}
+      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.color}`}
     >
-      <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current" />
       {cfg.label}
     </span>
   );
 }
 
-// -------- Modal cập nhật thông tin --------
+// --- Component Stats Card ---
+function StatCard({ label, value, icon: Icon, colorClass }) {
+  return (
+    <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+      <div
+        className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClass}`}
+      >
+        <Icon className="w-6 h-6" />
+      </div>
+      <div>
+        <p className="text-sm text-gray-500 font-medium">{label}</p>
+        <p className="text-xl font-bold text-gray-900">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// -------- Modal Cập nhật thông tin --------
 function UpdateProfileModal({ open, onClose, profile, onUpdated }) {
   const [name, setName] = useState(profile?.name || "");
   const [avatar, setAvatar] = useState(profile?.avatar || "");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (open && profile) {
       setName(profile.name || "");
       setAvatar(profile.avatar || "");
-      setError("");
-      setSuccess("");
     }
   }, [open, profile]);
 
@@ -69,104 +85,72 @@ function UpdateProfileModal({ open, onClose, profile, onUpdated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
     try {
       setLoading(true);
-
-      // 👉 DÙNG HÀM updateUser, truyền id + data
       const updatedUser = await usersApi.updateUser(profile.id, {
         name,
         avatar,
       });
-
-      setSuccess("Cập nhật thông tin thành công.");
+      toast.success("Cập nhật thông tin thành công!");
       onUpdated && onUpdated(updatedUser);
-
-      setTimeout(() => {
-        onClose();
-      }, 600);
+      setTimeout(onClose, 300);
     } catch (err) {
-      console.error("Lỗi cập nhật thông tin:", err);
-      setError(
-        err?.response?.data?.message ||
-          "Không thể cập nhật thông tin. Vui lòng thử lại."
-      );
+      toast.error(err?.response?.data?.message || "Lỗi cập nhật.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-md rounded-xl bg-white shadow-lg">
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Cập nhật thông tin
-          </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <h3 className="font-semibold text-gray-900">Chỉnh sửa hồ sơ</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            ×
+            ✕
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="px-4 py-4 space-y-3 text-sm">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">
               Họ và tên
             </label>
             <input
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/70"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Nhập họ tên"
+              placeholder="Nhập tên hiển thị"
             />
           </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
-              Ảnh đại diện (URL)
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              Avatar URL
             </label>
             <input
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/70"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               value={avatar}
               onChange={(e) => setAvatar(e.target.value)}
-              placeholder="https://..."
+              placeholder="https://example.com/avatar.jpg"
             />
-            <p className="text-[11px] text-gray-400">
-              Bạn có thể dán link ảnh avatar hoặc để trống để dùng avatar mặc
-              định.
-            </p>
           </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-              {success}
-            </div>
-          )}
-
-          <div className="mt-3 flex justify-end gap-2 pt-2 border-t border-gray-100">
+          <div className="pt-2 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-3 py-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-black disabled:opacity-60"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm shadow-blue-200 transition-all disabled:opacity-70 flex items-center gap-2"
             >
-              {loading ? "Đang lưu..." : "Lưu thay đổi"}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Lưu thay đổi
             </button>
           </div>
         </form>
@@ -175,148 +159,80 @@ function UpdateProfileModal({ open, onClose, profile, onUpdated }) {
   );
 }
 
-// -------- Modal đổi mật khẩu --------
+// -------- Modal Đổi mật khẩu --------
 function ChangePasswordModal({ open, onClose, userId }) {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [form, setForm] = useState({ current: "", new: "", confirm: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    if (open) {
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setError("");
-      setSuccess("");
-    }
+    if (open) setForm({ current: "", new: "", confirm: "" });
   }, [open]);
 
   if (!open) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setError("Vui lòng nhập đủ các trường.");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Xác nhận mật khẩu không khớp.");
-      return;
-    }
+    if (form.new !== form.confirm)
+      return toast.error("Mật khẩu xác nhận không khớp");
+    if (form.new.length < 6) return toast.error("Mật khẩu mới quá ngắn");
 
     try {
       setLoading(true);
-
-      // 👉 GỌI API CẬP NHẬT USER: chỉ gửi field password
-      await usersApi.updateUser(userId, {
-        password: newPassword,
-      });
-
-      setSuccess("Đổi mật khẩu thành công.");
-      setTimeout(() => {
-        onClose();
-      }, 600);
+      await usersApi.updateUser(userId, { password: form.new });
+      toast.success("Đổi mật khẩu thành công!");
+      setTimeout(onClose, 300);
     } catch (err) {
-      console.error("Lỗi đổi mật khẩu:", err);
-      setError(
-        err?.response?.data?.message ||
-          "Không thể đổi mật khẩu. Vui lòng thử lại."
-      );
+      toast.error(err?.response?.data?.message || "Lỗi đổi mật khẩu.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-md rounded-xl bg-white shadow-lg">
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-          <h3 className="text-sm font-semibold text-gray-900">Đổi mật khẩu</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <h3 className="font-semibold text-gray-900">Đổi mật khẩu</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="text-gray-400 hover:text-gray-600"
           >
-            ×
+            ✕
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="px-4 py-4 space-y-3 text-sm">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
-              Mật khẩu hiện tại
-            </label>
-            <input
-              type="password"
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/70"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Nhập mật khẩu hiện tại"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
-              Mật khẩu mới
-            </label>
-            <input
-              type="password"
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/70"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Nhập mật khẩu mới"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
-              Xác nhận mật khẩu mới
-            </label>
-            <input
-              type="password"
-              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/70"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Nhập lại mật khẩu mới"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
-              {error}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {["current", "new", "confirm"].map((field) => (
+            <div key={field} className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700 capitalize">
+                {field === "current"
+                  ? "Mật khẩu hiện tại"
+                  : field === "new"
+                  ? "Mật khẩu mới"
+                  : "Xác nhận mật khẩu"}
+              </label>
+              <input
+                type="password"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                value={form[field]}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+              />
             </div>
-          )}
-          {success && (
-            <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-              {success}
-            </div>
-          )}
-
-          <div className="mt-3 flex justify-end gap-2 pt-2 border-t border-gray-100">
+          ))}
+          <div className="pt-2 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-3 py-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-black disabled:opacity-60"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm shadow-blue-200 flex items-center gap-2"
             >
-              {loading ? "Đang đổi..." : "Đổi mật khẩu"}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Xác nhận
             </button>
           </div>
         </form>
@@ -325,195 +241,139 @@ function ChangePasswordModal({ open, onClose, userId }) {
   );
 }
 
+// -------- MAIN COMPONENT --------
 export function ProfilePageClient() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const [openEditModal, setOpenEditModal] = useState(false);
-  const [openPasswordModal, setOpenPasswordModal] = useState(false);
+  const [openPassModal, setOpenPassModal] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchUser() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const user = await usersApi.getCurrentUser();
-
-        if (!cancelled) {
-          setProfile(user);
-        }
-      } catch (err) {
-        console.error("Lỗi lấy thông tin người dùng:", err);
-        if (!cancelled) {
-          setError("Không thể tải thông tin tài khoản.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchUser();
-
-    return () => {
-      cancelled = true;
-    };
+    usersApi
+      .getCurrentUser()
+      .then(setProfile)
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
     return (
-      <div className="space-y-4 text-sm text-gray-500">
-        Đang tải thông tin tài khoản...
+      <div className="flex h-64 w-full items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
       </div>
     );
   }
 
-  if (error || !profile) {
-    return (
-      <div className="space-y-4">
-        <p className="text-sm text-red-600">{error || "Không có dữ liệu."}</p>
-      </div>
-    );
-  }
+  if (!profile)
+    return <div className="text-center py-10">Không tải được thông tin.</div>;
 
-  const stats = profile.stats || {};
-  const name = profile.name || "";
-  const email = profile.email || "";
-  const avatar = profile.avatar;
-  const status = profile.status || "active";
-  const hasPassword = Boolean(profile.passwordHash);
+  const {
+    name,
+    email,
+    avatar,
+    status,
+    stats = {},
+    createdAt,
+    passwordHash,
+  } = profile;
+  const hasPassword = Boolean(passwordHash);
 
   return (
-    <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">
-              Thông tin tài khoản
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Quản lý thông tin cá nhân và bảo mật của bạn.
-            </p>
-          </div>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* 1. Header & User Info Card */}
+      <div className="relative overflow-hidden bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-8">
+        {/* Background Decor */}
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none" />
 
-          <StatusBadge status={status} />
-        </div>
-
-        {/* Thông tin cơ bản */}
-        <section className="rounded-xl border border-gray-100 bg-white px-5 py-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">
-            Thông tin cá nhân
-          </h2>
-
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            {/* Avatar */}
-            <div className="flex items-center gap-4">
+        <div className="relative flex flex-col md:flex-row gap-6 md:items-center">
+          {/* Avatar Section */}
+          <div className="flex-shrink-0 relative group mx-auto md:mx-0">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100">
               {avatar ? (
                 <img
                   src={avatar}
-                  alt={name || email}
-                  className="h-14 w-14 rounded-full object-cover"
+                  alt={name}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-lg font-semibold text-gray-700">
-                  {(name && name.charAt(0).toUpperCase()) ||
-                    (email && email.charAt(0).toUpperCase())}
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-3xl font-bold">
+                  {(name?.[0] || email?.[0] || "U").toUpperCase()}
                 </div>
               )}
+            </div>
+            {/* Edit Icon Overlay */}
+            <button
+              onClick={() => setOpenEditModal(true)}
+              className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              title="Cập nhật ảnh"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+          </div>
 
-              <div className="text-sm">
-                <div className="font-semibold text-gray-900">
-                  {name || "Chưa có tên"}
-                </div>
-                <div className="text-gray-500">{email}</div>
-                <div className="text-xs text-gray-400 mt-1">
-                  Tham gia từ {formatDate(profile.createdAt)}
-                </div>
+          {/* Info Section */}
+          <div className="flex-1 text-center md:text-left space-y-2">
+            <div className="flex flex-col md:flex-row items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {name || "Khách hàng"}
+              </h1>
+              <StatusBadge status={status || "active"} />
+            </div>
+
+            <div className="flex flex-col md:flex-row items-center gap-x-6 gap-y-1 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                {email}
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Tham gia: {formatDate(createdAt)}
               </div>
             </div>
+          </div>
 
-            {/* Nút bên phải */}
-            <div className="md:ml-auto flex gap-2">
-              {hasPassword && (
-                <button
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                  onClick={() => setOpenPasswordModal(true)}
-                >
-                  Đổi mật khẩu
-                </button>
-              )}
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <button
+              onClick={() => setOpenEditModal(true)}
+              className="flex-1 sm:flex-none inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-gray-900 text-white text-sm font-medium cursor-pointer rounded-xl hover:bg-black transition-colors shadow-lg shadow-gray-200"
+            >
+              <Edit3 className="w-4 h-4" />
+              Chỉnh sửa
+            </button>
+            {hasPassword && (
               <button
-                className="px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 text-white hover:bg-black"
-                onClick={() => setOpenEditModal(true)}
+                onClick={() => setOpenPassModal(true)}
+                className="flex-1 sm:flex-none inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors"
               >
-                Cập nhật thông tin
+                <Lock className="w-4 h-4" />
+                Đổi mật khẩu
               </button>
-            </div>
+            )}
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* Thống kê nhanh */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-gray-100 bg-white px-4 py-3">
-            <div className="text-xs text-gray-500 mb-1">Tổng đơn hàng</div>
-            <div className="text-xl font-semibold text-gray-900">
-              {stats.totalOrders ?? 0}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-gray-100 bg-white px-4 py-3">
-            <div className="text-xs text-gray-500 mb-1">Tổng chi tiêu</div>
-            <div className="text-xl font-semibold text-gray-900">
-              {formatCurrency(stats.totalSpent ?? 0)}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-gray-100 bg-white px-4 py-3">
-            <div className="text-xs text-gray-500 mb-1">Đánh giá sản phẩm</div>
-            <div className="text-xl font-semibold text-gray-900">
-              {stats.totalReviews ?? 0}
-            </div>
-          </div>
-        </section>
-
-        {/* Form hiển thị chi tiết */}
-        <section className="rounded-xl border border-gray-100 bg-white px-5 py-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">
-            Chi tiết tài khoản
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-500">
-                Họ và tên
-              </label>
-              <input
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm bg-gray-50"
-                value={name}
-                disabled
-                readOnly
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-500">
-                Email đăng nhập
-              </label>
-              <input
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm bg-gray-50"
-                value={email}
-                disabled
-                readOnly
-              />
-            </div>
-          </div>
-        </section>
+      {/* 2. Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <StatCard
+          label="Đơn hàng"
+          value={stats.totalOrders ?? 0}
+          icon={ShoppingBag}
+          colorClass="bg-blue-50 text-blue-600"
+        />
+        <StatCard
+          label="Tổng chi tiêu"
+          value={formatCurrency(stats.totalSpent ?? 0)}
+          icon={CreditCard}
+          colorClass="bg-violet-50 text-violet-600"
+        />
+        <StatCard
+          label="Đánh giá"
+          value={stats.totalReviews ?? 0}
+          icon={Star}
+          colorClass="bg-amber-50 text-amber-600"
+        />
       </div>
 
       {/* Modals */}
@@ -521,16 +381,13 @@ export function ProfilePageClient() {
         open={openEditModal}
         onClose={() => setOpenEditModal(false)}
         profile={profile}
-        onUpdated={(updatedUser) => setProfile(updatedUser)}
+        onUpdated={setProfile}
       />
-
-      {hasPassword && (
-        <ChangePasswordModal
-          open={openPasswordModal}
-          onClose={() => setOpenPasswordModal(false)}
-          userId={profile.id}
-        />
-      )}
-    </>
+      <ChangePasswordModal
+        open={openPassModal}
+        onClose={() => setOpenPassModal(false)}
+        userId={profile.id}
+      />
+    </div>
   );
 }

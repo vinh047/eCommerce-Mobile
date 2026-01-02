@@ -1,23 +1,23 @@
+// app/signin/page.jsx
 "use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  WrapperContainerLeft,
-  WrapperContainerRight,
-  WrapperText,
-} from "./style";
-import InputForm from "./InputForm";
-import "./style.css";
-import { toast } from "sonner";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { toast } from "sonner";
+import { Mail, Lock, Check, LogIn, ArrowLeft } from "lucide-react";
+
+import { Button } from "@/components/ui/form/Button";
+import { Input } from "@/components/ui/form/Input";
 
 const Signin = () => {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // State cho Remember Me
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -41,12 +41,9 @@ const Signin = () => {
     try {
       setLoading(true);
       const credential = credentialResponse.credential;
-      // Mặc định Google Login sẽ tự giữ trạng thái,
-      // hoặc bạn có thể gửi thêm { token: credential, rememberMe: true } nếu muốn
       const res = await axios.post("/api/auth/login", { token: credential });
 
       toast.success(res.data.message || "Đăng nhập Google thành công!");
-
       router.push("/");
       router.refresh();
     } catch (err) {
@@ -57,7 +54,7 @@ const Signin = () => {
     }
   };
 
-  // Xử lý Submit Form (Email/Password)
+  // Xử lý Submit Form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -67,7 +64,6 @@ const Signin = () => {
 
     try {
       setLoading(true);
-      // Gửi thêm rememberMe lên server
       const res = await axios.post("/api/auth/login", {
         email,
         password,
@@ -75,7 +71,6 @@ const Signin = () => {
       });
 
       toast.success(res.data.message || "Đăng nhập thành công!");
-
       router.push("/");
       router.refresh();
     } catch (err) {
@@ -87,153 +82,163 @@ const Signin = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#f5f5f5",
-      }}
-    >
-      <div
-        style={{
-          width: "800px",
-          height: "480px", // Tăng chiều cao một chút để chứa checkbox
-          display: "flex",
-          background: "#fff",
-          borderRadius: "16px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        }}
-      >
-        <WrapperContainerLeft className="px-10 py-4">
-          <h1 style={{ fontSize: "2.5rem", fontWeight: 800 }}>Xin chào</h1>
-          <p>Đăng nhập vào tài khoản của bạn</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative">
+      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
+        <Button
+          as={Link}
+          href="/"
+          ghost
+          size="sm"
+          className="text-gray-500 hover:text-blue-600 hover:bg-white/80 backdrop-blur-sm shadow-sm border border-transparent hover:border-gray-200 transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Về trang chủ
+        </Button>
+      </div>
 
-          <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-            <InputForm
-              style={{ margin: "16px 0px 8px" }}
-              placeholder="abc@gmail.com"
+      <div className="max-w-5xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+        <div className="w-full md:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Xin chào,</h1>
+            <p className="text-gray-500">
+              Nhập thông tin để đăng nhập vào tài khoản của bạn.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Input */}
+            <Input
+              placeholder="Email của bạn"
+              type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors({ ...errors, email: "" });
+              }}
+              fullWidth
+              size="md"
+              leftIcon={<Mail className="h-5 w-5" />}
+              error={errors.email}
             />
-            {errors.email && (
-              <div
-                style={{ color: "red", fontSize: "12px", marginBottom: "8px" }}
-              >
-                {errors.email}
-              </div>
-            )}
 
-            <InputForm
+            {/* Password Input */}
+            <Input
               placeholder="Mật khẩu"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors({ ...errors, password: "" });
+              }}
+              fullWidth
+              size="md"
+              leftIcon={<Lock className="h-5 w-5" />}
+              error={errors.password}
+              showPasswordToggle={true}
             />
-            {errors.password && (
-              <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-                {errors.password}
-              </div>
-            )}
 
-            {/* --- CHECKBOX GHI NHỚ ĐĂNG NHẬP --- */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: "12px",
-              }}
-            >
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                // accent-sky-400: Tạo màu xanh dương nhạt khi tick
-                className="w-4 h-4 cursor-pointer mr-2 rounded accent-sky-400 focus:ring-sky-400 ms-1"
-              />
-              <label
-                htmlFor="rememberMe"
-                style={{ fontSize: "14px", cursor: "pointer", color: "#555" }}
-              >
-                Ghi nhớ đăng nhập
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div
+                  className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                    rememberMe
+                      ? "bg-blue-600 border-blue-600"
+                      : "bg-white border-gray-300 group-hover:border-blue-500"
+                  }`}
+                >
+                  {rememberMe && <Check className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                  Ghi nhớ đăng nhập
+                </span>
               </label>
+
+              <Link
+                href="/ForgotPassword"
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-all"
+              >
+                Quên mật khẩu?
+              </Link>
             </div>
-            {/* ---------------------------------- */}
 
-            <button
-              id="SignupButton"
+            {/* Submit Button */}
+            <Button
+              primary
+              size="lg"
+              fullWidth
               type="submit"
-              className="signup-btn"
-              disabled={loading}
-              style={{
-                marginTop: "16px",
-                marginBottom: "16px",
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
+              loading={loading}
+              className="shadow-lg shadow-blue-200 mt-2"
             >
-              {loading ? "Đang xử lý..." : "Đăng nhập"}
-            </button>
+              <LogIn className="w-5 h-5 mr-2" />
+              Đăng nhập
+            </Button>
+          </form>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: "16px",
-              }}
-            >
+          {/* Divider */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500 font-medium">
+                Hoặc đăng nhập với
+              </span>
+            </div>
+          </div>
+
+          {/* Google Login */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-[280px]">
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
                 onError={() => toast.error("Google login thất bại")}
+                width="100%"
+                theme="outline"
+                shape="pill"
+                size="large"
               />
             </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "14px",
-              }}
-            >
-              <Link
-                href="/ForgotPassword"
-                passHref
-                style={{ textDecoration: "none" }}
-              >
-                <WrapperText>Quên mật khẩu?</WrapperText>
-              </Link>
-
-              <p style={{ margin: 0 }}>
-                Chưa có tài khoản?{" "}
-                <Link
-                  href="/signup"
-                  passHref
-                  style={{ textDecoration: "none" }}
-                >
-                  <WrapperText>Tạo tài khoản</WrapperText>
-                </Link>
-              </p>
-            </div>
-          </form>
-        </WrapperContainerLeft>
-
-        <WrapperContainerRight>
-          <div className="signup-image-container">
-            <img
-              src="/assets/b4d225f471fe06887284e1341751b36e.png"
-              alt="sign-in"
-              className="signup-image"
-              style={{
-                objectFit: "cover",
-                height: "100%",
-                width: "100%",
-                borderRadius: "0 16px 16px 0",
-              }}
-            />
           </div>
-        </WrapperContainerRight>
+
+          {/* Sign Up Link */}
+          <p className="text-center mt-8 text-sm text-gray-600">
+            Chưa có tài khoản?{" "}
+            <Link
+              href="/signup"
+              className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-all"
+            >
+              Tạo tài khoản mới
+            </Link>
+          </p>
+        </div>
+
+        <div className="hidden md:block md:w-1/2 relative bg-blue-50">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 z-10" />
+          <img
+            src="/assets/b4d225f471fe06887284e1341751b36e.png"
+            alt="Sign In Illustration"
+            className="w-full h-full object-cover"
+          />
+
+          {/* Text Overlay */}
+          <div className="absolute bottom-12 left-12 right-12 z-20 backdrop-blur-md bg-white/30 p-6 rounded-2xl border border-white/50 shadow-lg">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Trải nghiệm mua sắm tuyệt vời
+            </h3>
+            <p className="text-sm text-gray-800">
+              Hàng ngàn sản phẩm chất lượng đang chờ đón bạn. Đăng nhập ngay để
+              khám phá ưu đãi!
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export default function CheckoutProductSummary({
         </div>
         <div className="flex-1">
           <div className="font-medium text-gray-900">
-            <a href={`/product/${firstItem.slug}`} className="hover:underline">
+            <a href={`/san-pham/${firstItem.slug}`} className="hover:underline">
               {firstItem.name}
             </a>{" "}
             {[firstItem.variantName || "", ...(firstItem.specs || [])]
@@ -88,7 +88,7 @@ export default function CheckoutProductSummary({
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium text-gray-900">
-                  <a href={`/product/${it.slug}`} className="hover:underline">
+                  <a href={`/san-pham/${it.slug}`} className="hover:underline">
                     {it.name}
                   </a>{" "}
                   {[it.variantName || "", ...(it.specs || [])]

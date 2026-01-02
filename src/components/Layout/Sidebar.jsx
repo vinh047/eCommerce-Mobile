@@ -60,6 +60,8 @@ const navItems = [
   { name: "Nhân sự", icon: UserCog, href: "/admin/staff", permission: PERMISSION_KEYS.VIEW_STAFF },
   { name: "Phân Quyền", icon: ShieldCheck, href: "/admin/roles", permission: PERMISSION_KEYS.VIEW_ROLE },
   { name: "Thống kê", icon: BarChart3, href: "/admin/reports", permission: PERMISSION_KEYS.VIEW_REPORT },
+  
+  { name: "Banner", icon: BarChart3, href: "/admin/banners", permission: PERMISSION_KEYS.VIEW_BANNER },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }) {

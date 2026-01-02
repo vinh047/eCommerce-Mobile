@@ -6,17 +6,18 @@ export default function CustomerInfoForm({ customer, onChange }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
         Thông tin khách hàng
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Field
           label="Họ tên"
           value={customer.name}
           onChange={(v) => onChange({ ...customer, name: v })}
+          className="col-span-1"
         />
         <Field
           label="Email"
           value={customer.email}
           onChange={(v) => onChange({ ...customer, email: v })}
-          className="md:col-span-2"
+          className="col-span-1"
         />
       </div>
     </div>

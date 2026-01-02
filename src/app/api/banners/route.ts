@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const search = searchParams.get("search") || "";
     const isActiveQuery = searchParams.get("isActive"); // 'true' | 'false'
-    
+
     // Sort logic
     const sort = searchParams.get("sort") || "";
     let sortBy = "displayOrder"; // Mặc định sắp xếp theo thứ tự hiển thị
@@ -18,7 +18,11 @@ export async function GET(req: Request) {
 
     if (sort) {
       const [column, direction] = sort.split(":");
-      if (["id", "altText", "displayOrder", "isActive", "createdAt"].includes(column)) {
+      if (
+        ["id", "altText", "displayOrder", "isActive", "createdAt"].includes(
+          column
+        )
+      ) {
         sortBy = column;
         sortOrder = direction === "asc" ? "asc" : "desc";
       }
@@ -26,9 +30,9 @@ export async function GET(req: Request) {
 
     // Filter Condition
     const where: any = {
-        isDeleted: false // Luôn lọc bỏ item đã xóa mềm
+      isDeleted: false, // Luôn lọc bỏ item đã xóa mềm
     };
-    
+
     if (search) {
       where.OR = [
         { altText: { contains: search, mode: "insensitive" } },
@@ -37,7 +41,7 @@ export async function GET(req: Request) {
     }
 
     if (isActiveQuery) {
-        where.isActive = isActiveQuery === 'true';
+      where.isActive = isActiveQuery === "true";
     }
 
     // Query Data
@@ -50,8 +54,8 @@ export async function GET(req: Request) {
       orderBy: { [sortBy]: sortOrder },
       include: {
         product: {
-            select: { id: true, name: true } // Chỉ lấy thông tin cần thiết của Product
-        } 
+          select: { slug: true }, // Chỉ lấy thông tin cần thiết của Product
+        },
       },
     });
 
@@ -78,7 +82,10 @@ export async function POST(req: Request) {
 
     // Validate
     if (!image || !productId) {
-      return NextResponse.json({ error: "Hình ảnh và Sản phẩm là bắt buộc." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Hình ảnh và Sản phẩm là bắt buộc." },
+        { status: 400 }
+      );
     }
 
     const newBanner = await prisma.banner.create({
@@ -90,8 +97,8 @@ export async function POST(req: Request) {
         productId: parseInt(productId),
       },
       include: {
-          product: { select: { id: true, name: true } }
-      }
+        product: { select: { id: true, name: true } },
+      },
     });
 
     return NextResponse.json(newBanner, { status: 201 });

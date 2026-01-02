@@ -1,8 +1,10 @@
+// components/Checkout/AddressSection.jsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Button } from "@/components/ui/form/Button";
-import Field from "./Field";
+import { Button } from "@/components/ui/form/Button"; 
+import { Input } from "@/components/ui/form/Input"; // Giả sử bạn có Input comp
+import { MapPin, Store, Truck, Plus } from "lucide-react";
 
 const HCMC_PROVINCE = "Hồ Chí Minh";
 const HCMC_CODE = 79;
@@ -17,16 +19,15 @@ export default function AddressSection({
   onSaveAddress,
   savingAddress,
   onResetNewAddress,
-  onResetAddressToDefault,
-
-  deliveryMethod, // "pickup" | "shipping"
+  deliveryMethod,
   onChangeDeliveryMethod,
 }) {
   const hasAddresses = addresses && addresses.length > 0;
-
   const [districts, setDistricts] = useState([]);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [isAddingNew, setIsAddingNew] = useState(false); // State cục bộ để hiện form thêm mới
 
+  // Logic fetch API giữ nguyên ...
   useEffect(() => {
     async function fetchDistricts() {
       try {
@@ -34,14 +35,9 @@ export default function AddressSection({
         const res = await fetch(HCMC_DISTRICT_API);
         if (!res.ok) throw new Error("Failed to load HCMC districts");
         const data = await res.json();
-        if (data && Array.isArray(data.districts)) {
-          setDistricts(data.districts);
-        }
-      } catch (err) {
-        console.error("fetchDistricts HCMC error:", err);
-      } finally {
-        setLoadingDistricts(false);
-      }
+        if (data && Array.isArray(data.districts)) setDistricts(data.districts);
+      } catch (err) { console.error(err); } 
+      finally { setLoadingDistricts(false); }
     }
     fetchDistricts();
   }, []);
@@ -52,299 +48,172 @@ export default function AddressSection({
     return d?.wards || [];
   }, [districts, addressForm?.district]);
 
-  const updateField = (field, value) => {
-    onChangeAddressForm({
-      ...addressForm,
-      [field]: value,
-    });
+  // Handle khi user bấm "Nhập địa chỉ mới"
+  const startAddNew = () => {
+      setIsAddingNew(true);
+      onSelectAddressId("new");
+      onChangeAddressForm({
+        line: "", ward: "", district: "", province: HCMC_PROVINCE, phone: "", isDefault: false,
+      });
+  };
+
+  const cancelAddNew = () => {
+      setIsAddingNew(false);
+      // Reset về địa chỉ đầu tiên nếu có
+      if (hasAddresses) onSelectAddressId(addresses[0].id);
+      if (onResetNewAddress) onResetNewAddress();
   };
 
   const handleDistrictChange = (value) => {
-    onChangeAddressForm({
-      ...addressForm,
-      province: HCMC_PROVINCE,
-      district: value,
-      ward: "",
-    });
+    onChangeAddressForm({ ...addressForm, province: HCMC_PROVINCE, district: value, ward: "" });
   };
 
-  const renderNewAddressForm = () => (
-    <>
-      <div className="text-sm text-gray-700 font-medium mb-2">Nhập địa chỉ</div>
+  const updateField = (field, value) => onChangeAddressForm({ ...addressForm, [field]: value });
+
+  // Form Render (đã rút gọn style cho đẹp hơn)
+  const renderForm = () => (
+    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 mt-4 animate-in fade-in slide-in-from-top-2">
+      <h4 className="font-semibold text-gray-800 mb-4">Thông tin giao hàng mới</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Tỉnh/Thành phố: cố định Hồ Chí Minh */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tỉnh/Thành phố
-          </label>
-          <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm">
-            {HCMC_PROVINCE}
-          </div>
-          <p className="mt-1 text-xs text-gray-500">
-            Hiện tại chỉ hỗ trợ giao hàng tại TP. Hồ Chí Minh.
-          </p>
-        </div>
-
-        {/* Số điện thoại nhận hàng */}
-        <Field
-          label="Số điện thoại nhận hàng"
-          value={addressForm.phone || ""}
-          onChange={(v) => updateField("phone", v)}
-        />
-
-        {/* Quận/Huyện */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Quận/Huyện
-          </label>
-          <select
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
-            value={addressForm.district || ""}
-            onChange={(e) => handleDistrictChange(e.target.value)}
-          >
-            <option value="">Chọn quận/huyện</option>
-            {districts.map((d) => (
-              <option key={d.code} value={d.name}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-          {loadingDistricts && (
-            <p className="mt-1 text-xs text-gray-400">
-              Đang tải danh sách quận/huyện…
-            </p>
-          )}
-        </div>
-
-        {/* Phường/Xã */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phường/Xã
-          </label>
-          <select
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-400 cursor-pointer"
-            value={addressForm.ward || ""}
-            onChange={(e) => updateField("ward", e.target.value)}
-            disabled={!addressForm.district}
-          >
-            <option value="">
-              {addressForm.district
-                ? "Chọn phường/xã"
-                : "Chọn quận/huyện trước"}
-            </option>
-            {wardOptions.map((w) => (
-              <option key={w.code} value={w.name}>
-                {w.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Địa chỉ chi tiết */}
-        <Field
-          label="Địa chỉ (số nhà, đường)"
-          value={addressForm.line}
-          onChange={(v) => updateField("line", v)}
-          className="md:col-span-2"
-        />
+         {/* Giữ nguyên logic input fields của bạn nhưng style lại Input/Select cho đẹp */}
+         <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại người nhận</label>
+            <Input value={addressForm.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="VD: 0901234567" />
+         </div>
+         
+         <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện</label>
+            <select 
+                className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                value={addressForm.district || ""} 
+                onChange={(e) => handleDistrictChange(e.target.value)}
+            >
+                <option value="">Chọn Quận/Huyện</option>
+                {districts.map(d => <option key={d.code} value={d.name}>{d.name}</option>)}
+            </select>
+         </div>
+         <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
+            <select 
+                className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm disabled:bg-gray-100"
+                value={addressForm.ward || ""} 
+                onChange={(e) => updateField("ward", e.target.value)}
+                disabled={!addressForm.district}
+            >
+                <option value="">Chọn Phường/Xã</option>
+                {wardOptions.map(w => <option key={w.code} value={w.name}>{w.name}</option>)}
+            </select>
+         </div>
+         <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ cụ thể</label>
+            <Input value={addressForm.line} onChange={(e) => updateField("line", e.target.value)} placeholder="Số nhà, tên đường..." />
+         </div>
       </div>
-
-      <div className="mt-3 flex gap-3">
-        <Button
-          primary
-          size="sm"
-          onClick={onSaveAddress}
-          loading={savingAddress}
-          className="cursor-pointer"
-        >
-          {savingAddress ? "Đang lưu..." : "Lưu địa chỉ"}
-        </Button>
-
-        <Button
-          size="sm"
-          outline
-          onClick={() => {
-            if (onResetNewAddress) {
-              onResetNewAddress();
-            } else {
-              onChangeAddressForm({
-                line: "",
-                ward: "",
-                district: "",
-                province: HCMC_PROVINCE,
-                phone: "",
-                isDefault: true,
-              });
-            }
-          }}
-          className="cursor-pointer"
-        >
-          Hủy
-        </Button>
+      <div className="flex justify-end gap-3 mt-4">
+         <Button outline size="sm" onClick={cancelAddNew}>Hủy bỏ</Button>
+         <Button primary size="sm" onClick={onSaveAddress} loading={savingAddress}>Lưu địa chỉ này</Button>
       </div>
-    </>
+    </div>
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
-        Thông tin nhận hàng
-      </h2>
-
-      {/* Hình thức nhận hàng */}
-      <div className="mb-4">
-        <div className="text-sm text-gray-700 font-medium mb-2">
-          Hình thức nhận hàng
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Nhận tại cửa hàng */}
-          <button
-            type="button"
-            onClick={() => onChangeDeliveryMethod("pickup")}
-            className={`border rounded-lg px-3 py-2 text-left text-sm flex items-start gap-2 cursor-pointer ${
-              deliveryMethod === "pickup"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white"
-            }`}
-          >
-            <input
-              type="radio"
-              name="deliveryMethod"
-              checked={deliveryMethod === "pickup"}
-              readOnly
-              className="mt-0.5 cursor-pointer"
-            />
-            <div className="cursor-pointer">
-              <div className="font-medium text-gray-900">Nhận tại cửa hàng</div>
-              <div className="text-xs text-gray-600">
-                Địa chỉ: 273 An Dương Vương, P. Chợ Quán, Q.5, TP.HCM
+    <div className="space-y-6">
+      {/* 1. Phương thức vận chuyển */}
+      <div>
+        <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <Truck className="w-5 h-5 text-blue-600"/> Phương thức vận chuyển
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+           {/* Card Giao hàng */}
+           <div 
+             onClick={() => onChangeDeliveryMethod("shipping")}
+             className={`cursor-pointer rounded-xl border p-4 transition-all flex items-start gap-3
+               ${deliveryMethod === "shipping" ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600" : "border-gray-200 bg-white hover:border-gray-300"}
+             `}
+           >
+              <div className={`p-2 rounded-full ${deliveryMethod === "shipping" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+                 <Truck className="w-5 h-5" />
               </div>
-            </div>
-          </button>
-
-          {/* Giao hàng tận nơi */}
-          <button
-            type="button"
-            onClick={() => onChangeDeliveryMethod("shipping")}
-            className={`border rounded-lg px-3 py-2 text-left text-sm flex items-start gap-2 cursor-pointer ${
-              deliveryMethod === "shipping"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white"
-            }`}
-          >
-            <input
-              type="radio"
-              name="deliveryMethod"
-              checked={deliveryMethod === "shipping"}
-              readOnly
-              className="mt-0.5 cursor-pointer"
-            />
-            <div className="cursor-pointer">
-              <div className="font-medium text-gray-900">Giao hàng tận nơi</div>
-              <div className="text-xs text-gray-600">
-                Giao trong TP. Hồ Chí Minh, phí ship tính theo khoảng cách
+              <div>
+                 <p className={`font-semibold ${deliveryMethod === "shipping" ? "text-blue-900" : "text-gray-900"}`}>Giao hàng tận nơi</p>
+                 <p className="text-sm text-gray-500 mt-1">Giao trong nội thành TP.HCM</p>
               </div>
-            </div>
-          </button>
+           </div>
+
+           {/* Card Nhận tại cửa hàng */}
+           <div 
+             onClick={() => onChangeDeliveryMethod("pickup")}
+             className={`cursor-pointer rounded-xl border p-4 transition-all flex items-start gap-3
+               ${deliveryMethod === "pickup" ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600" : "border-gray-200 bg-white hover:border-gray-300"}
+             `}
+           >
+              <div className={`p-2 rounded-full ${deliveryMethod === "pickup" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+                 <Store className="w-5 h-5" />
+              </div>
+              <div>
+                 <p className={`font-semibold ${deliveryMethod === "pickup" ? "text-blue-900" : "text-gray-900"}`}>Nhận tại cửa hàng</p>
+                 <p className="text-sm text-gray-500 mt-1">273 An Dương Vương, Q.5</p>
+              </div>
+           </div>
         </div>
       </div>
 
-      {/* Nếu chọn giao hàng thì mới hiển thị địa chỉ */}
+      {/* 2. Chọn địa chỉ (Chỉ hiện khi chọn shipping) */}
       {deliveryMethod === "shipping" && (
-        <>
-          {!hasAddresses ? (
-            renderNewAddressForm()
-          ) : (
-            <>
-              {/* Địa chỉ đã lưu */}
-              <div className="mb-4">
-                <div className="text-sm text-gray-700 font-medium mb-2">
-                  Địa chỉ đã lưu
-                </div>
-                <ul className="space-y-2">
-                  {addresses.map((ad) => (
-                    <li key={ad.id}>
-                      <label className="p-3 border rounded-lg bg-white flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="selectedAddress"
-                          checked={selectedAddressId === ad.id}
-                          onChange={() => {
-                            onSelectAddressId(ad.id);
-                            onChangeAddressForm({
-                              line: ad.line || "",
-                              ward: ad.ward || "",
-                              district: ad.district || "",
-                              province: ad.province || HCMC_PROVINCE,
-                              phone: ad.phone || "",   // 👈 copy phone
-                              isDefault: !!ad.isDefault,
-                            });
-                          }}
-                          className="mt-1 cursor-pointer"
-                        />
-                        <div className="flex-1 cursor-pointer">
-                          <div className="text-sm font-medium text-gray-900">
-                            {ad.line}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {[ad.ward, ad.district, ad.province]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </div>
-                          {ad.phone && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              SĐT: {ad.phone}
+        <div className="animate-in fade-in slide-in-from-top-2">
+           <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-blue-600"/> Địa chỉ nhận hàng
+           </h3>
+           
+           {!hasAddresses && !isAddingNew ? (
+              // Chưa có địa chỉ nào -> Hiện form luôn
+              renderForm()
+           ) : (
+             <div className="space-y-3">
+                {/* List địa chỉ dạng Grid Card */}
+                {!isAddingNew && (
+                    <div className="grid grid-cols-1 gap-3">
+                        {addresses.map((ad) => (
+                        <div 
+                            key={ad.id}
+                            onClick={() => {
+                                onSelectAddressId(ad.id);
+                                onChangeAddressForm({ ...ad, isDefault: !!ad.isDefault }); // Update form state để shipping calc chạy
+                            }}
+                            className={`relative cursor-pointer rounded-xl border p-4 transition-all flex items-start gap-3
+                                ${selectedAddressId === ad.id ? "border-blue-600 bg-blue-50/50" : "border-gray-200 bg-white hover:border-gray-300"}
+                            `}
+                        >
+                            <div className={`mt-0.5 w-5 h-5 rounded-full border flex items-center justify-center
+                                ${selectedAddressId === ad.id ? "border-blue-600" : "border-gray-400"}
+                            `}>
+                                {selectedAddressId === ad.id && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
                             </div>
-                          )}
+                            <div className="flex-1">
+                                <p className="font-medium text-gray-900">{ad.line}</p>
+                                <p className="text-sm text-gray-600 mt-0.5">
+                                    {[ad.ward, ad.district, ad.province].filter(Boolean).join(", ")}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-1">SĐT: {ad.phone}</p>
+                            </div>
                         </div>
-                      </label>
-                    </li>
-                  ))}
+                        ))}
+                        
+                        {/* Nút thêm mới */}
+                        <button 
+                            onClick={startAddNew}
+                            className="w-full py-3 border border-dashed border-gray-300 rounded-xl flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                        >
+                            <Plus className="w-5 h-5" /> Thêm địa chỉ mới
+                        </button>
+                    </div>
+                )}
 
-                  {/* Chọn nhập địa chỉ mới */}
-                  <li>
-                    <label className="p-3 border rounded-lg cursor-pointer bg-white flex items-start gap-3">
-                      <input
-                        type="radio"
-                        name="selectedAddress"
-                        checked={selectedAddressId === "new"}
-                        onChange={() => {
-                          onSelectAddressId("new");
-                          onChangeAddressForm({
-                            line: "",
-                            ward: "",
-                            district: "",
-                            province: HCMC_PROVINCE,
-                            phone: "",
-                            isDefault: false,
-                          });
-                        }}
-                        className="mt-1 cursor-pointer"
-                      />
-                      <div className="flex-1 cursor-pointer">
-                        <div className="text-sm font-medium text-gray-900">
-                          Nhập địa chỉ mới
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Bạn có thể nhập địa chỉ mới để giao hàng trong TP. Hồ
-                          Chí Minh
-                        </div>
-                      </div>
-                    </label>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Form địa chỉ mới */}
-              {selectedAddressId === "new" && (
-                <>
-                  {renderNewAddressForm()}
-                  <div className="mt-3 flex gap-3" />
-                </>
-              )}
-            </>
-          )}
-        </>
+                {/* Form thêm mới */}
+                {isAddingNew && renderForm()}
+             </div>
+           )}
+        </div>
       )}
     </div>
   );
