@@ -15,7 +15,7 @@ import VerticalCategoryMenu from "@/components/Home/category/VerticalCategoryMen
 import ServiceFeatures from "@/components/Home/ServiceFeatures";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 import Footer from "@/components/Home/Footer";
-import Reveal from "@/components/Animations/Reveal"; // Đảm bảo bạn đã có component này
+import Reveal from "@/components/Animations/Reveal";
 
 export const dynamic = "force-dynamic";
 
@@ -37,11 +37,10 @@ export default async function HomePage() {
     <HeaderLayout>
       <main className="min-h-screen bg-gray-50/50 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-          
           {/* --- HERO SECTION --- */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-auto lg:h-[400px]">
             {/* Cột Menu: Bay từ trái sang */}
-            <div className="hidden lg:block lg:col-span-3 h-full">
+            <div className="hidden lg:block lg:col-span-3 h-full ">
               <Reveal direction="right" className="h-full" fullWidth>
                 <VerticalCategoryMenu categories={categoriesSidbar} />
               </Reveal>
