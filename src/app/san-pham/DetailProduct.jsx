@@ -474,7 +474,7 @@ const DetailProduct = ({ product }) => {
                   <p className="font-semibold text-gray-900">
                     Đổi trả miễn phí
                   </p>
-                  <p className="text-gray-500 text-xs">Trong vòng 7 ngày</p>
+                  <p className="text-gray-500 text-xs">Đổi trả tiện lợi</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50">
