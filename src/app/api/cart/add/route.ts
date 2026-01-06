@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
       );
     }
     const token = authHeader;
-    console.log("your token :", token);
 
     const payload = await verifyToken(token);
     if (!payload) {
@@ -76,7 +75,7 @@ export async function POST(req: NextRequest) {
     } else {
       //  Kiểm tra item đã tồn tại trong cart
       const existingItem = cart.items.find(
-        (item) => item.variantId === variantId
+        (item: any) => item.variantId === variantId
       );
 
       if (existingItem) {
