@@ -10,7 +10,7 @@ type CartItem = {
 
 function parseItems(payloadItems: any): CartItem[] {
   if (!Array.isArray(payloadItems)) return [];
-  return payloadItems.map((it) => ({
+  return payloadItems.map((it: any) => ({
     price: Number(it.price) || 0,
     quantity: Number(it.quantity) || 0,
     categoryId:

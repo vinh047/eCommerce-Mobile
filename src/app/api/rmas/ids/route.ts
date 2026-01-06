@@ -23,7 +23,7 @@ export async function GET(req: Request) {
       select: { id: true },
     });
 
-    return NextResponse.json({ ids: rmas.map((r) => r.id) });
+    return NextResponse.json({ ids: rmas.map((r: any) => r.id) });
   } catch (error) {
     console.error("Error fetching RMA IDs:", error);
     return NextResponse.json({ message: "Failed to get IDs" }, { status: 500 });

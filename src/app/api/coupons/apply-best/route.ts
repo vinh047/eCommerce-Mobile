@@ -104,7 +104,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ build list tất cả coupon hợp lệ kèm discountAmount
-    const allCoupons = validCoupons.map((c) => {
+    const allCoupons = validCoupons.map((c: any) => {
       const discountAmount = calcDiscount(c, subtotal);
       return {
         id: c.id,

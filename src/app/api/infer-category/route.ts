@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     }> = [];
     if (tokens.length > 0) {
       // build OR conditions for tokens across product.name and product.slug
-      const tokenOr: Prisma.ProductWhereInput[] = tokens.flatMap((t) => [
+      const tokenOr: Prisma.ProductWhereInput[] = tokens.flatMap((t: any) => [
         { name: { contains: t, mode: "insensitive" as Prisma.QueryMode } },
         { slug: { contains: t, mode: "insensitive" as Prisma.QueryMode } },
       ]);

@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       select: { id: true },
     });
 
-    return NextResponse.json({ ids: roles.map((r) => r.id) });
+    return NextResponse.json({ ids: roles.map((r: any) => r.id) });
   } catch (error) {
     console.error("Error fetching role IDs:", error);
     return NextResponse.json({ message: "Failed to get IDs" }, { status: 500 });

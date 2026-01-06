@@ -166,7 +166,7 @@ export async function POST(req: Request) {
           });
 
           if (availableDevices.length !== deviceIdentifiers.length) {
-            const foundIdentifiers = availableDevices.map((d) => d.identifier);
+            const foundIdentifiers = availableDevices.map((d: any) => d.identifier);
             const missing = deviceIdentifiers.filter(
               (id: string) => !foundIdentifiers.includes(id)
             );
@@ -192,7 +192,7 @@ export async function POST(req: Request) {
             quantity,
 
             devices: {
-              create: deviceRecords.map((dev) => ({
+              create: deviceRecords.map((dev: any) => ({
                 device: { connect: { id: dev.id } },
               })),
             },

@@ -25,7 +25,7 @@ export async function GET(req: Request) {
       select: { id: true },
     });
 
-    return NextResponse.json({ ids: variants.map((v) => v.id) });
+    return NextResponse.json({ ids: variants.map((v: any) => v.id) });
   } catch (error) {
     return NextResponse.json({ message: "Failed to get IDs" }, { status: 500 });
   }

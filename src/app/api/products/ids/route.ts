@@ -42,7 +42,7 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({
-      ids: products.map((p) => p.id),
+      ids: products.map((p: any) => p.id),
     });
   } catch (error) {
     console.error("Product IDs error:", error);

@@ -101,7 +101,7 @@ export async function PUT(
           select: { id: true },
         });
 
-        const deleteIds = variantsToDelete.map((v) => v.id);
+        const deleteIds = variantsToDelete.map((v: any) => v.id);
 
         if (deleteIds.length > 0) {
           // 👉 1. Xoá devices tham chiếu tới các variant này
