@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth"; // bạn cần hàm verifyToken đối xứng với signToken
+import { verifyToken } from "@/lib/auth"; 
 
 export async function GET(req: Request) {
   try {
@@ -49,8 +49,6 @@ export async function GET(req: Request) {
       },
     });
 
-    console.log("staff: ", staff)
-
     if (!staff) {
       return NextResponse.json(
         { error: "Không tìm thấy staff" },
@@ -58,10 +56,10 @@ export async function GET(req: Request) {
       );
     }
 
-    const roles = staff.staffRoles.map((r) => r.role.name);
+    const roles = staff.staffRoles.map((r: any) => r.role.name);
     const permissions = staff.staffRoles
-      .flatMap((r) => r.role.rolePermissions)
-      .map((rp) => rp.permission.key);
+      .flatMap((r: any) => r.role.rolePermissions)
+      .map((rp: any) => rp.permission.key);
 
     return NextResponse.json({
       staff: {
