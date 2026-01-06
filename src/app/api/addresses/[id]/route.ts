@@ -1,7 +1,7 @@
-// src/app/api/addresses/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 /**
  * Helper: get authenticated user id from token cookie
@@ -101,7 +101,7 @@ export async function PUT(
 
     // Nếu set isDefault = true -> transaction unset default ở địa chỉ khác
     if (isDefault === true) {
-      updatedAddress = await prisma.$transaction(async (tx) => {
+      updatedAddress = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await tx.address.updateMany({
           where: {
             userId: Number(userId),
@@ -184,7 +184,7 @@ export async function DELETE(
       );
     }
 
-    const deletedAddress = await prisma.$transaction(async (tx) => {
+    const deletedAddress = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Xóa địa chỉ
       const deleted = await tx.address.delete({
         where: { id: addressId },
