@@ -12,7 +12,8 @@
     "prisma:studio": "prisma studio --schema=src/prisma/schema.prisma",
     "prisma:validate": "prisma validate --schema=src/prisma/schema.prisma",
     "prisma:format": "prisma format --schema=src/prisma/schema.prisma",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.45",
