@@ -136,7 +136,7 @@ export async function GET(req: Request) {
     const paymentRate = totalOrdersCount > 0 ? (paidOrdersCount / totalOrdersCount) * 100 : 0;
 
     // Map lại top selling products
-    const topProducts = topSellingItems.map((item) => ({
+    const topProducts = topSellingItems.map((item: any) => ({
       name: item.nameSnapshot,
       quantity: item._sum.quantity,
       // Doanh thu ước tính của sp này = giá lúc mua * số lượng

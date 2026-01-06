@@ -11,7 +11,7 @@ const productsRaw = await prisma.product.findMany({
   },
 });
 
-const products = productsRaw.map((p) => ({
+const products = productsRaw.map((p: any) => ({
   ...p,
   ratingAvg: Number(p.ratingAvg),
 }));
@@ -199,7 +199,7 @@ function semanticSearch(query: string, products: Product[], topN = 3) {
   }
 
   return products
-    .map((p) => {
+    .map((p: any) => {
       let score = 0;
 
       // Match tên + mô tả

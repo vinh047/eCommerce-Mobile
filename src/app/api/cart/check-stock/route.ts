@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
       // ===== BUILD PHẦN SPEC: "16 GB", "256 GB", ... =====
       const specParts =
-        v.variantSpecValues?.map((sv) => {
+        v.variantSpecValues?.map((sv: any) => {
           let value: string | null = null;
 
           if (sv.stringValue != null) {

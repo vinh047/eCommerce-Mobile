@@ -58,7 +58,7 @@ export async function GET(req: Request) {
     });
 
     // Map lại dữ liệu để FE dễ hiển thị (ví dụ: thêm itemsCount)
-    const formattedData = data.map((cart) => ({
+    const formattedData = data.map((cart: any) => ({
       ...cart,
       itemsCount: cart.items.length,
     }));

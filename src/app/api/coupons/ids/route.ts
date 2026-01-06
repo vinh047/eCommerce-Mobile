@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       select: { id: true }, 
     });
 
-    return NextResponse.json({ ids: coupons.map((c) => c.id) });
+    return NextResponse.json({ ids: coupons.map((c: any) => c.id) });
   } catch (error) {
     console.error("Error fetching coupon IDs:", error);
     return NextResponse.json({ message: "Failed to get IDs" }, { status: 500 });

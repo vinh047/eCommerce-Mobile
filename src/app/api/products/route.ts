@@ -63,12 +63,12 @@ export async function GET(req: Request) {
     ]);
 
     // Xử lý dữ liệu trước khi trả về (Tính Min/Max Price, Total Stock)
-    const formattedProducts = products.map((p) => {
+    const formattedProducts = products.map((p: any) => {
       const activeVariants = p.variants; // Hoặc filter .filter(v => v.isActive) tuỳ logic
 
       // Tính tổng tồn kho
       const totalStock = activeVariants.reduce(
-        (sum, v) => sum + (v.stock || 0),
+        (sum: any, v: any) => sum + (v.stock || 0),
         0
       );
 
@@ -78,8 +78,8 @@ export async function GET(req: Request) {
 
       if (activeVariants.length > 0) {
         const prices = activeVariants
-          .map((v) => Number(v.price))
-          .filter((price) => price > 0);
+          .map((v: any) => Number(v.price))
+          .filter((price: any) => price > 0);
         if (prices.length > 0) {
           minPrice = Math.min(...prices);
           maxPrice = Math.max(...prices);

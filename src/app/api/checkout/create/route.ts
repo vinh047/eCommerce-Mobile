@@ -257,7 +257,7 @@ export async function POST(req: NextRequest) {
             quantity: qty,
             // Lưu danh sách device cụ thể vào giao dịch kho
             devices: {
-              create: devices.map((d) => ({
+              create: devices.map((d: any) => ({
                 device: { connect: { id: d.id } },
               })),
             },
