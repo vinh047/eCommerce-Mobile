@@ -22,9 +22,9 @@ model Banner {
 }
 
 /// *
-///  * ==========================
-///  * USERS & ADDRESS
-///  * ==========================
+/// * ==========================
+/// * USERS & ADDRESS
+/// * ==========================
 model User {
   id           Int           @id @default(autoincrement())
   email        String        @unique @db.VarChar(255)
@@ -58,9 +58,9 @@ model Address {
 }
 
 /// *
-///  * ==========================
-///  * BRANDS, CATEGORIES, SPEC_TEMPLATES
-///  * ==========================
+/// * ==========================
+/// * BRANDS, CATEGORIES, SPEC_TEMPLATES
+/// * ==========================
 model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @db.VarChar(255)
@@ -326,9 +326,9 @@ model MediaVariant {
 }
 
 /// *
-///  * ==========================
-///  * COUPONS & CARTS
-///  * ==========================
+/// * ==========================
+/// * COUPONS & CARTS
+/// * ==========================
 model Coupon {
   id         Int           @id @default(autoincrement())
   code       String        @unique @db.VarChar(50)
@@ -375,9 +375,9 @@ model CartItem {
 }
 
 /// *
-///  * ==========================
-///  * ORDERS & PAYMENTS
-///  * ==========================
+/// * ==========================
+/// * ORDERS & PAYMENTS
+/// * ==========================
 model Order {
   id               Int                  @id @default(autoincrement())
   userId           Int                  @map("user_id")
@@ -444,9 +444,9 @@ model PaymentTransaction {
 }
 
 /// *
-///  * ==========================
-///  * REVIEWS & RMA
-///  * ==========================
+/// * ==========================
+/// * REVIEWS & RMA
+/// * ==========================
 model Review {
   id         Int        @id @default(autoincrement())
   userId     Int        @map("user_id")
@@ -481,9 +481,9 @@ model Rma {
 }
 
 /// *
-///  * ==========================
-///  * STAFF & ROLES & PERMISSIONS
-///  * ==========================
+/// * ==========================
+/// * STAFF & ROLES & PERMISSIONS
+/// * ==========================
 model Staff {
   id           Int               @id @default(autoincrement())
   email        String            @unique @db.VarChar(255)
@@ -542,9 +542,9 @@ model RolePermission {
 }
 
 /// *
-///  * ==========================
-///  * INVENTORY & DEVICES
-///  * ==========================
+/// * ==========================
+/// * INVENTORY & DEVICES
+/// * ==========================
 model InventoryTicket {
   id           Int                    @id @default(autoincrement())
   code         String                 @unique
@@ -659,9 +659,9 @@ model VariantSpecToVariantSpecValue {
 }
 
 /// *
-///  * ==========================
-///  * ENUMS
-///  * ==========================
+/// * ==========================
+/// * ENUMS
+/// * ==========================
 enum AccountStatus {
   active
   blocked

@@ -51,14 +51,14 @@ export async function GET(req: Request) {
           include: {
             options: true,
             buckets: true,
-            values: true,
+            productSpecValues: true,
           },
         },
         variantSpecs: {
           include: {
             options: true,
             buckets: true,
-            values: true,
+            variantSpecValues: true,
           },
         },
         _count: { select: { productSpecs: true } },

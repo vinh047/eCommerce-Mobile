@@ -15,12 +15,12 @@ export async function GET(
         MediaVariant: { include: { Media: true } },
         variantSpecValues: {
           include: {
-            VariantSpec: {
+            variantSpecs: {
               include: {
                 template: true,
                 buckets: true,
                 options: true,
-                values: true,
+                variantSpecValues: true,
               },
             },
           },

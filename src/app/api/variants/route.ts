@@ -123,12 +123,12 @@ export async function GET(req: Request) {
         },
         variantSpecValues: {
           include: {
-            VariantSpec: {
+            variantSpecs: {
               include: {
                 template: true,
                 buckets: true,
                 options: true,
-                values: true,
+                variantSpecValues: true,
               },
             },
           },
