@@ -40,12 +40,12 @@ export async function POST(req: Request) {
     }
 
     // Extract roles
-    const roles = staff.staffRoles.map((r) => r.role.name);
+    const roles = staff.staffRoles.map((r: any) => r.role.name);
 
     // Extract permissions
     const permissions = staff.staffRoles
-      .flatMap((r) => r.role.rolePermissions)
-      .map((rp) => rp.permission.key);
+      .flatMap((r: any) => r.role.rolePermissions)
+      .map((rp: any) => rp.permission.key);
 
     // Create Staff JWT
     const token = await signToken({
