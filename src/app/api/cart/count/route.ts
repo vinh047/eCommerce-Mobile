@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     const count =
       cart?.items?.reduce(
-        (sum, item) => sum + (Number(item.quantity) || 0),
+        (sum: any, item: any) => sum + (Number(item.quantity) || 0),
         0
       ) || 0;
 

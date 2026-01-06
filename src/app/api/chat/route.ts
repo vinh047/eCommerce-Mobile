@@ -217,7 +217,7 @@ function semanticSearch(query: string, products: Product[], topN = 3) {
         score += 1.5;
 
       // Match label / specKey
-      p.productSpecValues?.forEach((spec) => {
+      p.productSpecValues?.forEach((spec: any) => {
         const label = (spec.label || "").toLowerCase();
         const key = spec.specKey.toLowerCase();
 
