@@ -123,7 +123,7 @@ model ProductSpec {
   isRequired                    Boolean                         @default(false)
   groupLabel                    String?                         @db.VarChar(128)
   displayOrder                  Int                             @default(0) @map("display_order")
-  ProductSpecToProductSpecValue ProductSpecToProductSpecValue[]
+  productSpecValues ProductSpecValue[]
   buckets                       ProductBucket[]
   options                       ProductSpecOption[]
   template                      SpecTemplate                    @relation(fields: [specTemplateId], references: [id], onDelete: Cascade)
@@ -175,7 +175,7 @@ model VariantSpec {
   orderIndex                    Int                             @default(0) @map("order_index")
   groupLabel                    String?                         @db.VarChar(128)
   displayOrder                  Int                             @default(0) @map("display_order")
-  VariantSpecToVariantSpecValue VariantSpecToVariantSpecValue[]
+  variantSpecValues VariantSpecValue[]
   buckets                       VariantBucket[]
   options                       VariantSpecOption[]
   template                      SpecTemplate                    @relation(fields: [specTemplateId], references: [id], onDelete: Cascade)
@@ -273,7 +273,7 @@ model ProductSpecValue {
   stringValue                   String?                         @db.VarChar(255)
   numericValue                  Float?
   booleanValue                  Boolean?
-  ProductSpecToProductSpecValue ProductSpecToProductSpecValue[]
+  productSpecs ProductSpec[]
   product                       Product                         @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
@@ -293,7 +293,7 @@ model VariantSpecValue {
   stringValue                   String?                         @db.VarChar(255)
   numericValue                  Float?
   booleanValue                  Boolean?
-  VariantSpecToVariantSpecValue VariantSpecToVariantSpecValue[]
+  variantSpecs VariantSpec[]
   variant                       Variant                         @relation(fields: [variantId], references: [id], onDelete: Cascade)
 
   @@index([variantId])
@@ -636,27 +636,6 @@ model PaymentAccount {
   @@map("payment_accounts")
 }
 
-model ProductSpecToProductSpecValue {
-  A                   Int
-  B                   Int
-  product_specs       ProductSpec      @relation(fields: [A], references: [id], onDelete: Cascade)
-  product_spec_values ProductSpecValue @relation(fields: [B], references: [id], onDelete: Cascade)
-
-  @@id([A, B], map: "_ProductSpecToProductSpecValue_AB_pkey")
-  @@index([B], map: "_ProductSpecToProductSpecValue_B_index")
-  @@map("_ProductSpecToProductSpecValue")
-}
-
-model VariantSpecToVariantSpecValue {
-  A                   Int
-  B                   Int
-  variant_specs       VariantSpec      @relation(fields: [A], references: [id], onDelete: Cascade)
-  variant_spec_values VariantSpecValue @relation(fields: [B], references: [id], onDelete: Cascade)
-
-  @@id([A, B], map: "_VariantSpecToVariantSpecValue_AB_pkey")
-  @@index([B], map: "_VariantSpecToVariantSpecValue_B_index")
-  @@map("_VariantSpecToVariantSpecValue")
-}
 
 /// *
 /// * ==========================
