@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     let createdAddress;
     if (isDefault) {
       // transaction: unset other defaults then create
-      createdAddress = await prisma.$transaction(async (tx) => {
+      createdAddress = await prisma.$transaction(async (tx: any) => {
         await tx.address.updateMany({
           where: { userId: Number(userId), isDefault: true },
           data: { isDefault: false },
