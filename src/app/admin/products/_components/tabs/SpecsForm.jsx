@@ -1,5 +1,9 @@
 import { useFormContext } from "react-hook-form";
-import { ValueType } from "@prisma/client";
+
+const ValueType = {
+  discrete: "discrete",
+  range: "range",
+};
 
 export default function SpecsForm({ template, isLoading }) {
   const {
