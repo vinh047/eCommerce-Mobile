@@ -1,0 +1,14 @@
+name: Keep Database Alive
+
+on:
+  schedule:
+    # Cron syntax: phút giờ ngày tháng thứ
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping_database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel API
+        run: curl -I https://e-commerce-mobile-sgu.vercel.app/api/cron
