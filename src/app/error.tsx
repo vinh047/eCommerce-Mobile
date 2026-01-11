@@ -1,5 +1,6 @@
 "use client";
 
+import WakeUpDB from "@/components/Home/wakeUpDb";
 import { useEffect, useState } from "react";
 
 export default function Error({
@@ -12,6 +13,7 @@ export default function Error({
   const [isDBError, setIsDBError] = useState(false);
   const [status, setStatus] = useState("Đang kiểm tra lỗi...");
   const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 10;
 
   useEffect(() => {
     // BƯỚC 1: KHÁM BỆNH
@@ -30,9 +32,8 @@ export default function Error({
       return;
     }
 
-    // Nếu ĐÚNG là lỗi DB -> Bắt đầu quy trình Polling (Code cũ)
+    // Nếu ĐÚNG là lỗi DB -> Bắt đầu quy trình Polling
     let isMounted = true;
-    const MAX_RETRIES = 20;
 
     const wakeUpDatabase = async () => {
       setStatus("Server đang khởi động (Cold Start)...");
@@ -94,34 +95,6 @@ export default function Error({
 
   // TRƯỜNG HỢP 2: Lỗi do DB ngủ (Hiển thị Spinner và quy trình polling)
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-800 p-4">
-      <div className="text-center space-y-4">
-        <div className="relative w-16 h-16 mx-auto">
-          <div className="absolute top-0 w-16 h-16 border-4 border-blue-200 rounded-full"></div>
-          <div className="absolute top-0 w-16 h-16 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-        </div>
-
-        <h2 className="text-2xl font-bold">Hệ thống đang khởi động</h2>
-
-        <div className="bg-white p-4 rounded shadow-sm border border-gray-200 max-w-md">
-          <p className="text-blue-600 font-medium">{status}</p>
-          {isDBError && (
-            <p className="text-sm text-gray-500 mt-2">
-              Lần thử: {retryCount}/20 <br />
-              <span className="text-xs text-gray-400">
-                (Database Free Tier đang thức dậy...)
-              </span>
-            </p>
-          )}
-        </div>
-
-        <button
-          onClick={() => reset()}
-          className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition"
-        >
-          Thử lại ngay
-        </button>
-      </div>
-    </div>
+    <WakeUpDB isDBError={isDBError} retryCount={retryCount} maxRetry={MAX_RETRIES} />
   );
 }
