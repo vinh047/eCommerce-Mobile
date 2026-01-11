@@ -145,9 +145,21 @@ export default function Header() {
     if (e) e.preventDefault();
     const qRaw = (search || "").trim();
     if (!qRaw) return;
+
     try {
-      router.push(`/search?q=${encodeURIComponent(qRaw)}`);
+      const res = await fetch("/api/infer-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q: qRaw }),
+      });
+      const data = await res.json();
+      if (data?.ok && data.category) {
+        router.push(`/${data.category}?q=${encodeURIComponent(qRaw)}`);
+      } else {
+        router.push(`/search?q=${encodeURIComponent(qRaw)}`);
+      }
     } catch (err) {
+      console.error("infer category error", err);
       router.push(`/search?q=${encodeURIComponent(qRaw)}`);
     }
   }
