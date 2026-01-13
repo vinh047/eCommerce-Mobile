@@ -1,5 +1,5 @@
 import React from "react";
-import Signup from "@/app/signup/signup";
+import Signup from "./signup"; 
 
 export const metadata = {
   title: "Signup",

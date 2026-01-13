@@ -4,9 +4,9 @@ import {
   getCategoryBySlug,
   getCategoriesWithSpecTemplates,
 } from "@/lib/api/categoriesApi";
-import CategoryTabs from "@/app/(products)/[categorySlug]/_component/CategoryTabs";
-import Breadcrumb from "@/app/(products)/[categorySlug]/_component/navigation/Breadcrumb";
-import BreadcrumbSkeleton from "@/app/(products)/[categorySlug]/_component/navigation/BreadcrumbSkeleton";
+import CategoryTabs from "./_component/CategoryTabs";
+import Breadcrumb from "./_component/navigation/Breadcrumb";
+import BreadcrumbSkeleton from "./_component/navigation/BreadcrumbSkeleton";
 import FilterSidebar from "./_component/FilterSidebar";
 import SortDropdown from "./_component/SortDropdown";
 import ListProducts from "./_component/ListProduct";

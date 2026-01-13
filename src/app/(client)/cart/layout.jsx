@@ -1,5 +1,4 @@
 import HeaderLayout from '@/components/Layout/HeaderLayout'
-import '../globals.css'
 
 export const metadata = {
   title: 'Giỏ hàng - TechMobile',

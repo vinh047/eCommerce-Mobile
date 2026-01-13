@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { User, ShoppingBag, MapPin, LogOut } from "lucide-react";
 import usersApi from "@/lib/api/usersApi";
 import { toast } from "sonner";
+import { ROUTES } from "@/config/routes";
 
 // Cấu hình menu items
 const MENU_ITEMS = [
@@ -36,7 +37,7 @@ export function ProfileSidebar() {
       if (usersApi && usersApi.logout) await usersApi.logout();
       else await fetch("/api/auth/logout", { method: "POST" });
 
-      router.replace("/signin");
+      router.replace(ROUTES.LOGIN);
       router.refresh();
     } catch (error) {
       toast.error("Đăng xuất thất bại");

@@ -1,5 +1,5 @@
 import React from "react";
-import Signin from "@/app/signin/signin";
+import Signin from "./signin";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 
 export const metadata = {

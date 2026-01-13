@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import "../signin/style.css"; // dùng lại style nút, input
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
