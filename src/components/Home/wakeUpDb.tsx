@@ -43,7 +43,7 @@ const WakeUpDB: React.FC<WakeUpDBProps> = ({
           href={href}
           className="mt-6 inline-block rounded-lg px-6 py-3 font-medium shadow-lg transition-transform hover:scale-105 hover:bg-green-200"
         >
-          Go Home
+          Thử lại
         </a>
       </div>
     </div>

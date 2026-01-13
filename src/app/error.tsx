@@ -95,6 +95,10 @@ export default function Error({
 
   // TRƯỜNG HỢP 2: Lỗi do DB ngủ (Hiển thị Spinner và quy trình polling)
   return (
-    <WakeUpDB isDBError={isDBError} retryCount={retryCount} maxRetry={MAX_RETRIES} />
+    <WakeUpDB
+      isDBError={isDBError}
+      retryCount={retryCount}
+      maxRetry={MAX_RETRIES}
+    />
   );
 }
