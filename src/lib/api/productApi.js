@@ -7,11 +7,13 @@ export async function getProductsByCategory(categoryId, limit) {
 export async function getProductsByFilters(categoryId, params) {
   return await apiFetch(`/products/filters/${categoryId}?${params}`, {
     // next: { revalidate: 600 },
-    cache: "no-store",
+    cache: "force-cache",
   });
 }
 export async function getProductBySlug(slug) {
-  return await apiFetch(`/products/detail/${slug}`);
+  return await apiFetch(`/products/detail/${slug}`, {
+    cache: "force-cache",
+  });
 }
 export async function getReviewsProducts(params) {
   return await apiFetch(
@@ -33,13 +35,13 @@ const productsApi = {
   getProducts: (params) =>
     apiFetch(`/products?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getProductById: (id) =>
     apiFetch(`/products/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createProduct: (data) =>
@@ -73,13 +75,13 @@ const productsApi = {
   getAllIds: (params) =>
     apiFetch(`/products/ids?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getAll: (params) =>
     apiFetch(`/products/bulk?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 };
 

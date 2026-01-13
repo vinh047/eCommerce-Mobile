@@ -4,11 +4,11 @@ const categoryApi = {
   getCategories: (params) =>
     apiFetch(`/category?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getCategoryById: (id) =>
-    apiFetch(`/category/${id}`, { method: "GET", cache: "no-store" }),
+    apiFetch(`/category/${id}`, { method: "GET", cache: "force-cache" }),
 
   createCategory: (data) =>
     apiFetch("/category", { method: "POST", body: data }),

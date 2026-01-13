@@ -10,13 +10,13 @@ const bannersApi = {
   getBanners: (params) =>
     apiFetch(`/banners?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getBannerById: (id) =>
     apiFetch(`/banners/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createBanner: (data) =>

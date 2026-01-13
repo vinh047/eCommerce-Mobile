@@ -4,13 +4,13 @@ const staffApi = {
   getStaffs: (params) =>
     apiFetch(`/staffs?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getStaffById: (id) =>
     apiFetch(`/staffs/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createStaff: (data) =>

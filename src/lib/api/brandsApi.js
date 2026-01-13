@@ -4,13 +4,13 @@ const brandsApi = {
   getBrands: (params) =>
     apiFetch(`/brands?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getBrandById: (id) =>
     apiFetch(`/brands/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createBrand: (data) =>
@@ -33,7 +33,7 @@ const brandsApi = {
   getAllIds: (params) =>
     apiFetch(`/brands/ids?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   bulkAction: (ids, action) =>

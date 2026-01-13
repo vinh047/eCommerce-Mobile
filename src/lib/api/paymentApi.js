@@ -4,7 +4,7 @@ const paymentApi = {
   getMethods: (params) =>
     apiFetch(`/payment-methods?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createMethod: (data) =>

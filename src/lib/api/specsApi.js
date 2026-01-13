@@ -4,16 +4,16 @@ const specsApi = {
   getSpecs: (params) =>
     apiFetch(`/specs?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getSpecById: (id) =>
-    apiFetch(`/specs/${id}`, { method: "GET", cache: "no-store" }),
+    apiFetch(`/specs/${id}`, { method: "GET", cache: "force-cache" }),
 
   getTemplateByCategoryId: (categoryId) =>
     apiFetch(`/specs/by-category/${categoryId}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createSpec: (data) => apiFetch("/specs", { method: "POST", body: data }),

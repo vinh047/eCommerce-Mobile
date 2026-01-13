@@ -4,13 +4,13 @@ const rmasApi = {
   getRmas: (params) =>
     apiFetch(`/rmas?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getRmaById: (id) =>
     apiFetch(`/rmas/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createRma: (data) =>

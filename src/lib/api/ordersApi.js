@@ -10,7 +10,7 @@ const ordersApi = {
   getOrderById: (id) =>
     apiFetch(`/orders/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createOrder: (data) =>

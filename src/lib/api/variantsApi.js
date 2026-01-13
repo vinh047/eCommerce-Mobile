@@ -4,19 +4,19 @@ const variantsApi = {
   getVariants: (params) =>
     apiFetch(`/variants?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getVariantById: (id) =>
     apiFetch(`/variants/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getVariantByTemplateId: (productID) =>
     apiFetch(`/variant-spec/by-template/${productID}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createVariant: (data) =>
@@ -39,7 +39,7 @@ const variantsApi = {
   getAllIds: (params) =>
     apiFetch(`/variants/ids?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   bulkAction: (ids, action) =>
@@ -51,7 +51,7 @@ const variantsApi = {
   getCategoryById: (variantId) =>
     apiFetch(`/variants/category?variantId=${variantId}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 };
 

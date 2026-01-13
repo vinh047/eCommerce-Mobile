@@ -4,7 +4,7 @@ const reportsApi = {
   getReports: (range = "7days") =>
     apiFetch(`/reports?range=${range}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 };
 
