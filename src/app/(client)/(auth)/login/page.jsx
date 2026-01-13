@@ -1,5 +1,5 @@
 import React from "react";
-import LoginPage from "./loginPage";
+import LoginPage from "./LoginPage"; 
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 
 export const metadata = {
