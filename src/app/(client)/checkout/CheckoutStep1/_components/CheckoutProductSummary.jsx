@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/form/Button";
+import { ROUTES } from "@/config/routes";
 
 export default function CheckoutProductSummary({
   items,
@@ -35,7 +36,10 @@ export default function CheckoutProductSummary({
         </div>
         <div className="flex-1">
           <div className="font-medium text-gray-900">
-            <a href={`/san-pham/${firstItem.slug}`} className="hover:underline">
+            <a
+              href={ROUTES.productDetail(firstItem.slug)}
+              className="hover:underline"
+            >
               {firstItem.name}
             </a>{" "}
             {[firstItem.variantName || "", ...(firstItem.specs || [])]
@@ -88,7 +92,7 @@ export default function CheckoutProductSummary({
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium text-gray-900">
-                  <a href={`/san-pham/${it.slug}`} className="hover:underline">
+                  <a href={ROUTES.productDetail(it.slug)} className="hover:underline">
                     {it.name}
                   </a>{" "}
                   {[it.variantName || "", ...(it.specs || [])]

@@ -13,21 +13,13 @@ const inter = Inter({
 });
 
 export const metadata = {
-  referrer: 'origin-when-cross-origin',
+  referrer: "origin-when-cross-origin",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
-      <body>
-        <GoogleAuthProvider>
-          {/* <ChatBox/> */}
-          {children}
-        </GoogleAuthProvider>
-        <Toaster position="top-center" richColors />
-        <ChatBot />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
-

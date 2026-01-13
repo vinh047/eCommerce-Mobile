@@ -1,6 +1,5 @@
 import PolicyLayout from "@/components/Layout/PolicyLayout";
 
-
 export default function WarrantyPolicyContent() {
   return (
     <PolicyLayout activePage={"warranty"}>

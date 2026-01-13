@@ -1,4 +1,3 @@
-// components/Checkout/CheckoutStepper.jsx
 import { Check } from "lucide-react";
 
 export default function CheckoutStepper({ currentStep }) {

@@ -1,4 +1,3 @@
-// components/Checkout/CheckoutStep2.jsx
 "use client";
 
 import React, { useState } from "react";

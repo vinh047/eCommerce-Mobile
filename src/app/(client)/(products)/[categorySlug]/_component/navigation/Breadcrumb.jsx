@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
+import { ROUTES } from "@/config/routes";
 
 /**
  * Breadcrumb
@@ -27,7 +28,7 @@ export default function Breadcrumb({
   hide,
   maxItems = Infinity,
   separator,
-  home = { href: "/", label: "Trang chủ" },
+  home = { href: ROUTES.HOME, label: "Trang chủ" },
   capitalizeFirst = true,
 }) {
   const pathname = usePathname();
@@ -43,9 +44,7 @@ export default function Breadcrumb({
     }
 
     // Tạo từ pathname
-    const parts = (pathname || "/")
-      .split("/")
-      .filter(Boolean); // ['products', 'dien-thoai']
+    const parts = (pathname || "/").split("/").filter(Boolean); // ['products', 'dien-thoai']
 
     const derived = parts.map((slug, index) => {
       const href = "/" + parts.slice(0, index + 1).join("/");
@@ -71,9 +70,10 @@ export default function Breadcrumb({
     });
 
     // 4) filter theo hide
-    const filtered = typeof hide === "function"
-      ? derived.filter((seg) => !hide(seg))
-      : derived;
+    const filtered =
+      typeof hide === "function"
+        ? derived.filter((seg) => !hide(seg))
+        : derived;
 
     // 5) rút gọn theo maxItems
     if (Number.isFinite(maxItems) && filtered.length > maxItems) {
@@ -83,7 +83,15 @@ export default function Breadcrumb({
     }
 
     return filtered;
-  }, [items, pathname, customLabels, transformLabel, hide, maxItems, capitalizeFirst]);
+  }, [
+    items,
+    pathname,
+    customLabels,
+    transformLabel,
+    hide,
+    maxItems,
+    capitalizeFirst,
+  ]);
 
   if (!segments.length) return null;
 
@@ -92,14 +100,20 @@ export default function Breadcrumb({
   );
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex items-center gap-2 text-sm text-muted-foreground"
+    >
       {/* Home */}
       <Crumb href={home.href} label={home.label} />
 
       {segments.map((seg, i) => {
         const isLast = i === segments.length - 1;
         return (
-          <div key={`${seg.href ?? seg.slug}-${i}`} className="flex items-center gap-2">
+          <div
+            key={`${seg.href ?? seg.slug}-${i}`}
+            className="flex items-center gap-2"
+          >
             {Sep}
             {isLast || !seg.href ? (
               <span className="text-gray-400 font-medium">{seg.label}</span>

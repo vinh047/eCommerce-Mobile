@@ -12,6 +12,7 @@ import {
   Mail,
 } from "lucide-react";
 import Footer from "../Home/Footer";
+import { ROUTES } from "@/config/routes";
 
 const PolicyLayout = ({ children, activePage }) => {
   const menuItems = [
@@ -19,23 +20,37 @@ const PolicyLayout = ({ children, activePage }) => {
       id: "warranty",
       label: "Chính sách bảo hành",
       icon: <Shield size={18} />,
+      href: ROUTES.POLICY.WARRANTY,
     },
     {
       id: "return",
       label: "Chính sách đổi trả",
       icon: <RefreshCw size={18} />,
+      href: ROUTES.POLICY.RETURN,
     },
-    { id: "privacy", label: "Chính sách bảo mật", icon: <Lock size={18} /> },
+    {
+      id: "privacy",
+      label: "Chính sách bảo mật",
+      icon: <Lock size={18} />,
+      href: ROUTES.POLICY.PRIVACY,
+    },
     {
       id: "payment",
       label: "Quy định thanh toán",
       icon: <CreditCard size={18} />,
+      href: ROUTES.POLICY.PAYMENT,
     },
-    { id: "shipping", label: "Giao hàng & Lắp đặt", icon: <Truck size={18} /> },
+    {
+      id: "shipping",
+      label: "Giao hàng & Lắp đặt",
+      icon: <Truck size={18} />,
+      href: ROUTES.POLICY.SHIPPING,
+    },
     {
       id: "order-check",
       label: "Kiểm tra đơn hàng",
       icon: <Search size={18} />,
+      href: ROUTES.POLICY.ORDER_CHECK,
     },
   ];
 
@@ -62,7 +77,7 @@ const PolicyLayout = ({ children, activePage }) => {
                 {menuItems.map((item) => (
                   <li key={item.id}>
                     <Link
-                      href={`/policy/${item.id}`}
+                      href={item.href}
                       className={`flex items-center gap-3 px-4 py-3 text-sm transition-all hover:bg-gray-50
                         ${
                           item.id === activePage

@@ -1,4 +1,3 @@
-// app/cart/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,7 +21,9 @@ import {
 } from "@/components/Cart/CartStates";
 import { formatPrice } from "@/utils/format";
 import { getCart, removeItem, updateItemQuantity } from "@/lib/api/cartsApi";
-import "./CartStyles.css"; // Có thể xóa file này nếu không còn dùng class .removing nữa
+import "./CartStyles.css";
+
+import { ROUTES } from "@/config/routes";
 
 export default function CartPage() {
   const router = useRouter();
@@ -182,7 +183,7 @@ export default function CartPage() {
         createdAt: new Date().toISOString(),
       };
       sessionStorage.setItem("checkoutItems", JSON.stringify(payload));
-      router.push("/checkout");
+      router.push(ROUTES.CHECKOUT);
     } catch (err) {
       console.error("Checkout error:", err);
       toast.error("Có lỗi xảy ra, vui lòng thử lại");
@@ -195,7 +196,7 @@ export default function CartPage() {
         {/* Page Header */}
         <div className="flex items-center gap-2 mb-6">
           <div className="lg:hidden">
-            <Button as={Link} href="/" ghost iconOnly size="sm">
+            <Button as={Link} href={ROUTES.HOME} ghost iconOnly size="sm">
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Button>
           </div>

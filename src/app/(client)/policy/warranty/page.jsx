@@ -1,4 +1,4 @@
-import PolicyLayout from "../../../components/Layout/PolicyLayout";
+import PolicyLayout from "@/components/Layout/PolicyLayout";
 
 export default function WarrantyPolicyContent() {
   return (

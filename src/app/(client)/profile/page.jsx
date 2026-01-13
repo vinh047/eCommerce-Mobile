@@ -1,4 +1,3 @@
-// app/profile/page.jsx
 import React from "react";
 import { ProfilePageClient } from "./_components/ProfilePageClient";
 

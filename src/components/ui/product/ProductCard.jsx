@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaStar, FaRegStar, FaStarHalfAlt } from "react-icons/fa";
 import { formatPrice } from "@/utils/format";
+import { ROUTES } from "@/config/routes";
 
 const baseUrlImage = "/assets/products/";
 
@@ -39,7 +40,7 @@ function ProductCard({ product }) {
     );
   }
   return (
-    <Link href={`/san-pham/${product.slug}`}>
+    <Link href={ROUTES.productDetail(product.slug)}>
       <div className="my-2 mx-2 group bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-shadow duration-300 ease-in-out p-3 flex flex-col items-center text-center cursor-pointer min-h-[325px]">
         {/* Ảnh sản phẩm */}
         <div className="relative w-full h-48 rounded-lg mb-1 overflow-hidden flex justify-center items-center">

@@ -1,4 +1,3 @@
-// components/Checkout/OrderSummary.jsx
 import { useState } from "react";
 import { ChevronDown, ChevronUp, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "../utils/utils"; 

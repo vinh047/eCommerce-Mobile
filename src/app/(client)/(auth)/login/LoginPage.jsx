@@ -10,8 +10,9 @@ import { Mail, Lock, Check, LogIn, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/form/Button";
 import { Input } from "@/components/ui/form/Input";
+import { ROUTES } from "@/config/routes";
 
-const Signin = () => {
+const LoginPage = () => {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -43,7 +44,7 @@ const Signin = () => {
       const res = await axios.post("/api/auth/login", { token: credential });
 
       toast.success(res.data.message || "Đăng nhập Google thành công!");
-      router.push("/");
+      router.push(ROUTES.HOME);
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -70,7 +71,7 @@ const Signin = () => {
       });
 
       toast.success(res.data.message || "Đăng nhập thành công!");
-      router.push("/");
+      router.push(ROUTES.HOME);
       router.refresh();
     } catch (err) {
       const msg = err.response?.data?.error || "Đăng nhập thất bại";
@@ -85,7 +86,7 @@ const Signin = () => {
       <div className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
         <Button
           as={Link}
-          href="/"
+          href={ROUTES.HOME}
           ghost
           size="sm"
           className="text-gray-500 hover:text-blue-600 hover:bg-white/80 backdrop-blur-sm shadow-sm border border-transparent hover:border-gray-200 transition-all"
@@ -211,7 +212,7 @@ const Signin = () => {
           <p className="text-center mt-8 text-sm text-gray-600">
             Chưa có tài khoản?{" "}
             <Link
-              href="/signup"
+              href={ROUTES.REGISTER}
               className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-all"
             >
               Tạo tài khoản mới
@@ -243,4 +244,4 @@ const Signin = () => {
   );
 };
 
-export default Signin;
+export default LoginPage;

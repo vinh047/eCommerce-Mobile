@@ -1,5 +1,5 @@
 import { getProductBySlug, getRelatedProduct } from "@/lib/api/productApi";
-import DetailProduct from "../DetailProduct";
+import ProductDetail from "../ProductDetail";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 // import ImageSilder from "./_components/ImageSilder";
 
@@ -11,7 +11,7 @@ const DetailProductPage = async ({ params }) => {
   });
   return (
     <HeaderLayout>
-      <DetailProduct product={product} />
+      <ProductDetail product={product} />
     </HeaderLayout>
   );
 };

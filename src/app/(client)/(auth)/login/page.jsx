@@ -1,11 +1,11 @@
 import React from "react";
-import Signin from "./signin";
+import LoginPage from "./loginPage";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 
 export const metadata = {
-  title: "Signin",
+  title: "Đăng nhập",
 };
 
 export default function Page() {
-  return <Signin />;
+  return <LoginPage />;
 }

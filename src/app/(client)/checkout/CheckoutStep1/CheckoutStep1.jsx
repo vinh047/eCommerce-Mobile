@@ -1,4 +1,3 @@
-// components/Checkout/CheckoutStep1.jsx
 "use client";
 
 import React from "react";

@@ -24,7 +24,9 @@ import { globalEvents } from "@/lib/globalEvents";
 import ProductCard from "@/components/ui/product/ProductCard";
 import ProductCardSkeleton from "@/components/ui/product/ProductCardSkeleton";
 
-const DetailProduct = ({ product }) => {
+import { ROUTES } from "@/config/routes";
+
+const ProductDetail = ({ product }) => {
   const router = useRouter();
 
   // --- STATE ---
@@ -133,13 +135,13 @@ const DetailProduct = ({ product }) => {
 
       if (isBuyNow) {
         toast.success("Đang chuyển đến giỏ hàng...");
-        router.push("/cart");
+        router.push(ROUTES.CART);
       } else {
         toast.success("Đã thêm vào giỏ hàng!");
       }
     } catch (err) {
       toast.error(err?.payload?.message || "Có lỗi xảy ra");
-      if (err.status === 401) router.push("/signin");
+      if (err.status === 401) router.push(ROUTES.LOGIN);
     } finally {
       setLoadedBtn(false);
     }
@@ -156,7 +158,7 @@ const DetailProduct = ({ product }) => {
         <nav className="flex text-sm text-gray-500 items-center gap-2">
           <span
             className="hover:text-blue-600 cursor-pointer"
-            onClick={() => router.push("/")}
+            onClick={() => router.push(ROUTES.HOME)}
           >
             Trang chủ
           </span>
@@ -718,4 +720,4 @@ const DetailProduct = ({ product }) => {
   );
 };
 
-export default DetailProduct;
+export default ProductDetail;

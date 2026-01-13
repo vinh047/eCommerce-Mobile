@@ -10,8 +10,9 @@ import { Mail, Lock, User, UserPlus, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/form/Button";
 import { Input } from "@/components/ui/form/Input";
+import { ROUTES } from "@/config/routes";
 
-const Signup = () => {
+const RegisterPage = () => {
   const router = useRouter();
 
   // State
@@ -62,7 +63,7 @@ const Signup = () => {
         password,
       });
       toast.success(res.data.message || "Đăng ký thành công!");
-      router.push("/signin");
+      router.push(ROUTES.LOGIN);
     } catch (error) {
       const msg = error.response?.data?.error || "Đăng ký thất bại";
       toast.error(msg);
@@ -79,7 +80,7 @@ const Signup = () => {
         token: credentialResponse.credential,
       });
       toast.success(res.data.message || "Đăng ký Google thành công!");
-      router.push("/");
+      router.push(ROUTES.HOME);
       router.refresh();
     } catch (error) {
       const msg = error.response?.data?.error || "Đăng ký Google thất bại";
@@ -94,7 +95,7 @@ const Signup = () => {
       <div className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
         <Button
           as={Link}
-          href="/"
+          href={ROUTES.HOME}
           ghost
           size="sm"
           className="text-gray-500 hover:text-blue-600 hover:bg-white/80 backdrop-blur-sm shadow-sm border border-transparent hover:border-gray-200 transition-all"
@@ -208,12 +209,12 @@ const Signup = () => {
             <div className="w-full max-w-[280px]">
               <GoogleLogin
                 onSuccess={handleGoogleRegister}
-                onError={() => toast.error("Google sign up thất bại")}
+                onError={() => toast.error("Google đăng ký thất bại")}
                 width="100%"
                 theme="outline"
                 shape="pill"
                 size="large"
-                text="signup_with"
+                text="register_with"
               />
             </div>
           </div>
@@ -222,7 +223,7 @@ const Signup = () => {
           <p className="text-center mt-8 text-sm text-gray-600">
             Đã có tài khoản?{" "}
             <Link
-              href="/signin"
+              href={ROUTES.LOGIN}
               className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-all"
             >
               Đăng nhập ngay
@@ -254,4 +255,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default RegisterPage;

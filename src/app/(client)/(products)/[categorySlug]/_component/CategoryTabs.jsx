@@ -2,6 +2,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/form/Button";
 import { FaTag } from "react-icons/fa"; // hoặc icon phù hợp
+import { ROUTES } from "@/config/routes";
 
 function CategoryTabs({ categories }) {
   const router = useRouter();
@@ -18,7 +19,7 @@ function CategoryTabs({ categories }) {
             <Button
               key={category.id}
               outline
-              onClick={() => router.push(`/${category.slug}`)}
+              onClick={() => router.push(ROUTES.category(category.slug))}
               className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200
                 ${
                   isActive

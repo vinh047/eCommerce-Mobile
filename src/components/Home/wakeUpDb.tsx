@@ -1,5 +1,6 @@
 import Lottie from "lottie-react";
 import notFound from "../../../public/assets/sleep.json";
+import { ROUTES } from "@/config/routes";
 
 interface WakeUpDBProps {
   status?: string;
@@ -16,7 +17,7 @@ const WakeUpDB: React.FC<WakeUpDBProps> = ({
   maxRetry = 20,
   isDBError = false,
   onRetry,
-  href = "/",
+  href = ROUTES.HOME,
 }) => {
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col items-center justify-center bg-white">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Calendar, CreditCard, ChevronRight, Package } from "lucide-react";
+import { ROUTES } from "@/config/routes";
 
 // Helper components (Badge)
 function OrderStatusBadge({ status }) {
@@ -9,16 +10,24 @@ function OrderStatusBadge({ status }) {
     pending: { label: "Chờ xác nhận", color: "bg-yellow-100 text-yellow-800" },
     confirmed: { label: "Đã xác nhận", color: "bg-blue-100 text-blue-800" },
     processing: { label: "Đang xử lý", color: "bg-indigo-100 text-indigo-800" },
-    shipped: { label: "Đang vận chuyển", color: "bg-purple-100 text-purple-800" },
+    shipped: {
+      label: "Đang vận chuyển",
+      color: "bg-purple-100 text-purple-800",
+    },
     delivered: { label: "Đã giao", color: "bg-teal-100 text-teal-800" },
-    completed: { label: "Hoàn thành", color: "bg-emerald-100 text-emerald-800" },
+    completed: {
+      label: "Hoàn thành",
+      color: "bg-emerald-100 text-emerald-800",
+    },
     cancelled: { label: "Đã hủy", color: "bg-gray-100 text-gray-600" },
     returned: { label: "Trả hàng", color: "bg-rose-100 text-rose-800" },
     refunded: { label: "Đã hoàn tiền", color: "bg-pink-100 text-pink-800" },
   };
   const cfg = map[status] || map.pending;
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.color}`}>
+    <span
+      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.color}`}
+    >
       {cfg.label}
     </span>
   );
@@ -26,18 +35,31 @@ function OrderStatusBadge({ status }) {
 
 function PaymentBadge({ status }) {
   if (status === "paid") {
-    return <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">✔ Đã thanh toán</span>;
+    return (
+      <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">
+        ✔ Đã thanh toán
+      </span>
+    );
   }
   if (status === "failed") {
-    return <span className="text-xs font-medium text-red-600">Thanh toán lỗi</span>;
+    return (
+      <span className="text-xs font-medium text-red-600">Thanh toán lỗi</span>
+    );
   }
-  return <span className="text-xs font-medium text-orange-600">Chưa thanh toán</span>;
+  return (
+    <span className="text-xs font-medium text-orange-600">Chưa thanh toán</span>
+  );
 }
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(value || 0);
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
 
-const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString("vi-VN") : "");
+const formatDate = (iso) =>
+  iso ? new Date(iso).toLocaleDateString("vi-VN") : "";
 
 export default function OrderCard({ order, onOpenWarranty }) {
   return (
@@ -69,7 +91,10 @@ export default function OrderCard({ order, onOpenWarranty }) {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div className="space-y-1">
           <div className="text-sm text-gray-600">
-            Tổng tiền: <span className="font-bold text-gray-900 text-lg">{formatCurrency(order.total)}</span>
+            Tổng tiền:{" "}
+            <span className="font-bold text-gray-900 text-lg">
+              {formatCurrency(order.total)}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <CreditCard className="w-3.5 h-3.5 text-gray-400" />
@@ -88,7 +113,7 @@ export default function OrderCard({ order, onOpenWarranty }) {
             </button>
           )}
           <Link
-            href={`/profile/orders/${order.id}`}
+            href={ROUTES.PROFILE.orderDetail(order.id)}
             className="flex-1 sm:flex-none text-center px-4 py-2 text-xs font-medium text-white bg-gray-900 hover:bg-black rounded-lg shadow-sm transition-colors"
           >
             Xem chi tiết

@@ -1,5 +1,5 @@
 import PolicyLayout from "@/components/Layout/PolicyLayout";
-import { CreditCard, Wallet, Banknote } from "lucide-react"; // Import icon nếu cần
+import { CreditCard, Wallet, Banknote } from "lucide-react";
 
 export default function PaymentPolicyContent() {
   return (

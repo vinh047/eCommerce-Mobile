@@ -1,4 +1,3 @@
-// components/Checkout/AddressSection.jsx
 "use client";
 
 import { useEffect, useState, useMemo } from "react";

@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
+import { ROUTES } from "./config/routes";
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value; // user token
   const adminToken = request.cookies.get("admin_token")?.value; // staff/admin token
   const { pathname } = request.nextUrl;
 
-  const authRoutes = ["/signin", "/signup"];
-  const protectedRoutes = ["/cart", "/profile", "/checkout", "/api/protected"];
+  const authRoutes = [ROUTES.LOGIN, ROUTES.REGISTER];
+  const protectedRoutes = [ROUTES.CART, ROUTES.PROFILE.INDEX, ROUTES.CHECKOUT, "/api/protected"];
 
   // =============== ADMIN LOGIN PAGE (/login) ===============
   if (pathname === "/login") {
@@ -45,9 +46,9 @@ export async function middleware(request: NextRequest) {
 
   // ===================== USER AREA (CLIENT) =====================
 
-  // Nếu đã đăng nhập user mà vẫn vào /signin /signup → đẩy về trang chủ
+  // Nếu đã đăng nhập user mà vẫn vào /login /register → đẩy về trang chủ
   if (token && authRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
   }
 
   // Các route cần đăng nhập user
@@ -55,9 +56,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Chưa có token user mà vào route protected → đẩy về /signin
+  // Chưa có token user mà vào route protected → đẩy về /login
   if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/signin", request.url));
+    return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
   }
 
   if (token) {
@@ -80,7 +81,9 @@ export async function middleware(request: NextRequest) {
     } else {
       // token user sai mà đang vào route cần bảo vệ → bắt login lại
       if (isProtectedRoute) {
-        const response = NextResponse.redirect(new URL("/signin", request.url));
+        const response = NextResponse.redirect(
+          new URL(ROUTES.LOGIN, request.url)
+        );
         response.cookies.delete("token");
         return response;
       }

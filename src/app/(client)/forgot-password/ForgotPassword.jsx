@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { ROUTES } from "@/config/routes";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -66,7 +67,7 @@ export default function ForgotPassword() {
           </form>
         )}
         <div style={{ marginTop: 24, textAlign: "center" }}>
-          <Link href="/signin" passHref>
+          <Link href={ROUTES.LOGIN} passHref>
             <span style={{ color: "#2563eb", cursor: "pointer" }}>
               Quay lại đăng nhập
             </span>

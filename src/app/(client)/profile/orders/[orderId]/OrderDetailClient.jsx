@@ -15,6 +15,8 @@ import usersApi from "@/lib/api/usersApi";
 import ReviewModal from "./ReviewModal";
 import WarrantyModal from "../_components/WarrantyModal";
 
+import { ROUTES } from "@/config/routes";
+
 // Helper Formatter
 const formatCurrency = (val) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -115,7 +117,7 @@ export default function OrderDetailClient({ orderId }) {
         </div>
         <div>
           <Link
-            href="/profile/orders"
+            href={ROUTES.PROFILE.ORDERS}
             className="text-sm text-blue-600 hover:underline"
           >
             ← Quay lại danh sách
@@ -135,7 +137,7 @@ export default function OrderDetailClient({ orderId }) {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <Link
-          href="/profile/orders"
+          href={ROUTES.PROFILE.ORDERS}
           className="hover:text-blue-600 flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" /> Danh sách đơn hàng
@@ -159,7 +161,7 @@ export default function OrderDetailClient({ orderId }) {
             <div className="divide-y divide-gray-50">
               {items.map((item) => {
                 const productSlug = item.slug || item.productId;
-                const productLink = `/san-pham/${productSlug}`;
+                const productLink = ROUTES.productDetail(productSlug);
 
                 return (
                   <div key={item.id} className="p-6 flex gap-4 group">

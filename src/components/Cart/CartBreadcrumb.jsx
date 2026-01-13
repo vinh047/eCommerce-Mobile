@@ -1,3 +1,4 @@
+import { ROUTES } from '@/config/routes'
 import Link from 'next/link'
 
 export default function CartBreadcrumb() {
@@ -6,7 +7,7 @@ export default function CartBreadcrumb() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <ol className="flex items-center space-x-2 text-sm">
           <li>
-            <Link href="/" className="text-gray-500 hover:text-gray-700 focus-ring rounded">Trang chủ</Link>
+            <Link href={ROUTES.HOME} className="text-gray-500 hover:text-gray-700 focus-ring rounded">Trang chủ</Link>
           </li>
           <li>
             <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">

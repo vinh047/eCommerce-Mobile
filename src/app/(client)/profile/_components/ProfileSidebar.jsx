@@ -12,17 +12,17 @@ import { ROUTES } from "@/config/routes";
 const MENU_ITEMS = [
   {
     label: "Thông tin tài khoản",
-    href: "/profile",
+    href: ROUTES.PROFILE.INDEX,
     icon: User,
   },
   {
     label: "Đơn hàng của tôi",
-    href: "/profile/orders",
+    href: ROUTES.PROFILE.ORDERS,
     icon: ShoppingBag,
   },
   {
     label: "Sổ địa chỉ",
-    href: "/profile/addresses",
+    href: ROUTES.PROFILE.ADDRESS,
     icon: MapPin,
   },
 ];

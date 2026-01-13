@@ -4,13 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import usersApi from "@/lib/api/usersApi";
 import { getPaymentMethod } from "@/lib/api/paymentMethodApi";
-// ❌ Bỏ validateCoupon vì không còn nhập mã tay nữa
-// import { validateCoupon } from "@/lib/api/couponApi";
 import CheckoutStep2 from "./CheckoutStep2/CheckoutStep2";
 import CheckoutStep1 from "./CheckoutStep1/CheckoutStep1";
 import { removeItem as removeCartItem } from "@/lib/api/cartsApi";
 import CheckoutStepper from "./CheckoutStep1/_components/CheckoutStepper";
 import OrderSummary from "./CheckoutStep1/_components/OrderSummary";
+import { ROUTES } from "@/config/routes";
 
 const HCMC_PROVINCE = "Hồ Chí Minh";
 
@@ -78,7 +77,7 @@ export default function CheckoutPage() {
     if (!raw) {
       setMissing(true);
       setLoading(false);
-      setTimeout(() => router.replace("/cart"), 800);
+      setTimeout(() => router.replace(ROUTES.CART), 800);
       return;
     }
 
@@ -89,7 +88,7 @@ export default function CheckoutPage() {
       console.error("Invalid checkoutItems payload", e);
       setMissing(true);
       setLoading(false);
-      setTimeout(() => router.replace("/cart"), 800);
+      setTimeout(() => router.replace(ROUTES.CART), 800);
       return;
     }
 
@@ -100,7 +99,7 @@ export default function CheckoutPage() {
     ) {
       setMissing(true);
       setLoading(false);
-      setTimeout(() => router.replace("/cart"), 800);
+      setTimeout(() => router.replace(ROUTES.CART), 800);
       return;
     }
 
@@ -718,7 +717,7 @@ export default function CheckoutPage() {
 
       // 3) Thông báo + điều hướng
       showToast("Đặt hàng thành công", "success");
-      router.replace("/profile/orders");
+      router.replace(ROUTES.PROFILE.ORDERS);
     } catch (err) {
       console.error("Place order error:", err);
       showToast("Đặt hàng thất bại. Vui lòng thử lại", "error");
