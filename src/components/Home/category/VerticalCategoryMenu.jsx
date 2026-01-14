@@ -5,7 +5,7 @@ import { ROUTES } from "@/config/routes";
 
 export default function VerticalCategoryMenu({ categories }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-[400px] flex flex-col overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-[370px] flex flex-col overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-100 bg-white z-10 shrink-0">
         <h3 className="font-bold text-gray-800 text-sm uppercase flex items-center gap-2">
           <List className="w-4 h-4" />

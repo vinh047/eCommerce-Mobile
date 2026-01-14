@@ -37,9 +37,9 @@ export default async function HomePage() {
     <main className="min-h-screen bg-gray-50/50 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* --- HERO SECTION --- */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-auto lg:h-[400px]">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-auto lg:h-[370px]">
           {/* Cột Menu: Bay từ trái sang */}
-          <div className="hidden lg:block lg:col-span-3 h-full ">
+          <div className="hidden lg:block lg:col-span-3 ">
             <Reveal direction="right" className="h-full" fullWidth>
               <VerticalCategoryMenu categories={categoriesSidbar} />
             </Reveal>
@@ -48,7 +48,7 @@ export default async function HomePage() {
           {/* Cột Banner: Bay từ phải sang, delay 0.1s */}
           <div className="col-span-1 lg:col-span-9 h-full">
             <Reveal direction="left" delay={0.1} className="h-full" fullWidth>
-              <div className="h-full rounded-xl overflow-hidden shadow-sm bg-white">
+              <div className=" rounded-xl overflow-hidden">
                 <BannerSlider banners={banners.data} />
               </div>
             </Reveal>
