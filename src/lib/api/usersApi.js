@@ -5,14 +5,14 @@ const usersApi = {
   getUsers: (params) =>
     apiFetch(`/users?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   // Lấy chi tiết user
   getUserById: (id) =>
     apiFetch(`/users/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createUser: (data) =>
@@ -35,7 +35,7 @@ const usersApi = {
   getAllIds: (params) =>
     apiFetch(`/users/ids?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   bulkAction: (ids, action) =>

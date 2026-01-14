@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, List } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
+import { ROUTES } from "@/config/routes";
 
 export default function VerticalCategoryMenu({ categories }) {
   return (
@@ -17,7 +18,7 @@ export default function VerticalCategoryMenu({ categories }) {
           {categories.map((cat) => (
             <Link
               key={cat.id}
-              href={`/${cat.slug}`}
+              href={ROUTES.category(cat.slug)}
               className="flex items-center justify-between px-4 py-2.5 hover:bg-blue-50 group transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-3 overflow-hidden">

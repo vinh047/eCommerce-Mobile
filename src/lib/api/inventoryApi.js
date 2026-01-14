@@ -4,13 +4,13 @@ const inventoryApi = {
   getTransactions: (params) =>
     apiFetch(`/inventory/transactions?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getTransactionById: (id) =>
     apiFetch(`/inventory/transactions/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   createTransaction: (data) =>
@@ -22,7 +22,7 @@ const inventoryApi = {
   getDevices: (params) =>
     apiFetch(`/inventory/devices?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 };
 

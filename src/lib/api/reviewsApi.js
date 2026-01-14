@@ -4,13 +4,13 @@ const reviewsApi = {
   getReviews: (params) =>
     apiFetch(`/reviews?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   getReviewById: (id) =>
     apiFetch(`/reviews/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   updateReview: (id, data) =>

@@ -1,8 +1,10 @@
-// components/Cart/CartItem.jsx
-import { Trash2, Minus, Plus } from "lucide-react";
 import Link from "next/link";
+
+import { Trash2, Minus, Plus } from "lucide-react";
 import { formatPrice } from "@/utils/format";
 import { Button } from "../ui/form/Button";
+
+import { ROUTES } from "@/config/routes";
 
 export default function CartItem({
   item,
@@ -42,13 +44,13 @@ export default function CartItem({
             <div className="flex justify-between items-start gap-2">
               <h3 className="text-sm sm:text-base font-medium text-gray-900 line-clamp-2">
                 <Link
-                  href={`/san-pham/${item.slug}`}
+                  href={ROUTES.productDetail(item.slug)}
                   className="hover:text-blue-600 transition-colors"
                 >
                   {item.name}
                 </Link>
               </h3>
-              
+
               {/* Nút xoá desktop - Dùng Button ghost */}
               <div className="hidden sm:block">
                 <Button
@@ -90,11 +92,11 @@ export default function CartItem({
               >
                 <Minus className="w-3.5 h-3.5" />
               </Button>
-              
+
               <span className="min-w-[2rem] text-center text-sm font-medium text-gray-900">
                 {item.quantity}
               </span>
-              
+
               <Button
                 outline
                 size="xs"

@@ -4,7 +4,7 @@ const dashboardApi = {
   getStats: () =>
     apiFetch(`/dashboard`, {
       method: "GET",
-      cache: "no-store", 
+      next: { revalidate: 600 },
     }),
 };
 

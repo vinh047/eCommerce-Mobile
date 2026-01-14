@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ShoppingCart } from "lucide-react";
+import { ROUTES } from '@/config/routes';
 
 export function LoadingState() {
   return (
@@ -50,7 +51,7 @@ export function EmptyState() {
         Bạn chưa có sản phẩm nào trong giỏ hàng
       </p>
       <Link
-        href="/"
+        href={ROUTES.HOME}
         className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-2xl hover:bg-blue-700 focus-ring font-medium transition-colors"
       >
         Tiếp tục mua sắm

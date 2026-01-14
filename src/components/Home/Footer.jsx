@@ -9,6 +9,7 @@ import {
   Mail,
   Send,
 } from "lucide-react";
+import { ROUTES } from "@/config/routes";
 
 const Footer = () => {
   return (
@@ -50,7 +51,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-gray-500">
               <li>
                 <Link
-                  href="/policy/warranty"
+                  href={ROUTES.POLICY.WARRANTY}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Chính sách bảo hành
@@ -58,7 +59,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/policy/return"
+                  href={ROUTES.POLICY.RETURN}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Chính sách đổi trả
@@ -66,7 +67,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/policy/privacy"
+                  href={ROUTES.POLICY.PRIVACY}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Chính sách bảo mật
@@ -74,7 +75,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/policy/payment"
+                  href={ROUTES.POLICY.PAYMENT}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Quy định thanh toán
@@ -82,7 +83,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/policy/shipping"
+                  href={ROUTES.POLICY.SHIPPING}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Giao hàng & Lắp đặt
@@ -90,7 +91,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/policy/order-check"
+                  href={ROUTES.POLICY.ORDER_CHECK}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Kiểm tra đơn hàng
@@ -217,7 +218,7 @@ const Footer = () => {
             <Link href="/terms" className="hover:text-blue-600">
               Điều khoản
             </Link>
-            <Link href="/policy/privacy" className="hover:text-blue-600">
+            <Link href={ROUTES.POLICY.PRIVACY} className="hover:text-blue-600">
               Bảo mật
             </Link>
             <Link href="/cookies" className="hover:text-blue-600">

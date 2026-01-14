@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import CategoryProductsDelay from "./CategoryProductsDelay";
 import CategoryProductsSkeleton from "./CategoryProductsSkeleton";
+import { ROUTES } from "@/config/routes";
 
 async function CategorySection({ category, products }) {
   return (
@@ -14,7 +15,7 @@ async function CategorySection({ category, products }) {
             {category.name}
           </h2>
           <Link
-            href={`/${category.slug}`}
+            href={ROUTES.category(category.slug)}
             className="group flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
           >
             Xem tất cả

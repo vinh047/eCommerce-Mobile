@@ -5,14 +5,14 @@ const rolesApi = {
   getRoles: (params) =>
     apiFetch(`/roles?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   // Lấy chi tiết 1 role (để xem hoặc edit)
   getRoleById: (id) =>
     apiFetch(`/roles/${id}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   // Tạo role mới (Payload gồm: name, permissionIds[])
@@ -39,7 +39,7 @@ const rolesApi = {
   getAllIds: (params) =>
     apiFetch(`/roles/ids?${new URLSearchParams(params)}`, {
       method: "GET",
-      cache: "no-store",
+      cache: "force-cache",
     }),
 
   // Xóa hàng loạt

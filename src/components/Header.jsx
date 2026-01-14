@@ -20,6 +20,8 @@ import { globalEvents } from "@/lib/globalEvents";
 import { Button } from "./ui/form/Button";
 import { Input } from "./ui/form/Input";
 
+import { ROUTES } from "@/config/routes";
+
 export default function Header() {
   const router = useRouter();
 
@@ -135,7 +137,7 @@ export default function Header() {
     } finally {
       setUser(null);
       setProfileOpen(false);
-      router.replace("/");
+      router.replace(ROUTES.HOME);
       globalEvents.emitUserUpdated();
       globalEvents.emitCartUpdated();
     }
@@ -145,9 +147,21 @@ export default function Header() {
     if (e) e.preventDefault();
     const qRaw = (search || "").trim();
     if (!qRaw) return;
+
     try {
-      router.push(`/search?q=${encodeURIComponent(qRaw)}`);
+      const res = await fetch("/api/infer-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q: qRaw }),
+      });
+      const data = await res.json();
+      if (data?.ok && data.category) {
+        router.push(`/${data.category}?q=${encodeURIComponent(qRaw)}`);
+      } else {
+        router.push(`/search?q=${encodeURIComponent(qRaw)}`);
+      }
     } catch (err) {
+      console.error("infer category error", err);
       router.push(`/search?q=${encodeURIComponent(qRaw)}`);
     }
   }
@@ -164,7 +178,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-20 gap-4 md:gap-8">
           {/* 1. LOGO */}
           <div className="flex-shrink-0 min-w-[140px]">
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <Link href={ROUTES.HOME} className="flex items-center gap-2.5 group">
               <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:scale-105 transition-transform duration-200">
                 <Store className="w-6 h-6" />
               </div>
@@ -208,7 +222,7 @@ export default function Header() {
           <div className="flex items-center gap-6 flex-shrink-0">
             {/* --- CART ICON --- */}
             <Link
-              href="/cart"
+              href={ROUTES.CART}
               className="relative group p-2.5 hover:bg-gray-100 rounded-full transition-all duration-200"
               aria-label="Giỏ hàng"
             >
@@ -233,14 +247,14 @@ export default function Header() {
                 {!user && (
                   <div className="flex items-center gap-3 animate-in fade-in duration-300">
                     <Link
-                      href="/signin"
+                      href={ROUTES.LOGIN}
                       className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
                     >
                       Đăng nhập
                     </Link>
                     <div className="h-4 w-px bg-gray-300"></div>
                     <Link
-                      href="/signup"
+                      href={ROUTES.REGISTER}
                       className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                     >
                       Đăng ký
@@ -300,7 +314,7 @@ export default function Header() {
 
                         <div className="p-2 space-y-1">
                           <Link
-                            href="/profile"
+                            href={ROUTES.PROFILE.INDEX}
                             onClick={() => setProfileOpen(false)}
                             className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors"
                           >
@@ -308,7 +322,7 @@ export default function Header() {
                             Hồ sơ cá nhân
                           </Link>
                           <Link
-                            href="/profile/orders"
+                            href={ROUTES.PROFILE.ORDERS}
                             onClick={() => setProfileOpen(false)}
                             className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors"
                           >

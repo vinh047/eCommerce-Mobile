@@ -1,9 +1,12 @@
 "use client";
+import Link from "next/link";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import Link from "next/link";
+
+import { ROUTES } from "@/config/routes";
 
 export default function BannerSlider({ banners }) {
   return (
@@ -23,7 +26,7 @@ export default function BannerSlider({ banners }) {
             key={banner.id}
             className="flex items-center justify-center"
           >
-            <Link href={`/san-pham/${banner.product.slug}`}>
+            <Link href={ROUTES.productDetail(banner.product.slug)}>
               <img
                 src={`/assets/products/${banner.image}`}
                 className="max-h-full w-full object-contain"
