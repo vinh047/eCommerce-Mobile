@@ -1,9 +1,6 @@
-import { GoogleAuthProvider } from "@/providers/google-auth-provider";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
-import { ChatBox } from "@/components/chatbox/ChatBox";
-import ChatBot from "@/components/ChatBot";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "vietnamese"],
@@ -19,7 +16,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body>
+        <Toaster position="top-center" richColors />
+        {children}
+      </body>
     </html>
   );
 }

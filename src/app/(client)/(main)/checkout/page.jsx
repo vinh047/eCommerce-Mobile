@@ -3,11 +3,7 @@ import CheckoutPage from "./CheckoutPage";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 
 async function CheckoutPageSection() {
-  return (
-    <HeaderLayout>
-      <CheckoutPage />
-    </HeaderLayout>
-  );
+  return <CheckoutPage />;
 }
 
 export default CheckoutPageSection;

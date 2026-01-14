@@ -9,11 +9,7 @@ const DetailProductPage = async ({ params }) => {
   const related = await getRelatedProduct({
     productId: product.id,
   });
-  return (
-    <HeaderLayout>
-      <ProductDetail product={product} />
-    </HeaderLayout>
-  );
+  return <ProductDetail product={product} />;
 };
 
 export default DetailProductPage;

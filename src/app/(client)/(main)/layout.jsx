@@ -1,16 +1,10 @@
 import { GoogleAuthProvider } from "@/providers/google-auth-provider";
-import "../globals.css";
+import "../../globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { ChatBox } from "@/components/chatbox/ChatBox";
 import ChatBot from "@/components/ChatBot";
-
-const inter = Inter({
-  subsets: ["latin", "latin-ext", "vietnamese"],
-  weight: ["400", "500", "700"],
-  variable: "--font-sans",
-  display: "swap",
-});
+import HeaderLayout from "@/components/Layout/HeaderLayout";
 
 export const metadata = {
   referrer: "origin-when-cross-origin",
@@ -18,13 +12,12 @@ export const metadata = {
 
 export default function ClientLayout({ children }) {
   return (
-    <>
+    <HeaderLayout>
       <GoogleAuthProvider>
         {/* <ChatBox/> */}
         {children}
       </GoogleAuthProvider>
-      <Toaster position="top-center" richColors />
       <ChatBot />
-    </>
+    </HeaderLayout>
   );
 }
