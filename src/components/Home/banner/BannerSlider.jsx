@@ -10,7 +10,7 @@ import { ROUTES } from "@/config/routes";
 
 export default function BannerSlider({ banners }) {
   return (
-    <div className="relative aspect-[15/6] w-full rounded-xl overflow-hidden bg-white group">
+    <div className="relative aspect-15/6 w-full rounded-xl overflow-hidden bg-white group">
       <Swiper
         modules={[Navigation, Autoplay]}
         loop
