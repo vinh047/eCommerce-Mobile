@@ -17,12 +17,27 @@ import { notFound } from "next/navigation";
 export default async function ProductsPage({ params }) {
   const { categorySlug } = await params;
 
-  const [category, categories] = await Promise.all([
-    getCategoryBySlug(categorySlug),
-    getCategoriesWithSpecTemplates(),
-  ]);
+  // Khai báo biến bên ngoài để dùng được sau try/catch
+  let category = null;
+  let categories = [];
 
-  if(!category) {
+  try {
+    // Chạy song song 2 API
+    [category, categories] = await Promise.all([
+      getCategoryBySlug(categorySlug),
+      getCategoriesWithSpecTemplates(),
+    ]);
+  } catch (error) {
+    // Nếu lỗi là 404 hoặc "not found" -> Chuyển sang trang 404
+    if (error.status === 404 || error.message?.includes("not found")) {
+      notFound();
+    }
+    // Nếu là lỗi khác (ví dụ DB sập) -> Ném tiếp để hiện trang lỗi 500
+    throw error;
+  }
+
+  // Kiểm tra lại lần nữa (phòng trường hợp API trả về null thay vì ném lỗi)
+  if (!category) {
     notFound();
   }
 
