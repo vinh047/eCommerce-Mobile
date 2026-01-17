@@ -2,7 +2,7 @@
 
 import { Edit, Trash, Eye, Package } from "lucide-react";
 import Link from "next/link";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 import { PERMISSION_KEYS } from "../../constants/permissions";
 
 // Helper format tiền tệ

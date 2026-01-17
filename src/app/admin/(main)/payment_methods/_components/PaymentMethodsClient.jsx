@@ -9,7 +9,7 @@ import PaymentMethodList from "./PaymentMethodList";
 import PaymentMethodDetail from "./PaymentMethodDetail";
 import { useAuth } from "@/contexts/AuthContext";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 export default function PaymentMethodsClient({ initialData }) {
   // State Data

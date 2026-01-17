@@ -1,4 +1,4 @@
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate"; 
 import { PERMISSION_KEYS } from "../../constants/permissions";
 import { Plus } from "lucide-react";
 

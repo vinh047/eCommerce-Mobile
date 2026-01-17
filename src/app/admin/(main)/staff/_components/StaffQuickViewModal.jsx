@@ -2,7 +2,7 @@
 
 import { X, Mail, Calendar, Shield, User } from "lucide-react";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 export default function StaffQuickViewModal({ staff, onClose, onEdit }) {
   if (!staff) return null;

@@ -9,7 +9,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function CategoriesTableRow({

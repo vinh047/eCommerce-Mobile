@@ -2,7 +2,7 @@
 
 import { Edit, Trash, Users, ShieldAlert } from "lucide-react";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 function RolesTableRow({ role, onEdit, onDelete }) {
   const formatDate = (date) => new Date(date).toLocaleDateString("vi-VN");

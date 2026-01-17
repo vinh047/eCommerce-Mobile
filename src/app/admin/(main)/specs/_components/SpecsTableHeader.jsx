@@ -2,7 +2,7 @@
 
 import { useQueryParams } from "@/hooks/useQueryParams"; // Đảm bảo bạn có hook này
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function SpecsTableHeader({

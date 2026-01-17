@@ -2,7 +2,7 @@
 
 import { Edit, Trash, Settings, Layers } from "lucide-react";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 export default function SpecsTableRow({
   spec,

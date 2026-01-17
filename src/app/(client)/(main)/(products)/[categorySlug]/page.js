@@ -12,6 +12,7 @@ import SortDropdown from "./_component/SortDropdown";
 import ListProducts from "./_component/ListProduct";
 import HeaderLayout from "@/components/Layout/HeaderLayout";
 import Reveal from "@/components/Animations/Reveal";
+import { notFound } from "next/navigation";
 
 export default async function ProductsPage({ params }) {
   const { categorySlug } = await params;
@@ -20,6 +21,10 @@ export default async function ProductsPage({ params }) {
     getCategoryBySlug(categorySlug),
     getCategoriesWithSpecTemplates(),
   ]);
+
+  if(!category) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
