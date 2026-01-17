@@ -23,7 +23,7 @@ import {
   ListChecks,
   Smartphone,
 } from "lucide-react";
-import { PERMISSION_KEYS } from "@/app/admin/constants/permissions"; 
+import { PERMISSION_KEYS } from "@/app/admin/(main)/constants/permissions"; 
 
 const navItems = [
   { name: "Dashboard", icon: Home, href: "/admin/dashboard" }, // không cần quyền
