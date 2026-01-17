@@ -10,7 +10,7 @@ import {
   PenSquare,
 } from "lucide-react";
 import AccountModal from "./AccountModal";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function PaymentMethodDetail({

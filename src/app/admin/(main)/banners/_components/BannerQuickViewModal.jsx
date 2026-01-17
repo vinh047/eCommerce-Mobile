@@ -2,7 +2,7 @@
 
 import { X, Image as ImageIcon, Link, Hash } from "lucide-react";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 export default function BannerQuickViewModal({ banner, onClose, onEdit }) {
   if (!banner) return null;

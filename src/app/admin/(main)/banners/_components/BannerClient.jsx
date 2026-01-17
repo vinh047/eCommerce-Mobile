@@ -4,9 +4,9 @@ import { useState, lazy, Suspense } from "react";
 import BannerHeader from "./BannerHeader";
 import BannerToolbar from "./BannerToolbar";
 import BannerTable from "./BannerTable";
-import { useFetchBanners } from "../hooks/useFetchBanners"; // Giả sử bạn đã duplicate hook useFetchStaff
+import { useFetchBanners } from "../hooks/useFetchBanners";
 import TableSkeleton from "@/components/common/TableSkeleton";
-import { UserBulkActionsBar } from "../../users/_components"; // Tái sử dụng hoặc tạo BannerBulkActionsBar
+import { UserBulkActionsBar } from "../../users/_components";
 import { useAuth } from "@/contexts/AuthContext";
 import { PERMISSION_KEYS } from "../../constants/permissions";
 

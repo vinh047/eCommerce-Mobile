@@ -1,7 +1,7 @@
 "use client";
 
 import { Edit, Eye, Trash, Tag, Box } from "lucide-react";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 import { PERMISSION_KEYS } from "../../constants/permissions";
 
 export default function BrandsTableRow({

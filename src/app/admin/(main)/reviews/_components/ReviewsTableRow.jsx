@@ -2,7 +2,7 @@
 
 import { Edit, Eye, Trash, Star, Image as ImageIcon } from "lucide-react";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 export default function ReviewsTableRow({
   review,

@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { useFetchRoles } from "../hooks/useFetchRoles";
 import { useAuth } from "@/contexts/AuthContext";
 import { PERMISSION_KEYS } from "../../constants/permissions";
-import PermissionGate from "../../../_components/PermissionGate";
+import PermissionGate from "../../_components/PermissionGate";
 
 // Lazy load Components
 const RolesTable = lazy(() => import("./RolesTable"));
