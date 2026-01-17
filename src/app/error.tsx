@@ -2,6 +2,9 @@
 
 import WakeUpDB from "@/components/Home/wakeUpDb";
 import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react"; // Đảm bảo bạn đã cài lucide-react
+import Link from "next/link";
+import { ROUTES } from "@/config/routes";
 
 export default function Error({
   error,
@@ -11,53 +14,72 @@ export default function Error({
   reset: () => void;
 }) {
   const [isDBError, setIsDBError] = useState(false);
-  const [status, setStatus] = useState("Đang kiểm tra lỗi...");
+  const [isChecking, setIsChecking] = useState(true); // Trạng thái đang chuẩn đoán bệnh
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 10;
 
   useEffect(() => {
-    // BƯỚC 1: KHÁM BỆNH
-    // Log lỗi ra để dev xem (quan trọng)
-    console.error(error.message);
-    const isConnectionIssue =
-      error?.message?.includes("database") ||
-      error?.message?.includes("Server");
-    console.error(isConnectionIssue);
+    // --- BƯỚC 1: LOG LỖI (Cho Developer xem ngầm) ---
+    // Chỉ log ra console browser để dev debug, user bình thường sẽ không bật F12
+    console.group("🚨 Application Error Diagnostics");
+    console.error("Error Message:", error.message);
+    console.error("Error Digest:", error.digest);
+    console.error("Stack:", error.stack);
+    console.groupEnd();
+
+    // --- BƯỚC 2: CHUẨN ĐOÁN BỆNH (Logic Frontend) ---
+    const lowerMsg = error.message?.toLowerCase() || "";
+
+    // Danh sách từ khóa nhận diện lỗi kết nối Database / Server Cold Start
+    const dbKeywords = [
+      "database",
+      "connection",
+      "connect",
+      "timeout",
+      "prisma",
+      "econnrefused",
+      "500", // Đôi khi server lỗi 500 do mất kết nối DB
+    ];
+
+    const isConnectionIssue = dbKeywords.some((keyword) =>
+      lowerMsg.includes(keyword),
+    );
+
     setIsDBError(isConnectionIssue);
 
-    // BƯỚC 2: QUYẾT ĐỊNH
+    // Nếu KHÔNG PHẢI lỗi DB, kết thúc kiểm tra ngay để hiện UI lỗi thường
     if (!isConnectionIssue) {
-      // Nếu không phải lỗi mạng/DB -> Dừng lại, không làm gì cả (UI sẽ hiển thị lỗi thường)
-      setStatus("Lỗi ứng dụng (Application Error)");
+      setIsChecking(false);
       return;
     }
 
-    // Nếu ĐÚNG là lỗi DB -> Bắt đầu quy trình Polling
+    // --- BƯỚC 3: XỬ LÝ NẾU LÀ LỖI DB (Polling) ---
     let isMounted = true;
-
     const wakeUpDatabase = async () => {
-      setStatus("Server đang khởi động (Cold Start)...");
-
       for (let i = 0; i < MAX_RETRIES; i++) {
         if (!isMounted) return;
 
         try {
           setRetryCount(i + 1);
-          const res = await fetch("/api/cron"); // Gọi API check
+          // Gọi API cron hoặc health-check nhẹ
+          const res = await fetch("/api/cron", { cache: "no-store" });
 
           if (res.ok) {
-            setStatus("Database đã sẵn sàng! Đang tải lại...");
-            window.location.reload();
+            window.location.reload(); // DB sống lại -> Reload trang
             return;
           }
         } catch (e) {
-          /* Kệ lỗi */
+          /* Silent fail: Chờ lần thử tiếp theo */
         }
-
+        // Đợi 3s trước khi thử lại
         await new Promise((r) => setTimeout(r, 3000));
       }
 
-      setStatus("Hết thời gian chờ. Vui lòng tải lại thủ công.");
+      // Hết số lần thử mà vẫn lỗi -> Chuyển sang hiển thị lỗi thường
+      if (isMounted) {
+        setIsChecking(false);
+        setIsDBError(false); // Coi như không cứu được, hiện lỗi 500
+      }
     };
 
     wakeUpDatabase();
@@ -65,40 +87,66 @@ export default function Error({
     return () => {
       isMounted = false;
     };
-  }, [error, reset]);
+  }, [error]);
 
-  // --- GIAO DIỆN (UI) ---
+  // --- RENDER GIAO DIỆN ---
 
-  // TRƯỜNG HỢP 1: Lỗi Code/Logic thông thường (Không phải DB ngủ)
-  if (!isDBError && status !== "Đang kiểm tra lỗi...") {
+  // 1. TRƯỜNG HỢP: Đang là lỗi DB (Cold Start) -> Hiển thị Component chờ
+  if (isDBError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-        <h2 className="text-2xl font-bold text-red-600 mb-2">Đã xảy ra lỗi!</h2>
-        <p className="text-gray-600 mb-6 max-w-md">
-          {/* Ở Prod, nextjs có thể giấu message, nên hiện digest nếu có */}
-          {error.message || "Lỗi không xác định."}
-          {error.digest && (
-            <span className="block text-xs text-gray-400 mt-1">
-              Ref: {error.digest}
-            </span>
-          )}
-        </p>
-        <button
-          onClick={() => reset()}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-        >
-          Thử lại
-        </button>
-      </div>
+      <WakeUpDB
+        isDBError={true}
+        retryCount={retryCount}
+        maxRetry={MAX_RETRIES}
+      />
     );
   }
 
-  // TRƯỜNG HỢP 2: Lỗi do DB ngủ (Hiển thị Spinner và quy trình polling)
+  // 2. TRƯỜNG HỢP: Đang kiểm tra (tránh flash nội dung)
+  if (isChecking) {
+    return null; // Hoặc return <LoadingSpinner />
+  }
+
+  // 3. TRƯỜNG HỢP: Lỗi ứng dụng thông thường (Code bug, Logic error...)
+  // Giao diện thân thiện, che giấu lỗi kỹ thuật
   return (
-    <WakeUpDB
-      isDBError={isDBError}
-      retryCount={retryCount}
-      maxRetry={MAX_RETRIES}
-    />
+    <div className="min-h-[100vh] flex flex-col items-center justify-center p-6 text-center bg-gray-50">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
+        {/* Icon minh họa */}
+        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <AlertTriangle className="w-8 h-8" />
+        </div>
+
+        {/* Tiêu đề */}
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Đã có lỗi xảy ra
+        </h2>
+
+        {/* Nội dung thân thiện */}
+        <p className="text-gray-500 mb-8">
+          Hệ thống đang gặp sự cố tạm thời. Bạn có thể thử tải lại trang hoặc
+          quay về trang chủ để tiếp tục sử dụng.
+        </p>
+
+        {/* Hành động */}
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => reset()}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all shadow-sm shadow-blue-200"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Thử tải lại trang
+          </button>
+
+          <Link
+            href={ROUTES.HOME}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all"
+          >
+            <Home className="w-4 h-4" />
+            Về trang chủ
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
