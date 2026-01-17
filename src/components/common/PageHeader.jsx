@@ -1,4 +1,4 @@
-import PermissionGate from "@/app/admin/_components/PermissionGate";
+import PermissionGate from "@/app/admin/(main)/_components/PermissionGate";
 import { Download, Plus } from "lucide-react";
 
 export default function PageHeader({

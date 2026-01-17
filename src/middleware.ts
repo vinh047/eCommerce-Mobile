@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = [ROUTES.CART, ROUTES.PROFILE.INDEX, ROUTES.CHECKOUT, "/api/protected"];
 
   // =============== ADMIN LOGIN PAGE (/login) ===============
-  if (pathname === "/login") {
+  if (pathname === "/admin/login") {
     if (adminToken) {
       const adminPayload = await verifyToken(adminToken);
 
@@ -30,13 +30,13 @@ export async function middleware(request: NextRequest) {
   // ===================== ADMIN AREA =====================
   if (pathname.startsWith("/admin")) {
     if (!adminToken) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
     const adminPayload = await verifyToken(adminToken);
 
     if (!adminPayload) {
-      const res = NextResponse.redirect(new URL("/login", request.url));
+      const res = NextResponse.redirect(new URL("/admin/login", request.url));
       res.cookies.delete("admin_token");
       return res;
     }
